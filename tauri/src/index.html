@@ -3111,6 +3111,56 @@
       box-shadow: 0 24px 60px var(--shadow-strong);
     }
 
+    .detail-overlay.meeting-pane {
+      position: relative;
+      inset: auto;
+      background: var(--bg);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0;
+      z-index: auto;
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: hidden;
+      border-left: 1px solid var(--border);
+    }
+
+    .detail-overlay.meeting-pane.active {
+      display: flex;
+    }
+
+    .meeting-pane .detail-card {
+      width: auto;
+      max-height: none;
+      height: 100%;
+      flex: 1 1 auto;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    body:has(#detail-overlay.active) .app-left {
+      flex: 0 0 clamp(260px, 30%, 360px);
+    }
+
+    body.sidebar-collapsed:has(#detail-overlay.active) .app-left {
+      flex: 0 0 0;
+      width: 0;
+      min-width: 0;
+    }
+
+    body:has(#detail-overlay.active) .recall-panel.expanded {
+      flex: 0 0 min(var(--recall-width, 50%), 40%);
+      width: auto;
+    }
+
+    .meeting-item[aria-current="true"] {
+      background: var(--bg-hover);
+    }
+
     .detail-header {
       padding: 18px 20px 14px;
       border-bottom: 1px solid var(--border);
@@ -3295,6 +3345,56 @@
 
     @media (prefers-reduced-motion: reduce) {
       .action-toast { transition: none; }
+    }
+
+    .detail-tabs {
+      display: flex;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .detail-tab {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 9px 10px 8px;
+      font-size: var(--text-meta);
+      color: var(--text-tertiary);
+      cursor: pointer;
+    }
+
+    .detail-tab:hover {
+      color: var(--text-secondary);
+    }
+
+    .detail-tab.is-active {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    .detail-tab:focus-visible {
+      outline: 2px solid var(--focus-ring);
+    }
+
+    .detail-tab-count {
+      color: var(--text-tertiary);
+    }
+
+    .detail-tab-panel {
+      padding-top: 16px;
+    }
+
+    .detail-tab-panel[hidden] {
+      display: none;
+    }
+
+    .detail-tab-empty {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
     }
 
     .detail-scroll {
@@ -6510,6 +6610,38 @@
     </div>
   </div><!-- end .app-left -->
 
+  <!-- In-app meeting detail view -->
+  <section class="detail-overlay meeting-pane" id="detail-overlay" aria-labelledby="detail-title">
+    <div class="detail-card">
+      <button class="detail-close-x" id="btn-detail-close" aria-label="Close meeting">&times;</button>
+      <div class="detail-header">
+        <div class="detail-header-copy">
+          <div class="detail-title" id="detail-title">Meeting</div>
+          <div class="detail-meta" id="detail-meta"></div>
+        </div>
+        <div class="detail-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-discuss-ai">Ask Assistant</button>
+          <button class="btn btn-primary btn-sm" id="btn-create-artifact">New draft</button>
+          <button class="detail-more-btn" id="btn-detail-more" type="button" aria-haspopup="menu" aria-label="More actions" title="More actions">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="3.5" cy="8" r="1.35"/><circle cx="8" cy="8" r="1.35"/><circle cx="12.5" cy="8" r="1.35"/></svg>
+          </button>
+          <!-- Resummarize keeps its state machine on this button; the ⋯ menu
+               drives it, so it stays in the DOM without taking header space. -->
+          <button class="btn btn-secondary btn-sm" id="btn-resummarize" hidden>Resummarize</button>
+        </div>
+      </div>
+      <div class="detail-feedback" id="detail-feedback" hidden></div>
+      <div class="detail-tabs" role="tablist" aria-label="Meeting views" id="detail-tabs">
+        <button class="detail-tab is-active" role="tab" id="detail-tab-overview" aria-selected="true" aria-controls="detail-panel-overview" tabindex="0" data-detail-tab="overview">Overview</button>
+        <button class="detail-tab" role="tab" id="detail-tab-transcript" aria-selected="false" aria-controls="detail-panel-transcript" tabindex="-1" data-detail-tab="transcript">Transcript</button>
+        <button class="detail-tab" role="tab" id="detail-tab-drafts" aria-selected="false" aria-controls="detail-panel-drafts" tabindex="-1" data-detail-tab="drafts">Drafts <span class="detail-tab-count" id="detail-drafts-count"></span></button>
+      </div>
+      <div class="detail-scroll" id="detail-scroll">
+        <div class="detail-empty">Select a meeting to view transcript and notes.</div>
+      </div>
+    </div>
+  </section>
+
   <!-- Kept outside the zero-width pane so a persisted collapse can always be
        reversed, including at the default narrow startup size. -->
   <button class="sidebar-expand-rail" id="btn-sidebar-expand" type="button"
@@ -6608,33 +6740,6 @@
     </div>
     <div class="md-viewer-content" id="md-viewer-content"></div>
     <textarea class="md-viewer-editor" id="md-viewer-editor" spellcheck="false"></textarea>
-  </div>
-
-  <!-- In-app meeting detail view -->
-  <div class="detail-overlay" id="detail-overlay">
-    <div class="detail-card" role="dialog" aria-modal="true" aria-labelledby="detail-title">
-      <button class="detail-close-x" id="btn-detail-close" aria-label="Close">&times;</button>
-      <div class="detail-header">
-        <div class="detail-header-copy">
-          <div class="detail-title" id="detail-title">Meeting</div>
-          <div class="detail-meta" id="detail-meta"></div>
-        </div>
-        <div class="detail-actions">
-          <button class="btn btn-secondary btn-sm" id="btn-discuss-ai">Ask Assistant</button>
-          <button class="btn btn-primary btn-sm" id="btn-create-artifact">Create Draft</button>
-          <button class="detail-more-btn" id="btn-detail-more" type="button" aria-haspopup="menu" aria-label="More actions" title="More actions">
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="3.5" cy="8" r="1.35"/><circle cx="8" cy="8" r="1.35"/><circle cx="12.5" cy="8" r="1.35"/></svg>
-          </button>
-          <!-- Resummarize keeps its state machine on this button; the ⋯ menu
-               drives it, so it stays in the DOM without taking header space. -->
-          <button class="btn btn-secondary btn-sm" id="btn-resummarize" hidden>Resummarize</button>
-        </div>
-      </div>
-      <div class="detail-feedback" id="detail-feedback" hidden></div>
-      <div class="detail-scroll" id="detail-scroll">
-        <div class="detail-empty">Select a meeting to view transcript and notes.</div>
-      </div>
-    </div>
   </div>
 
   <div class="action-toast" id="action-toast" role="status" aria-live="polite">
@@ -8074,6 +8179,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const detailFeedback = document.getElementById('detail-feedback');
     const detailCard = document.querySelector('.detail-card');
     const detailScroll = document.getElementById('detail-scroll');
+    const detailTabs = document.getElementById('detail-tabs');
     const resummarizeBtn = document.getElementById('btn-resummarize');
     const aboutOverlay = document.getElementById('about-overlay');
     const aboutVersion = document.getElementById('about-version');
@@ -8152,6 +8258,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     let copilotCriticalAlertsEnabled = false;
     let isSensitiveMeeting = false;
     let currentMeetingPath = null;
+    let detailActiveTab = 'overview';
+    let detailTabsPath = null;
     const liveBar = document.getElementById('live-bar');
     // Live bar elements are accessed by ID inline (live-time, live-utterances)
     let currentMeetingDetail = null;
@@ -11399,6 +11507,17 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       return !key.startsWith('speaker ') && !key.startsWith('speaker_') && !key.startsWith('speaker-');
     }
 
+    function markOpenMeetingRow() {
+      const meetingOpen = detailOverlay.classList.contains('active');
+      meetingsScroll.querySelectorAll('.meeting-item').forEach((row) => {
+        if (meetingOpen && row.dataset.path === currentMeetingPath) {
+          row.setAttribute('aria-current', 'true');
+        } else {
+          row.removeAttribute('aria-current');
+        }
+      });
+    }
+
     function closeDetailView() {
       const wasOpen = detailOverlay.classList.contains('active');
       detailOverlay.classList.remove('active');
@@ -11411,6 +11530,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       currentMeetingPath = null;
       currentMeetingDetail = null;
       persistRecallWorkspaceState({ currentMeetingPath: '' });
+      markOpenMeetingRow();
+      syncNarrowLayout();
       // Closing while the confirm is armed must not leave the armed state
       // behind: this clears the timer and also the "Confirm?" label, the pinned
       // button width, and the pinned card height, none of which are repaired
@@ -11541,6 +11662,93 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       detailFeedbackTimer = setTimeout(clearDetailFeedback, durationMs);
     }
 
+    function selectDetailTab(key, { focus = false } = {}) {
+      const buttons = [...detailTabs.querySelectorAll('[role="tab"]')];
+      const selected = buttons.find((button) => button.dataset.detailTab === key);
+      if (!selected) return;
+      const changed = detailActiveTab !== key;
+      detailActiveTab = key;
+      for (const button of buttons) {
+        const active = button === selected;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-selected', String(active));
+        button.tabIndex = active ? 0 : -1;
+      }
+      for (const panel of detailScroll.querySelectorAll('.detail-tab-panel')) {
+        panel.hidden = panel.id !== `detail-panel-${key}`;
+      }
+      if (changed) detailScroll.scrollTop = 0;
+      if (focus) selected.focus();
+    }
+
+    detailTabs.addEventListener('click', (event) => {
+      const tab = event.target.closest('[role="tab"]');
+      if (tab) selectDetailTab(tab.dataset.detailTab);
+    });
+
+    detailTabs.addEventListener('keydown', (event) => {
+      const tab = event.target.closest('[role="tab"]');
+      if (!tab) return;
+      const buttons = [...detailTabs.querySelectorAll('[role="tab"]')];
+      const index = buttons.indexOf(tab);
+      let target;
+      switch (event.key) {
+        case 'ArrowRight': target = (index + 1) % buttons.length; break;
+        case 'ArrowLeft': target = (index - 1 + buttons.length) % buttons.length; break;
+        case 'Home': target = 0; break;
+        case 'End': target = buttons.length - 1; break;
+        default: return;
+      }
+      event.preventDefault();
+      selectDetailTab(buttons[target].dataset.detailTab, { focus: true });
+    });
+
+    function arrangeDetailTabs() {
+      const cards = [...detailScroll.children];
+      const sections = {
+        overview: ['sensitive', 'summary', 'next-steps', 'decisions', 'notes', 'context', 'people', 'topics', 'commitments', 'nearby', 'other', 'cta'],
+        transcript: ['speakers', 'transcript', 'transcript-empty'],
+        drafts: ['drafts'],
+      };
+      const panels = Object.entries(sections).map(([key, order]) => {
+        const panel = document.createElement('div');
+        panel.className = 'detail-tab-panel';
+        panel.setAttribute('role', 'tabpanel');
+        panel.id = `detail-panel-${key}`;
+        panel.setAttribute('aria-labelledby', `detail-tab-${key}`);
+        panel.tabIndex = 0;
+        for (const section of order) {
+          for (const card of cards) {
+            if (card.dataset.detailSection === section) panel.appendChild(card);
+          }
+        }
+        if (!panel.hasChildNodes() && key !== 'overview') {
+          const empty = document.createElement('div');
+          empty.className = 'detail-tab-empty';
+          empty.textContent = key === 'transcript'
+            ? 'No transcript for this meeting.'
+            : 'No drafts from this meeting yet.';
+          if (key === 'drafts') {
+            const button = document.createElement('button');
+            button.className = 'btn btn-secondary btn-sm';
+            button.textContent = 'New draft';
+            button.addEventListener('click', () => document.getElementById('btn-create-artifact').click());
+            empty.appendChild(button);
+          }
+          panel.appendChild(empty);
+        }
+        return panel;
+      });
+      detailScroll.replaceChildren(...panels);
+      const draftCount = currentMeetingDetail?.adjacent_artifacts?.length || 0;
+      document.getElementById('detail-drafts-count').textContent = draftCount ? String(draftCount) : '';
+      if (currentMeetingPath !== detailTabsPath) {
+        detailActiveTab = 'overview';
+        detailTabsPath = currentMeetingPath;
+      }
+      selectDetailTab(detailActiveTab);
+    }
+
     function renderDetailSections(detail) {
       currentMeetingDetail = detail;
       const detailTitleText = detail.title || 'Untitled';
@@ -11595,6 +11803,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           decList.appendChild(row);
         }
         decCard.appendChild(decList);
+        decCard.dataset.detailSection = 'decisions';
         detailScroll.appendChild(decCard);
       }
 
@@ -11643,6 +11852,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           aiList.appendChild(row);
         });
         aiCard.appendChild(aiList);
+        aiCard.dataset.detailSection = 'next-steps';
         detailScroll.appendChild(aiCard);
       }
 
@@ -11660,6 +11870,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
         contextCard.appendChild(label);
         contextCard.appendChild(body);
+        contextCard.dataset.detailSection = 'context';
         detailScroll.appendChild(contextCard);
       }
 
@@ -11767,6 +11978,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           speakerCard.appendChild(row);
         }
 
+        speakerCard.dataset.detailSection = 'speakers';
         detailScroll.appendChild(speakerCard);
       }
 
@@ -11787,6 +11999,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
         peopleCard.appendChild(peopleLabel);
         peopleCard.appendChild(peopleRow);
+        peopleCard.dataset.detailSection = 'people';
         detailScroll.appendChild(peopleCard);
       }
 
@@ -11807,6 +12020,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
         topicsCard.appendChild(topicsLabel);
         topicsCard.appendChild(topicsRow);
+        topicsCard.dataset.detailSection = 'topics';
         detailScroll.appendChild(topicsCard);
       }
 
@@ -11838,6 +12052,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
         commitmentsCard.appendChild(commitmentsLabel);
         commitmentsCard.appendChild(commitmentsList);
+        commitmentsCard.dataset.detailSection = 'commitments';
         detailScroll.appendChild(commitmentsCard);
       }
 
@@ -11867,6 +12082,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
         meetingsCard.appendChild(meetingsLabel);
         meetingsCard.appendChild(meetingsList);
+        meetingsCard.dataset.detailSection = 'nearby';
         detailScroll.appendChild(meetingsCard);
       }
 
@@ -11909,6 +12125,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
         artifactsCard.appendChild(artifactsLabel);
         artifactsCard.appendChild(artifactsList);
+        artifactsCard.dataset.detailSection = 'drafts';
         detailScroll.appendChild(artifactsCard);
       }
 
@@ -11961,6 +12178,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
         sensitiveCard.appendChild(sensitiveLabel);
         sensitiveCard.appendChild(sensitiveBody);
+        sensitiveCard.dataset.detailSection = 'sensitive';
         detailScroll.appendChild(sensitiveCard);
       }
 
@@ -11978,6 +12196,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           const empty = document.createElement('div');
           empty.className = 'detail-empty';
           empty.textContent = 'No transcript content available for this recording.';
+          empty.dataset.detailSection = 'transcript-empty';
           detailScroll.appendChild(empty);
         }
       } else {
@@ -12007,6 +12226,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
           sectionEl.appendChild(heading);
           sectionEl.appendChild(body);
+          const sectionKey = (section.heading || '').toLowerCase();
+          sectionEl.dataset.detailSection = ['summary', 'notes', 'transcript'].includes(sectionKey) ? sectionKey : 'other';
           detailScroll.appendChild(sectionEl);
         }
       }
@@ -12025,9 +12246,13 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       });
       bottomCta.appendChild(ctaText);
       bottomCta.appendChild(ctaBtn);
+      bottomCta.dataset.detailSection = 'cta';
       detailScroll.appendChild(bottomCta);
 
+      arrangeDetailTabs();
       detailOverlay.classList.add('active');
+      markOpenMeetingRow();
+      syncNarrowLayout();
       persistRecallWorkspaceState({ currentMeetingPath: detail.path });
       scrollDetailToFirstMatch();
     }
@@ -12038,6 +12263,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!activeSearchQuery) return;
       const first = detailScroll.querySelector('.detail-section-body mark');
       if (!first) return;
+      const panel = first.closest('.detail-tab-panel');
+      if (panel) selectDetailTab(panel.id.replace('detail-panel-', ''));
       first.classList.add('mark-current');
       requestAnimationFrame(() => first.scrollIntoView({ block: 'center' }));
     }
@@ -12359,7 +12586,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!(event.metaKey || event.ctrlKey) || event.shiftKey || event.altKey || event.key.toLowerCase() !== 'f') return;
       if (document.activeElement?.closest?.('.recall-terminal') || isOverlayActive() || mdViewer.classList.contains('active')) return;
       event.preventDefault();
-      if (detailOverlay.classList.contains('active')) closeDetailView();
       if (document.body.classList.contains('sidebar-collapsed')) document.getElementById('btn-sidebar-expand')?.click();
       searchInput.focus();
       searchInput.select();
@@ -12379,6 +12605,9 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       item.tabIndex = 0;
       item.setAttribute('role', 'button');
       item.dataset.path = m.path;
+      if (m.path === currentMeetingPath && detailOverlay.classList.contains('active')) {
+        item.setAttribute('aria-current', 'true');
+      }
       item.addEventListener('click', () => {
         detailReturnFocusPath = m.path;
         openMeetingDetail(m.path);
@@ -13412,9 +13641,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     document.getElementById('btn-detail-close').addEventListener('click', closeDetailView);
-    detailOverlay.addEventListener('click', (e) => {
-      if (e.target === detailOverlay) closeDetailView();
-    });
     // Settings overlay
     const settingsOverlay = document.getElementById('settings-overlay');
     const settingsTabs = document.querySelectorAll('.settings-tab');
@@ -15716,7 +15942,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         closeActivity();
         return;
       }
-      if (e.key === 'Escape' && detailOverlay.classList.contains('active')) {
+      if (e.key === 'Escape' && detailOverlay.classList.contains('active')
+          && !isEditableShortcutTarget(e.target) && !e.target?.closest?.('#recall-panel')) {
         e.preventDefault();
         e.stopPropagation();
         closeDetailView();
@@ -16141,7 +16368,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function hasVisibleSecondaryPane() {
       // Read rendered pane state instead of later-initialized Recall variables.
-      return !!document.querySelector('#recall-panel.expanded, #md-viewer.active');
+      return !!document.querySelector('#recall-panel.expanded, #md-viewer.active, #detail-overlay.active');
     }
 
     const storedSidebarCollapsed = localStorage.getItem('minutes.sidebarCollapsed') === 'true';
@@ -16156,10 +16383,14 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     // explicit expand this session is respected.
     const SIDEBAR_AUTO_COLLAPSE_WIDTH = 720;
     const DOC_OPEN_COLLAPSE_WIDTH = 1000;
+    const MEETING_AND_RECALL_COLLAPSE_WIDTH = 1280;
     const DOC_OVERLAY_WIDTH = 820;
     function syncNarrowLayout() {
       const docOpen = document.body.classList.contains('doc-open');
-      const threshold = docOpen ? DOC_OPEN_COLLAPSE_WIDTH : SIDEBAR_AUTO_COLLAPSE_WIDTH;
+      const meetingAndRecallOpen = detailOverlay.classList.contains('active')
+        && !!document.querySelector('#recall-panel.expanded');
+      const threshold = docOpen ? DOC_OPEN_COLLAPSE_WIDTH
+        : meetingAndRecallOpen ? MEETING_AND_RECALL_COLLAPSE_WIDTH : SIDEBAR_AUTO_COLLAPSE_WIDTH;
       const width = window.innerWidth;
       const pinnedCollapsed = localStorage.getItem('minutes.sidebarCollapsed') === 'true';
       const secondaryPaneVisible = hasVisibleSecondaryPane();
@@ -18527,7 +18758,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!currentMeetingPath) return;
       const path = currentMeetingPath;
       const title = currentMeetingDetail ? currentMeetingDetail.title : 'Meeting';
-      closeDetailView();
       await discussMeetingWithAgent(path, title);
     });
 
@@ -19495,12 +19725,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       // Drives the three-pane split: chat yields, the list keeps its width.
       document.body.classList.add('doc-open');
       syncNarrowLayout();
-      // The detail overlay is a fixed full-screen layer (z-index 120) — leaving it
-      // open would render the draft behind the meeting note. Close it so the
-      // newly-active md-viewer is actually visible.
+      // Opening a document replaces the meeting pane with the document pane.
       if (detailOverlay.classList.contains('active')) {
         detailOverlay.classList.remove('active');
-        // Hiding the overlay bypasses closeDetailView(), so drop any armed
+        markOpenMeetingRow();
+        // Hiding the pane bypasses closeDetailView(), so drop any armed
         // "Confirm?" state and its pinned width with it, and clear the banner —
         // which also releases the card pin. Without the clear, a persistent
         // resummarize report would still be on screen (under a stale pin) when
@@ -19759,7 +19988,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         settingsOverlay,
         coachOnboardingOverlay,
         activityOverlay,
-        detailOverlay,
         recordingConsentOverlay,
         cliSetupScrim,
         artifactTemplateOverlay,
