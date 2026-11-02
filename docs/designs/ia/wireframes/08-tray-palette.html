@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>08 · Tray and palette — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">08 · Tray menu and command palette, same names as the window</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <div class="flex gap-8 items-start">
+    <!-- Tray menu (idle) -->
+    <section>
+      <h2 class="text-sm font-semibold text-muted mb-2">A · Tray menu, idle</h2>
+      <div class="w-[300px] rounded-xl border border-separator bg-overlay shadow-xl p-1 text-sm" role="menu">
+        <p class="px-3 pt-2 pb-1 text-xs font-medium text-muted">Next · in 25 min</p>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Northwind weekly sync <span class="text-muted">· 2:00 PM</span></div>
+        <div class="separator separator--horizontal my-1"></div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Record meeting</div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Record memo<span class="ms-auto text-muted">⌘⇧M</span></div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">More ways to record<span class="ms-auto text-muted">›</span></div>
+        <div class="separator separator--horizontal my-1"></div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Open Minutes</div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Ask Assistant</div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Last dictation<span class="ms-auto text-muted">›</span></div>
+        <div class="separator separator--horizontal my-1"></div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Hide from screen sharing<span class="ms-auto">✓</span></div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Settings…</div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Quit Minutes</div>
+      </div>
+    </section>
+
+    <!-- Tray menu (recording) -->
+    <section>
+      <h2 class="text-sm font-semibold text-muted mb-2">B · Tray menu, recording</h2>
+      <div class="w-[300px] rounded-xl border border-separator bg-overlay shadow-xl p-1 text-sm" role="menu">
+        <p class="px-3 pt-2 pb-1 text-xs font-medium text-muted">Recording · 12:34 · Northwind weekly sync</p>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Stop recording</div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Add note…<span class="ms-auto text-muted">⌘⇧N</span></div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Coach<span class="ms-auto">✓</span></div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Mute my microphone</div>
+        <div class="separator separator--horizontal my-1"></div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Open Minutes</div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Ask Assistant</div>
+        <div class="separator separator--horizontal my-1"></div>
+        <div class="menu-item rounded-lg px-3 py-1.5 flex" role="menuitem">Hide from screen sharing<span class="ms-auto">✓</span></div>
+        <div class="menu-item rounded-lg px-3 py-1.5" role="menuitem">Quit Minutes</div>
+      </div>
+    </section>
+
+    <!-- Palette -->
+    <section>
+      <h2 class="text-sm font-semibold text-muted mb-2">C · Palette, results for a search</h2>
+      <div class="w-[460px] rounded-xl border border-separator bg-overlay shadow-xl overflow-hidden text-sm">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-separator">
+          <span class="text-accent font-semibold">⌕</span>
+          <span class="text-muted">Search meetings: northwind</span>
+          <span class="ms-auto text-xs text-muted">Esc back</span>
+        </div>
+        <div class="py-1" role="listbox">
+          <div class="flex items-center gap-3 px-4 py-2 bg-accent-soft" role="option" aria-selected="true">
+            <div class="min-w-0 flex-1"><p class="font-medium truncate">Northwind Follow-up — SSO Status</p><p class="text-xs text-muted truncate">…promised Northwind the SSO timeline by…</p></div>
+            <span class="text-xs text-muted">Mar 30</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-2" role="option">
+            <div class="min-w-0 flex-1"><p class="font-medium truncate">Product Prioritization — Q2 Cut Lines</p><p class="text-xs text-muted truncate">…addresses the Northwind pain point plus…</p></div>
+            <span class="text-xs text-muted">Apr 17</span>
+          </div>
+          <div class="flex items-center gap-3 px-4 py-2" role="option">
+            <div class="min-w-0 flex-1"><p class="font-medium truncate">Customer Success Review — At-Risk Accounts</p><p class="text-xs text-muted truncate">…Northwind is the only account citing…</p></div>
+            <span class="text-xs text-muted">Apr 14</span>
+          </div>
+        </div>
+        <div class="flex gap-4 px-4 py-2 border-t border-separator text-xs text-muted">
+          <span>↑↓ move</span><span>⏎ open meeting</span><span>Esc back</span><span class="ms-auto">3 results</span>
+        </div>
+      </div>
+
+      <h2 class="text-sm font-semibold text-muted mt-6 mb-2">Palette groups (same nouns as the window)</h2>
+      <table class="text-sm w-[460px]">
+        <tbody class="align-top text-body">
+          <tr><td class="py-1 pe-4 font-medium text-foreground">Record</td><td>Record meeting · Record memo · Meeting with live transcript · Sensitive meeting · Stop · Add note</td></tr>
+          <tr><td class="py-1 pe-4 font-medium text-foreground">Meetings</td><td>Search meetings… · Open latest meeting · This week · Rename meeting · Copy as Markdown</td></tr>
+          <tr><td class="py-1 pe-4 font-medium text-foreground">Insights</td><td>Open action items · Recent decisions · Research a topic… · Upcoming meetings</td></tr>
+          <tr><td class="py-1 pe-4 font-medium text-foreground">Assistant</td><td>Ask Assistant · New draft… · Debrief this meeting</td></tr>
+          <tr><td class="py-1 pe-4 font-medium text-foreground">Dictation</td><td>Start dictation · Paste last dictation · Recover last dictation</td></tr>
+          <tr><td class="py-1 pe-4 font-medium text-foreground">App</td><td>Activity · Settings · Hide from screen sharing</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <ol class="wf-note list-decimal ps-5 flex flex-col gap-1">
+    <li>The tray menu is <b>state-aware</b>: idle shows ways to start; recording shows controls for the current recording. Today it shows everything at once and relabels Stop per activity.</li>
+    <li>Labels match the window and palette exactly (sentence case, same nouns): "Record memo", not "Quick Thought"; "Ask Assistant", not "Recall"/"AI Assistant".</li>
+    <li>Rarely used items move behind submenus ("More ways to record", "Last dictation") instead of three dictation-recovery rows at the top level. Copy Latest Summary/Transcript move to the meeting's ⋯ menu and the palette.</li>
+    <li>Palette results open in the window (PR #1281 ships the result list today); search uses the same "Search meetings" wording as the sidebar.</li>
+  </ol>
+</body>
+</html>

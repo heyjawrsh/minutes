@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>06 · Draft beside its meeting — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">06 · A draft open beside its meeting</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <div class="wf-frame flex flex-col">
+    <div class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-separator">
+      <span class="text-xl font-bold tracking-tight w-7 text-center">m</span>
+      <div class="button-group" role="group" aria-label="Record">
+        <button class="button button--primary button--sm">● Record meeting</button>
+        <span class="button-group__separator"></span>
+        <button class="button button--primary button--sm button--icon-only" aria-label="More ways to record">▾</button>
+      </div>
+      <div class="ms-auto flex items-center gap-2">
+        <button class="button button--ghost button--sm">Activity</button>
+        <button class="button button--ghost button--sm">Assistant</button>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex">
+      <!-- Sidebar collapsed to a rail when two panes are open -->
+      <aside class="w-[56px] shrink-0 border-e border-separator flex flex-col items-center gap-2 py-3" aria-label="Meetings (collapsed)">
+        <button class="button button--ghost button--sm button--icon-only" aria-label="Show meetings list">☰</button>
+        <button class="button button--ghost button--sm button--icon-only" aria-label="Search meetings">⌕</button>
+      </aside>
+
+      <!-- Meeting pane, narrower -->
+      <main class="w-[430px] shrink-0 border-e border-separator flex flex-col min-h-0">
+        <div class="px-5 pt-4 pb-2">
+          <h2 class="text-lg font-semibold leading-tight">Product Prioritization — Q2 Cut Lines</h2>
+          <p class="mt-1 text-sm text-muted">Apr 17 · 58 min · 5 people</p>
+        </div>
+        <div class="px-5 tabs tabs--secondary" data-orientation="horizontal">
+          <div class="tabs__list-container">
+            <div class="tabs__list" role="tablist">
+              <button class="tabs__tab" role="tab" aria-selected="false">Overview<span class="tabs__indicator" hidden></span></button>
+              <button class="tabs__tab" role="tab" aria-selected="false">Transcript<span class="tabs__indicator" hidden></span></button>
+              <button class="tabs__tab" role="tab" data-selected="true" aria-selected="true">Drafts · 2<span class="tabs__indicator"></span></button>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 overflow-auto px-5 py-4 flex flex-col gap-2 text-sm">
+          <a class="rounded-lg px-3 py-2 bg-accent-soft" aria-current="true">
+            <span class="block font-medium">Follow-up email</span>
+            <span class="text-xs text-muted">Made by Assistant · edited 1 min ago</span>
+          </a>
+          <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">
+            <span class="block font-medium">Meeting brief</span>
+            <span class="text-xs text-muted">Made by Assistant · Nov 1</span>
+          </a>
+          <div class="mt-2">
+            <p class="text-xs font-medium text-muted mb-2">New draft</p>
+            <div class="flex flex-wrap gap-2">
+              <button class="chip chip--sm"><span class="chip__label">Debrief memo</span></button>
+              <button class="chip chip--sm"><span class="chip__label">Follow-up email</span></button>
+              <button class="chip chip--sm"><span class="chip__label">Meeting brief</span></button>
+              <button class="chip chip--sm"><span class="chip__label">Decision memo</span></button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Draft pane -->
+      <section class="flex-1 min-w-0 flex flex-col min-h-0" aria-label="Draft">
+        <div class="h-12 shrink-0 flex items-center gap-2 px-4 border-b border-separator">
+          <span class="font-semibold">Follow-up email</span>
+          <span class="chip chip--sm chip--soft chip--success"><span class="chip__label">Saved</span></span>
+          <div class="ms-auto flex items-center gap-1">
+            <div class="tabs" data-orientation="horizontal">
+              <div class="tabs__list-container">
+                <div class="tabs__list" role="tablist" aria-label="View">
+                  <button class="tabs__tab" role="tab" data-selected="true" aria-selected="true">Edit<span class="tabs__indicator"></span></button>
+                  <button class="tabs__tab" role="tab" aria-selected="false">Preview<span class="tabs__indicator" hidden></span></button>
+                </div>
+              </div>
+            </div>
+            <button class="button button--ghost button--sm button--icon-only" aria-label="Draft actions">⋯</button>
+            <button class="button button--ghost button--sm button--icon-only" aria-label="Close draft">✕</button>
+          </div>
+        </div>
+        <div class="flex-1 overflow-auto px-6 py-5 text-sm leading-relaxed text-body flex flex-col gap-3 max-w-[560px]">
+          <p><span class="text-muted">Subject:</span> Q2 scope: what we cut and what ships</p>
+          <p>Hi Riley,</p>
+          <p>Quick summary from today's prioritization meeting. We're shipping a date-ranged CSV export by May 2. It covers the last quarter, with no dashboard or charts.</p>
+          <p>Advanced analytics is off the Q2 roadmap. Team billing stays our main focus and ships April 15.</p>
+          <p>Happy to walk through any of it.</p>
+        </div>
+        <div class="p-3 border-t border-separator flex gap-2">
+          <input class="input input--full-width" placeholder="Ask Assistant to change this draft (e.g. shorter, more formal)">
+          <button class="button button--secondary button--sm">Refine</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <ol class="wf-note list-decimal ps-5 flex flex-col gap-1">
+    <li>Drafts live in their meeting's <b>Drafts</b> tab and open <b>beside the meeting</b>, not in a separate Documents list. The meetings list collapses to a rail to make room.</li>
+    <li>The draft header shows save state; <b>Edit / Preview</b> is the only mode switch. Review changes and Restore an earlier version move into ⋯ (today "Revert" sits as a tab next to Preview and Source).</li>
+    <li>Refining goes through the Assistant from a field at the bottom of the draft, so it isn't necessary to open the Assistant pane to change one draft.</li>
+    <li>Template names are sentence case and match the "New draft" picker everywhere.</li>
+  </ol>
+</body>
+</html>

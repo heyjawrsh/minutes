@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>05 · Activity — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">05 · Activity: processing, recovery and setup in one place</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <div class="wf-frame flex flex-col">
+    <div class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-separator">
+      <span class="text-xl font-bold tracking-tight w-7 text-center">m</span>
+      <div class="button-group" role="group" aria-label="Record">
+        <button class="button button--primary button--sm">● Record meeting</button>
+        <span class="button-group__separator"></span>
+        <button class="button button--primary button--sm button--icon-only" aria-label="More ways to record">▾</button>
+      </div>
+      <span class="text-sm text-muted ms-2">Processing 1 meeting…</span>
+      <div class="ms-auto flex items-center gap-2">
+        <span class="badge-anchor">
+          <button class="button button--secondary button--sm" aria-pressed="true" aria-expanded="true">Activity</button>
+          <span class="badge badge--warning badge--sm badge--top-right"><span class="badge__label">2</span></span>
+        </span>
+        <button class="button button--ghost button--sm">Assistant</button>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex relative">
+      <!-- Dimmed app behind -->
+      <aside class="w-[256px] shrink-0 border-e border-separator p-3 text-sm opacity-40">
+        <p class="px-2 pb-1 text-xs font-medium text-muted">Today</p>
+        <a class="block rounded-lg px-2 py-2"><span class="block font-medium">Northwind weekly sync</span><span class="text-xs text-muted">Processing…</span></a>
+        <p class="px-2 pt-3 pb-1 text-xs font-medium text-muted">Apr 17</p>
+        <a class="block rounded-lg px-2 py-2"><span class="block font-medium">Product Prioritization — Q2 Cut Lines</span></a>
+      </aside>
+      <main class="flex-1 opacity-40 p-5"><h2 class="text-xl font-semibold">Product Prioritization — Q2 Cut Lines</h2></main>
+
+      <!-- Activity drawer -->
+      <section class="absolute right-0 top-0 bottom-0 w-[420px] border-s border-separator bg-overlay shadow-2xl flex flex-col" aria-label="Activity">
+        <div class="h-12 shrink-0 flex items-center px-4 border-b border-separator">
+          <h2 class="font-semibold">Activity</h2>
+          <button class="button button--ghost button--sm button--icon-only ms-auto" aria-label="Close Activity">✕</button>
+        </div>
+        <div class="flex-1 overflow-auto p-4 flex flex-col gap-5 text-sm">
+
+          <div>
+            <h3 class="text-xs font-semibold text-muted mb-2">Needs attention · 2</h3>
+            <div class="flex flex-col gap-2">
+              <div class="alert alert--warning bg-surface rounded-xl">
+                <div class="alert__content">
+                  <p class="alert__title">Dictation can't type into apps</p>
+                  <p class="alert__description text-body">Minutes needs Accessibility access to insert text at your cursor.</p>
+                  <div class="mt-2 flex gap-2"><button class="button button--secondary button--sm">Open System Settings</button><button class="button button--ghost button--sm">Check again</button></div>
+                </div>
+              </div>
+              <div class="alert alert--warning bg-surface rounded-xl">
+                <div class="alert__content">
+                  <p class="alert__title">A recording didn't finish processing</p>
+                  <p class="alert__description text-body">Mar 30 · 31 min. The audio is safe. Processing stopped when the model was missing.</p>
+                  <div class="mt-2 flex gap-2"><button class="button button--secondary button--sm">Try again</button><button class="button button--ghost button--sm">Show audio file</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-semibold text-muted mb-2">Processing · 1</h3>
+            <div class="card card--secondary">
+              <div class="card__content flex flex-col gap-2">
+                <div class="flex items-baseline gap-2"><span class="font-medium">Northwind weekly sync</span><span class="text-xs text-muted ms-auto">2 min</span></div>
+                <p class="text-xs text-muted">Transcribing · 62%</p>
+                <div class="h-1.5 rounded-full bg-default overflow-hidden" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100"><div class="h-full w-[62%] bg-accent"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-semibold text-muted mb-2">Done today</h3>
+            <ul class="flex flex-col gap-1 text-body">
+              <li class="flex gap-2"><span>Product Prioritization — Q2 Cut Lines</span><a class="link ms-auto text-xs">Open</a></li>
+              <li class="flex gap-2"><span>Memo · Q2 priorities</span><a class="link ms-auto text-xs">Open</a></li>
+            </ul>
+          </div>
+
+          <div class="separator separator--horizontal"></div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-muted">Microphone, Screen Recording, Accessibility, models</span>
+            <button class="button button--ghost button--sm ms-auto">Run all checks</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <ol class="wf-note list-decimal ps-5 flex flex-col gap-1">
+    <li><b>One Activity drawer</b> replaces three modals (Jobs Center, Recovery Center, Readiness Center) and the two header chips that never render. The top-bar badge counts only items that need attention.</li>
+    <li>Order is by urgency: <b>Needs attention</b> (setup problems, failed processing) › <b>Processing</b> (live progress) › <b>Done today</b>.</li>
+    <li>Every problem says what happened and what to do, with the fix as a button. Warning color, not red: nothing here is destructive.</li>
+    <li>"Run all checks" is the old Readiness Center, now a section action rather than a separate place.</li>
+    <li>The "+1 more" link on a banner (see 02) opens this drawer.</li>
+  </ol>
+</body>
+</html>
