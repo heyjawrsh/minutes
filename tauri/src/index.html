@@ -3997,6 +3997,38 @@
     }
 
     /* ── Activity drawer ── */
+    .banner-more {
+      display: block;
+      margin: -4px 16px 8px auto;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: var(--text-xs);
+      cursor: pointer;
+    }
+
+    .banner-more:hover {
+      color: var(--text);
+    }
+
+    .banner-more:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .banner-more[hidden],
+    .activity-section[hidden] {
+      display: none;
+    }
+
+    #activity-section-notices[hidden] + .activity-section {
+      border-top: 0;
+    }
+
+    #activity-notices > * {
+      margin: 10px 0 0;
+    }
+
     .activity-overlay {
       position: fixed;
       inset: 0;
@@ -6683,6 +6715,12 @@
         <button class="btn btn-secondary btn-sm" id="btn-activity-close" type="button">Close</button>
       </div>
       <div class="activity-scroll">
+        <section class="activity-section" id="activity-section-notices" aria-labelledby="activity-notices-title" hidden>
+          <div class="activity-section-heading">
+            <h3 id="activity-notices-title" tabindex="-1">Notices</h3>
+          </div>
+          <div id="activity-notices"></div>
+        </section>
         <section class="activity-section" id="activity-section-attention">
           <div class="activity-section-heading">
             <h3 id="activity-attention-title" tabindex="-1">Recordings to retry</h3>
@@ -9231,6 +9269,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function updateOutputNotice(notice) {
       latestOutput = notice || null;
+      if (notice?.kind) outputNotice.dataset.kind = notice.kind; else delete outputNotice.dataset.kind;
       if (!notice) {
         clearOutputNoticeAutoDismiss();
         outputNotice.classList.remove('active', 'capture');
@@ -9524,6 +9563,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       loadProcessingJobsCenter();
       const readinessPromise = loadReadinessItems();
       const headingId = {
+        notices: 'activity-notices-title',
         attention: 'activity-attention-title',
         processing: 'activity-processing-title',
         setup: 'readiness-title',
@@ -19822,6 +19862,71 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     } else {
       setCueToggle(true);
     }
+    // Keep banner state owned by each feature; only coordinate DOM placement.
+    (() => {
+      const isActive = el => el.classList.contains('active');
+      const banners = [
+        { id: 'config-warning', showing: el => !el.hidden, priority: el => el.classList.contains('is-repaired') ? 5 : 1 },
+        { id: 'output-notice', showing: isActive, priority: el => el.dataset.kind === 'error' ? 1 : el.dataset.kind === 'saved' ? 5 : 2 },
+        { id: 'call-ended-banner', showing: isActive, priority: () => 3 },
+        { id: 'call-detected-banner', showing: isActive, priority: () => 3 },
+        { id: 'upcoming', showing: isActive, priority: () => 4 },
+        { id: 'update-banner', showing: isActive, priority: () => 5 },
+        { id: 'parakeet-banner', showing: isActive, priority: () => 5 },
+      ].map((banner, index) => ({ ...banner, index, el: document.getElementById(banner.id) }))
+        .filter(banner => banner.el);
+      const notices = document.getElementById('activity-notices');
+      const noticesSection = document.getElementById('activity-section-notices');
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'banner-more';
+      more.id = 'banner-more';
+      more.hidden = true;
+      more.addEventListener('click', () => openActivity('notices'));
+
+      for (const banner of banners) {
+        banner.home = document.createComment(`banner-home:${banner.id}`);
+        banner.el.before(banner.home);
+      }
+
+      function arrangeBanners() {
+        const showing = banners.filter(banner => banner.showing(banner.el))
+          .sort((a, b) => a.priority(a.el) - b.priority(b.el) || a.index - b.index);
+        const top = showing[0];
+        const queued = showing.slice(1);
+        for (const banner of banners) {
+          if (!queued.includes(banner) && banner.home.nextSibling !== banner.el) {
+            banner.home.after(banner.el);
+          }
+        }
+        for (const banner of queued) notices.append(banner.el);
+        noticesSection.hidden = queued.length === 0;
+        if (top && queued.length) {
+          more.textContent = `+${queued.length} more`;
+          more.setAttribute('aria-label', `${queued.length} more ${queued.length === 1 ? 'notice' : 'notices'} in Activity`);
+          top.el.after(more);
+          more.hidden = false;
+        } else {
+          more.hidden = true;
+        }
+      }
+
+      let scheduled = false;
+      const observer = new MutationObserver(() => {
+        if (scheduled) return;
+        scheduled = true;
+        queueMicrotask(() => {
+          scheduled = false;
+          arrangeBanners();
+        });
+      });
+      for (const banner of banners) {
+        observer.observe(banner.el, { attributes: true, attributeFilter: ['class', 'hidden', 'data-kind'] });
+      }
+      window.arrangeBanners = arrangeBanners;
+      arrangeBanners();
+    })();
+
     loadDesktopCapabilities();
     loadHotkeySettings();
     checkSetup();
