@@ -305,13 +305,24 @@
       padding: 0;
       align-items: center;
       justify-content: center;
+      /* Same look as .sidebar-collapse-btn, which it stands in for. (It used
+         --radius-sm and --text-muted, neither of which is defined.) */
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 7px;
       background: var(--bg);
-      color: var(--text-muted);
-      font: inherit;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      line-height: 1;
       cursor: pointer;
       display: inline-flex;
+      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+    }
+
+    body.sidebar-collapsed .sidebar-expand-rail:hover {
+      background: var(--surface-fill);
+      color: var(--text);
+      border-color: var(--border-mid);
     }
 
     body.sidebar-collapsed .split-handle {
@@ -3202,19 +3213,11 @@
       visibility: hidden;
     }
 
-    /* In the window-controls row the rail reads as a toolbar control: no box,
-       centred on the traffic lights, one light-gap after the last of them. */
+    /* In the window-controls row: centred on the traffic lights, one
+       light-gap after the last of them. */
     html[data-platform="macos"] body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail {
-      top: 5px;
+      top: 4px;
       left: 86px;
-      width: 24px;
-      height: 24px;
-      border-color: transparent;
-      background: transparent;
-    }
-
-    html[data-platform="macos"] body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail:hover {
-      background: var(--bg-hover);
     }
 
     .detail-header {
