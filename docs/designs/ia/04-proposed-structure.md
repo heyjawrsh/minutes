@@ -1,6 +1,6 @@
 # Minutes IA overhaul: proposed structure
 
-Status: **draft for discussion**, local only. Builds on [00 — current state](00-current-state.md) and decisions 1–4 there. Items marked *(proposed)* are not yet decided.
+Status: **draft for discussion**, local only. Builds on [00 — current state](00-current-state.md) and decisions 1–9 there.
 
 Principles:
 1. **One vocabulary** across the desktop app, CLI, MCP and skills.
@@ -61,7 +61,8 @@ Rules:
 - **Assistant** toggle (⌘⇧R), **Settings** (⌘,).
 
 ### Sidebar (Meetings)
-- Search with scope chips **All · Meetings · Memos**; filters later (people, date).
+- **Weekly** pinned at the top: a fixed view of the last 7 days (meetings, decisions, open action items, stale commitments) that opens in the main pane. Replaces the Weekly toggle inside the Recall panel.
+- Search with scope chips **Meetings · Memos · All**; **Meetings is the default**, so memos stay out of the list unless chosen. Filters later (people, date).
 - Date-grouped list. Selecting a row opens it in the meeting pane (no modal).
 - The Documents list goes away (drafts live in meetings).
 
@@ -74,7 +75,7 @@ Rules:
 - Sensitive meetings show markers and "Run debrief" in Overview.
 
 ### Assistant pane
-- Scoped to the open meeting by default ("About: Q2 Cut Lines"), switchable to "All meetings". Replaces the five phases (Recall/Prep/Listening/Debrief/Weekly) with a scope plus suggested prompts (Prep, Debrief, Weekly summary).
+- Scoped to the open meeting by default ("About: Q2 Cut Lines"), switchable to "All meetings". Replaces the five phases (Recall/Prep/Listening/Debrief/Weekly) with a scope plus suggested prompts (Prep, Debrief). Weekly moves to its own fixed view in the sidebar.
 - Chat by default; Terminal as a view option for power users. Setup/sign-in happens in a dedicated empty state, not inside a terminal's own onboarding.
 - Drafts it creates attach to the meeting and open beside it.
 
@@ -88,8 +89,8 @@ One notification area above the list with a priority order and at most one visib
 
 ## 3. Utilities (not top-level)
 
-- **Dictation**: overlay + tray + shortcuts; history and dictionary in Settings › Dictation. *(proposed, decision 6)*
-- **Coach**: started from the recording control or tray; its settings live in Settings › Recording. *(proposed, decision 5)* Coach HUD gains a Stop control.
+- **Dictation**: overlay + tray + shortcuts; history and dictionary in Settings › Dictation.
+- **Coach**: started from the recording control or tray; its settings live in Settings › Recording. Coach HUD gains a Stop control.
 - **Add note**: recording control, tray, File menu, palette, ⌘⇧N. One label: "Add note".
 - **Command palette** (⌘K / ⌘⇧K): mirrors the window's actions with the same names; results open in the window (search opens the sidebar with the query; "Open latest meeting" opens it in the meeting pane, not another app).
 
@@ -171,7 +172,6 @@ Steps 1–2 could go upstream early; 3–6 overlap `docs/plans/tauri-design-pass
 
 ## Open questions
 
-- Decisions 5 (Coach placement) and 6 (Dictation) — confirm or change.
-- Does "Assistant" also rename user-facing skill/MCP names that say "recall" (`minutes-mcp-recall`)?
-- Should Memo appear in the same list by default, or be filtered out of "Meetings" unless "All" is chosen?
-- Weekly summary: a suggested Assistant prompt (proposed) or a fixed view?
+- What the Weekly view contains beyond today's weekly summary (volume, recent meetings, decision arcs, stale commitments, open actions), and whether it can generate on open or needs a "Refresh".
+- Whether memo-only users (no meetings) should default to the Memos scope.
+- Sequencing with the maintainer's `tauri-design-pass.md`.

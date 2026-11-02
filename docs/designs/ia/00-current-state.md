@@ -103,7 +103,10 @@ Without one vocabulary, navigation labels can't be predictable and the CLI/MCP c
 | 2 | What is the AI surface called? | **Assistant** (replaces Recall, agent, AI Assistant, Minutes Assistant) | 2026-11-02 |
 | 3 | Meeting detail: pane or page? | **Pane** beside the list, so a meeting and the Assistant can be open together | 2026-11-02 |
 | 4 | Where do drafts belong? | **Inside their meeting**; the Assistant can create them; the separate Documents list goes away | 2026-11-02 |
-| 5 | Where does Coach belong? | *Proposed:* with recording (it only runs during capture) | pending |
-| 6 | Dictation | *Proposed:* a utility (overlay + tray + Settings), not a top-level area | pending |
+| 5 | Where does Coach belong? | **With recording** (it only runs during capture); settings in Recording | 2026-11-02 |
+| 6 | Dictation | **A utility** (overlay + tray + shortcuts + Settings), not a top-level area | 2026-11-02 |
+| 7 | Memos in the meetings list? | **Filtered out by default**; shown under the Memos or All scope | 2026-11-02 |
+| 8 | Weekly summary | **A fixed view**, not just an Assistant prompt | 2026-11-02 |
+| 9 | Rename "recall" in skill/MCP names? | **No.** `minutes-mcp-recall` uses "recall" as a verb; only the panel name "Recall" goes away (UI and help text) | 2026-11-02 |
 
 Proposed structure: [04 — proposed structure](04-proposed-structure.md).
