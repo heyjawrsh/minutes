@@ -3161,6 +3161,45 @@
       background: var(--bg-hover);
     }
 
+    /* The meeting header reaches the window's top edge, under the fixed 32px
+       .window-drag-strip (z-index 5) on macOS, which would swallow clicks on
+       its buttons. Lift it above the strip like .md-viewer-header; the header
+       background stays draggable and its controls opt out. */
+    .meeting-pane .detail-header {
+      position: relative;
+      z-index: 6;
+      -webkit-app-region: drag;
+    }
+
+    .meeting-pane .detail-header button,
+    .meeting-pane .detail-header .detail-meta {
+      -webkit-app-region: no-drag;
+    }
+
+    .meeting-pane .detail-close-x {
+      z-index: 7;
+    }
+
+    /* Leftmost pane (list collapsed): start the header below the window
+       controls row, and move the list's expand rail into that row instead of
+       over the tabs. Same 32px inset the list header reserves on macOS. */
+    body.sidebar-collapsed .meeting-pane .detail-header {
+      padding-top: 50px;
+    }
+
+    body.sidebar-collapsed .meeting-pane .detail-close-x {
+      top: 50px;
+    }
+
+    body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail {
+      top: 12px;
+    }
+
+    html[data-platform="macos"] body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail {
+      top: 4px;
+      left: 80px;
+    }
+
     .detail-header {
       padding: 18px 20px 14px;
       border-bottom: 1px solid var(--border);
