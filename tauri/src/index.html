@@ -5669,12 +5669,15 @@
     .settings-tabs {
       display: flex;
       gap: 0;
-      border-bottom: 1px solid var(--border);
+      box-shadow: inset 0 -1px 0 var(--border);
       margin: 0 -22px 20px;
       padding: 0 22px;
       overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
       position: sticky;
-      top: 57px;
+      /* Pins directly under the sticky header; JS measures the header height. */
+      top: var(--settings-header-h, 65px);
       z-index: 2;
       background: var(--bg-elevated);
       scrollbar-width: none;
@@ -5689,7 +5692,6 @@
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
       padding: 9px 10px 8px;
       cursor: pointer;
       font-family: var(--font-mono);
@@ -13271,6 +13273,16 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const coachOnboardingOverlay = document.getElementById('coach-onboarding-overlay');
     let coachSettingsState = null;
     let coachSetupRunning = false;
+
+    // Keep the sticky tab bar flush under the sticky header at any font size.
+    (() => {
+      const header = settingsOverlay.querySelector('.about-top');
+      const card = settingsOverlay.querySelector('.settings-card');
+      if (!header || !card || typeof ResizeObserver === 'undefined') return;
+      new ResizeObserver(() => {
+        card.style.setProperty('--settings-header-h', `${Math.floor(header.getBoundingClientRect().height)}px`);
+      }).observe(header);
+    })();
 
     function openSettings(options) {
       if (options?.keepDictationTarget !== true) invoke('cmd_clear_dictation_history_target').catch(() => {});
