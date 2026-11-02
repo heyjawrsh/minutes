@@ -3195,9 +3195,26 @@
       top: 12px;
     }
 
+    /* The list's own collapse button stays visible on purpose while collapsed
+       (it sits under the rail at the same spot elsewhere); beside a meeting the
+       rail has moved, so hide the button instead of showing two chevrons. */
+    body.sidebar-collapsed:has(#detail-overlay.active) .app-left .sidebar-collapse-btn {
+      visibility: hidden;
+    }
+
+    /* In the window-controls row the rail reads as a toolbar control: no box,
+       centred on the traffic lights, one light-gap after the last of them. */
     html[data-platform="macos"] body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail {
-      top: 4px;
-      left: 80px;
+      top: 5px;
+      left: 86px;
+      width: 24px;
+      height: 24px;
+      border-color: transparent;
+      background: transparent;
+    }
+
+    html[data-platform="macos"] body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail:hover {
+      background: var(--bg-hover);
     }
 
     .detail-header {
