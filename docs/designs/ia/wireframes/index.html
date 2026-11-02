@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-10">
+  <div class="max-w-[880px] flex flex-col gap-8">
+    <header class="flex items-start gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold">Minutes IA wireframes</h1>
+        <p class="mt-2 text-muted max-w-[640px]">Low-fidelity screens for the proposed information architecture. Real HeroUI components, Bricolage Grotesque, at the app's default 1120×720 window. Structure, not final visuals.</p>
+      </div>
+      <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+    </header>
+
+    <div class="grid grid-cols-2 gap-4">
+      <a href="01-main.html" class="card hover:bg-surface-hover"><div class="card__header"><h2 class="card__title">01 · Main window</h2><p class="card__description">Meeting open as a pane, Assistant beside it, Record in the top bar, This week pinned.</p></div></a>
+      <a href="02-recording.html" class="card hover:bg-surface-hover"><div class="card__header"><h2 class="card__title">02 · Recording</h2><p class="card__description">The Record menu, the in-place recording control, one banner at a time.</p></div></a>
+      <a href="03-weekly.html" class="card hover:bg-surface-hover"><div class="card__header"><h2 class="card__title">03 · This week</h2><p class="card__description">The fixed Weekly view, computed from decisions, action items and commitments.</p></div></a>
+      <a href="04-settings.html" class="card hover:bg-surface-hover"><div class="card__header"><h2 class="card__title">04 · Settings</h2><p class="card__description">Grouped by task, one row pattern, real switches, plain language.</p></div></a>
+    </div>
+
+    <section class="text-sm">
+      <h2 class="font-semibold mb-2">Decisions these screens follow</h2>
+      <ul class="list-disc ps-5 flex flex-col gap-1 text-muted">
+        <li><b class="text-foreground">Meeting</b> is the saved thing; <b class="text-foreground">Memo</b> is a kind of meeting, hidden from the list unless chosen.</li>
+        <li>The AI chat is the <b class="text-foreground">Assistant</b>. Drafts belong to their meeting.</li>
+        <li>A meeting opens as a <b class="text-foreground">pane</b>. <b class="text-foreground">This week</b> is a fixed view.</li>
+        <li><b class="text-foreground">Coach</b> sits with recording. <b class="text-foreground">Dictation</b> is a utility, not a top-level area.</li>
+      </ul>
+      <p class="mt-3 text-muted">Full reasoning: <code>../00-current-state.md</code> and <code>../04-proposed-structure.md</code>.</p>
+    </section>
+
+    <footer class="text-xs text-muted">Rebuild CSS after editing: <code>pnpm install &amp;&amp; pnpm build</code> in this folder. The built CSS and fonts are committed so the pages open offline.</footer>
+  </div>
+</body>
+</html>

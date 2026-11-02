@@ -1,0 +1,15 @@
+{
+  "name": "minutes-ia-wireframes",
+  "private": true,
+  "description": "Low-fidelity IA wireframes (HeroUI styles + Bricolage Grotesque). Build once; the HTML opens offline.",
+  "scripts": {
+    "build": "tailwindcss -i src/styles.css -o dist/wireframes.css --minify && node scripts/copy-fonts.mjs",
+    "watch": "tailwindcss -i src/styles.css -o dist/wireframes.css --watch"
+  },
+  "devDependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@heroui/styles": "^3.2.7",
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

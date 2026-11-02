@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>01 · Main window — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">01 · Main window: meeting open, Assistant beside it</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <!-- ───────────── App frame (1120×720, the app's default window size) ───────────── -->
+  <div class="wf-frame flex flex-col">
+
+    <!-- Top bar -->
+    <div class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-separator">
+      <span class="text-xl font-bold tracking-tight w-7 text-center" aria-label="Minutes">m</span>
+
+      <div class="button-group" role="group" aria-label="Record">
+        <button class="button button--primary button--sm">● Record meeting</button>
+        <span class="button-group__separator"></span>
+        <button class="button button--primary button--sm button--icon-only" aria-label="More ways to record">▾</button>
+      </div>
+
+      <span class="text-sm text-muted ms-2">Last saved 2 min ago</span>
+
+      <div class="ms-auto flex items-center gap-2">
+        <span class="badge-anchor">
+          <button class="button button--ghost button--sm">Activity</button>
+          <span class="badge badge--warning badge--sm badge--top-right" aria-label="1 item needs attention"><span class="badge__label">1</span></span>
+        </span>
+        <button class="button button--secondary button--sm" aria-pressed="true">Assistant</button>
+        <button class="button button--ghost button--sm button--icon-only" aria-label="Settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex">
+
+      <!-- Sidebar: Meetings -->
+      <aside class="w-[256px] shrink-0 border-e border-separator flex flex-col min-h-0">
+        <div class="p-3 flex flex-col gap-3">
+          <a href="03-weekly.html" class="flex items-center justify-between rounded-lg px-3 py-2 bg-surface hover:bg-surface-hover">
+            <span class="font-medium">This week</span>
+            <span class="text-xs text-muted">4 meetings · 6 open</span>
+          </a>
+          <div class="search-field search-field--full-width">
+            <div class="search-field__group search-field__group--full-width">
+              <svg class="search-field__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input class="search-field__input" placeholder="Search meetings" aria-label="Search meetings">
+            </div>
+          </div>
+          <div class="tabs" data-orientation="horizontal">
+            <div class="tabs__list-container">
+              <div class="tabs__list" role="tablist" aria-label="Show">
+                <button class="tabs__tab" role="tab" data-selected="true" aria-selected="true">Meetings<span class="tabs__indicator"></span></button>
+                <button class="tabs__tab" role="tab" aria-selected="false">Memos<span class="tabs__indicator" hidden></span></button>
+                <button class="tabs__tab" role="tab" aria-selected="false">All<span class="tabs__indicator" hidden></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <nav class="flex-1 overflow-auto px-2 pb-3 text-sm" aria-label="Meetings">
+          <p class="px-2 pt-2 pb-1 text-xs font-medium text-muted">Apr 17</p>
+          <a class="block rounded-lg px-2 py-2 bg-accent-soft text-accent-soft-foreground" aria-current="page">
+            <span class="block font-medium text-foreground">Product Prioritization — Q2 Cut Lines</span>
+            <span class="text-xs text-muted">1:00 PM · 58 min</span>
+          </a>
+          <p class="px-2 pt-3 pb-1 text-xs font-medium text-muted">Apr 14</p>
+          <a class="block rounded-lg px-2 py-2 hover:bg-surface-hover">
+            <span class="block font-medium">Customer Success Review — At-Risk Accounts</span>
+            <span class="text-xs text-muted">11:00 AM · 45 min</span>
+          </a>
+          <p class="px-2 pt-3 pb-1 text-xs font-medium text-muted">Apr 7</p>
+          <a class="block rounded-lg px-2 py-2 hover:bg-surface-hover">
+            <span class="block font-medium">Eng Standup — SSO Shipped, Team Billing Next</span>
+            <span class="text-xs text-muted">9:30 AM · 15 min</span>
+          </a>
+          <p class="px-2 pt-3 pb-1 text-xs font-medium text-muted">Mar 30</p>
+          <a class="block rounded-lg px-2 py-2 hover:bg-surface-hover">
+            <span class="block font-medium">Northwind Follow-up — SSO Status</span>
+            <span class="text-xs text-muted">2:00 PM · 30 min</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Meeting pane -->
+      <main class="flex-1 min-w-0 flex flex-col min-h-0">
+        <div class="px-5 pt-4 pb-2 flex items-start gap-3">
+          <div class="min-w-0">
+            <h2 class="text-xl font-semibold leading-tight">Product Prioritization — Q2 Cut Lines</h2>
+            <div class="mt-1 flex items-center gap-2 text-sm text-muted">
+              <span>Fri, Apr 17 · 1:00 PM · 58 min</span>
+              <span aria-hidden="true">·</span>
+              <span class="flex -space-x-1" aria-label="5 people">
+                <span class="avatar avatar--sm"><span class="avatar__fallback">MS</span></span>
+                <span class="avatar avatar--sm"><span class="avatar__fallback">AK</span></span>
+                <span class="avatar avatar--sm"><span class="avatar__fallback">SW</span></span>
+                <span class="avatar avatar--sm"><span class="avatar__fallback">PR</span></span>
+                <span class="avatar avatar--sm"><span class="avatar__fallback">JM</span></span>
+              </span>
+            </div>
+          </div>
+          <div class="ms-auto flex items-center gap-2 shrink-0">
+            <button class="button button--secondary button--sm">New draft</button>
+            <button class="button button--ghost button--sm button--icon-only" aria-label="More actions">⋯</button>
+          </div>
+        </div>
+
+        <div class="px-5 tabs tabs--secondary" data-orientation="horizontal">
+          <div class="tabs__list-container">
+            <div class="tabs__list" role="tablist" aria-label="Meeting">
+              <button class="tabs__tab" role="tab" data-selected="true" aria-selected="true" data-panel="p-overview">Overview<span class="tabs__indicator"></span></button>
+              <button class="tabs__tab" role="tab" aria-selected="false" data-panel="p-transcript">Transcript<span class="tabs__indicator" hidden></span></button>
+              <button class="tabs__tab" role="tab" aria-selected="false" data-panel="p-drafts">Drafts · 1<span class="tabs__indicator" hidden></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-auto px-5 py-4">
+          <!-- Overview -->
+          <section id="p-overview" class="flex flex-col gap-5 max-w-[640px]">
+            <div>
+              <h3 class="text-sm font-semibold mb-2">Summary</h3>
+              <ul class="list-disc ps-5 text-sm leading-relaxed flex flex-col gap-1">
+                <li>Advanced analytics is cut from Q2. It would not move retention or revenue this quarter.</li>
+                <li>Team billing stays the main engineering investment. Ships April 15.</li>
+                <li>Reporting exports gets a scoped fix: date-ranged CSV, no dashboard. Two weeks of work.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold mb-2">Action items <span class="text-muted font-normal">· 4 open</span></h3>
+              <ul class="flex flex-col gap-2 text-sm">
+                <li class="flex items-start gap-2"><input type="checkbox" class="mt-1 accent-[var(--accent)]"><span class="flex-1">Remove advanced analytics mockups from the roadmap page</span><span class="chip chip--sm chip--soft"><span class="chip__label">Sam · Apr 18</span></span></li>
+                <li class="flex items-start gap-2"><input type="checkbox" class="mt-1 accent-[var(--accent)]"><span class="flex-1">Ship date-ranged CSV export</span><span class="chip chip--sm chip--soft"><span class="chip__label">Alex · May 2</span></span></li>
+                <li class="flex items-start gap-2"><input type="checkbox" class="mt-1 accent-[var(--accent)]"><span class="flex-1">Finalize Q2 OKR doc and send to Jamie</span><span class="chip chip--sm chip--soft"><span class="chip__label">Mat · Apr 18</span></span></li>
+                <li class="flex items-start gap-2"><input type="checkbox" class="mt-1 accent-[var(--accent)]"><span class="flex-1">Tell Riley exports ship by May 2</span><span class="chip chip--sm chip--soft"><span class="chip__label">Priya · Apr 18</span></span></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold mb-2">Decisions</h3>
+              <ul class="list-disc ps-5 text-sm leading-relaxed flex flex-col gap-1">
+                <li>Kill advanced analytics.</li>
+                <li>Team billing is the primary Q2 investment.</li>
+                <li>Ship a scoped reporting-exports fix in Q2.</li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold mb-2">Notes</h3>
+              <button class="button button--ghost button--sm">+ Add note</button>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold mb-2">Related</h3>
+              <div class="flex flex-wrap gap-2">
+                <span class="chip chip--sm"><span class="chip__label">Priya R.</span></span>
+                <span class="chip chip--sm"><span class="chip__label">Northwind</span></span>
+                <span class="chip chip--sm"><span class="chip__label">reporting-exports</span></span>
+                <span class="chip chip--sm"><span class="chip__label">Eng Standup · Apr 7</span></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Transcript -->
+          <section id="p-transcript" class="flex flex-col gap-3 max-w-[640px] text-sm" hidden>
+            <p><span class="font-medium">Mat</span> <span class="text-muted">0:00</span><br>Three things on the table. Advanced analytics, team billing, reporting exports. Let's cut first.</p>
+            <p><span class="font-medium">Alex</span> <span class="text-muted">0:08</span><br>Kill analytics. It was a roadmap item from Q4 that never had a customer pulling for it. Priya?</p>
+            <p><span class="font-medium">Speaker 3</span> <button class="button button--ghost button--sm">Name this speaker</button> <span class="text-muted">0:20</span><br>Zero at-risk accounts cite analytics. They cite onboarding, exports, and one billing weirdness.</p>
+          </section>
+
+          <!-- Drafts -->
+          <section id="p-drafts" class="flex flex-col gap-3 max-w-[640px]" hidden>
+            <div class="card card--secondary">
+              <div class="card__header"><h3 class="card__title">Meeting brief</h3><p class="card__description">Made by Assistant · Nov 1</p></div>
+              <div class="card__footer"><button class="button button--secondary button--sm">Open</button></div>
+            </div>
+            <button class="button button--ghost button--sm self-start">+ New draft</button>
+          </section>
+        </div>
+      </main>
+
+      <!-- Assistant pane -->
+      <aside class="w-[340px] shrink-0 border-s border-separator flex flex-col min-h-0 bg-background-secondary">
+        <div class="h-12 shrink-0 flex items-center gap-2 px-3 border-b border-separator">
+          <span class="font-semibold">Assistant</span>
+          <button class="chip chip--sm chip--soft chip--accent"><span class="chip__label">About this meeting ▾</span></button>
+          <button class="button button--ghost button--sm button--icon-only ms-auto" aria-label="Assistant options">⋯</button>
+          <button class="button button--ghost button--sm button--icon-only" aria-label="Close Assistant">✕</button>
+        </div>
+        <div class="flex-1 overflow-auto p-3 flex flex-col gap-3 text-sm">
+          <div class="self-end max-w-[85%] rounded-2xl rounded-br-sm bg-accent text-accent-foreground px-3 py-2">What did we promise Northwind?</div>
+          <div class="max-w-[90%] rounded-2xl rounded-bl-sm bg-surface px-3 py-2 leading-relaxed">A date-ranged CSV export by May 2, owned by Alex. Priya is telling Riley this week. No dashboard or charts.</div>
+          <div class="mt-auto flex flex-wrap gap-2">
+            <button class="chip chip--sm"><span class="chip__label">Draft follow-up email</span></button>
+            <button class="chip chip--sm"><span class="chip__label">Prep the next meeting</span></button>
+            <button class="chip chip--sm"><span class="chip__label">Debrief</span></button>
+          </div>
+        </div>
+        <div class="p-3 border-t border-separator flex gap-2">
+          <input class="input input--full-width" placeholder="Ask about this meeting" aria-label="Ask Assistant">
+          <button class="button button--primary button--sm">Send</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <ol class="wf-note list-decimal ps-5 flex flex-col gap-1">
+    <li><b>Record</b> lives in the top bar as a split button: meeting by default; the menu adds Memo, Live transcript, Sensitive meeting (see 02). Replaces the footer button and the mode picker below it.</li>
+    <li><b>Activity</b> merges Jobs, Recovery and Readiness. The badge appears only when something needs attention.</li>
+    <li><b>Assistant</b> is a toggle (⌘⇧R). It opens beside the meeting and is scoped to it; the chip switches to "All meetings". "Ask Assistant" is no longer a separate button because the pane is the ask surface.</li>
+    <li><b>This week</b> is the fixed Weekly view (see 03). The list defaults to <b>Meetings</b>; memos appear under Memos or All.</li>
+    <li>The meeting is a <b>pane</b>, not a modal. Overview leads with the summary; transcript and drafts are tabs. Drafts belong to their meeting.</li>
+    <li>Speakers read "Speaker 3", never "SPEAKER_3". Naming happens inline in the transcript.</li>
+  </ol>
+</body>
+</html>

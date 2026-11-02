@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>04 · Settings — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">04 · Settings, grouped by task (Recording shown)</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <div class="wf-frame flex">
+    <!-- Section nav -->
+    <nav class="w-[220px] shrink-0 border-e border-separator p-3 flex flex-col gap-0.5 text-sm" aria-label="Settings">
+      <p class="px-3 pt-2 pb-3 text-lg font-semibold">Settings</p>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">General</a>
+      <a class="rounded-lg px-3 py-2 bg-accent-soft text-accent-soft-foreground font-medium" aria-current="page">Recording</a>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">Transcription</a>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">Dictation</a>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">Assistant &amp; AI</a>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">Privacy &amp; data</a>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">Shortcuts</a>
+      <a class="rounded-lg px-3 py-2 hover:bg-surface-hover">Advanced</a>
+      <div class="mt-auto px-3 pb-1">
+        <div class="search-field search-field--full-width">
+          <div class="search-field__group search-field__group--full-width">
+            <svg class="search-field__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="search-field__input" placeholder="Search settings">
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Recording -->
+    <main class="flex-1 min-w-0 overflow-auto px-8 py-6">
+      <h2 class="text-2xl font-semibold">Recording</h2>
+      <p class="mt-1 text-sm text-muted">What gets recorded, when, and what people are told.</p>
+
+      <!-- Row helper pattern: label + description left, control right -->
+      <section class="mt-6">
+        <h3 class="text-sm font-semibold mb-1">Audio</h3>
+        <div class="divide-y divide-separator rounded-xl bg-surface">
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Meeting audio</p><p class="text-sm text-muted">What Record meeting captures by default.</p></div>
+            <div class="select w-[240px]"><button class="select__trigger w-full"><span class="select__value">Microphone + system audio</span><span class="select__indicator">▾</span></button></div>
+          </div>
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Microphone</p></div>
+            <div class="select w-[240px]"><button class="select__trigger w-full"><span class="select__value">System default</span><span class="select__indicator">▾</span></button></div>
+          </div>
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Live transcript</p><p class="text-sm text-muted">Transcribe while you record. Uses more battery.</p></div>
+            <button class="switch" role="switch" aria-checked="false" aria-label="Live transcript"><span class="switch__control"><span class="switch__thumb"></span></span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-6">
+        <h3 class="text-sm font-semibold mb-1">Coach</h3>
+        <div class="divide-y divide-separator rounded-xl bg-surface">
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">When a meeting starts</p><p class="text-sm text-muted">Coach gives private suggestions on your screen. It never changes the recording.</p></div>
+            <div class="select w-[240px]"><button class="select__trigger w-full"><span class="select__value">Ask each time</span><span class="select__indicator">▾</span></button></div>
+          </div>
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Only alert me when it matters</p></div>
+            <button class="switch" role="switch" aria-checked="true" data-selected="true" aria-label="Only alert me when it matters"><span class="switch__control"><span class="switch__thumb"></span></span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-6">
+        <h3 class="text-sm font-semibold mb-1">Calls and calendar</h3>
+        <div class="divide-y divide-separator rounded-xl bg-surface">
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Notice calls in Zoom, Teams and Webex</p><p class="text-sm text-muted">Shows a reminder to record.</p></div>
+            <button class="switch" role="switch" aria-checked="true" data-selected="true" aria-label="Notice calls"><span class="switch__control"><span class="switch__thumb"></span></span></button>
+          </div>
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Record noticed calls automatically</p></div>
+            <button class="switch" role="switch" aria-checked="false" aria-label="Record noticed calls automatically"><span class="switch__control"><span class="switch__thumb"></span></span></button>
+          </div>
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Suggest upcoming meetings from your calendar</p></div>
+            <button class="switch" role="switch" aria-checked="true" data-selected="true" aria-label="Suggest upcoming meetings"><span class="switch__control"><span class="switch__thumb"></span></span></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-6">
+        <h3 class="text-sm font-semibold mb-1">Consent</h3>
+        <div class="divide-y divide-separator rounded-xl bg-surface">
+          <div class="flex items-center gap-6 px-4 py-3">
+            <div class="flex-1"><p class="text-sm font-medium">Before recording</p></div>
+            <div class="select w-[240px]"><button class="select__trigger w-full"><span class="select__value">Remind me</span><span class="select__indicator">▾</span></button></div>
+          </div>
+          <div class="px-4 py-3">
+            <p class="text-sm font-medium mb-2">What to tell people</p>
+            <input class="input input--full-width" value="Heads up: I'm using Minutes to transcribe this conversation locally on my device.">
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="wf-note">
+    <p class="font-semibold text-foreground mb-1">What moves where</p>
+    <table class="text-sm w-full max-w-[1120px]">
+      <thead class="text-start text-muted"><tr><th class="text-start py-1 pe-4">New section</th><th class="text-start py-1">Comes from today's tabs</th></tr></thead>
+      <tbody class="align-top">
+        <tr><td class="py-1 pe-4 font-medium">General</td><td>General (identity, language, login, alerts, one sound-cues control)</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Recording</td><td>footer audio + mic pickers · Capture › Live transcript · AI &amp; Privacy › Coach, Call detection, Calendar, Consent</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Transcription</td><td>Transcription · voice profiles and vocabulary (CLI-only today)</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Dictation</td><td>Dictation (same sub-sections, same row style as everything else)</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Assistant &amp; AI</td><td>AI &amp; Privacy › Recall agent, Auto-summarization, Search by meaning, Pipeline hooks ("After a recording")</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Privacy &amp; data</td><td>AI &amp; Privacy › Privacy (screen sharing, desktop and screen context), Vault sync · Advanced › Storage</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Shortcuts</td><td>shortcut controls scattered across General, Capture and Dictation</td></tr>
+        <tr><td class="py-1 pe-4 font-medium">Advanced</td><td>Advanced (config file, reference) · Diagnostics links into Activity</td></tr>
+      </tbody>
+    </table>
+    <ol class="list-decimal ps-5 mt-3 flex flex-col gap-1">
+      <li>One row pattern everywhere: label and plain description on the left, control on the right. Real switches (<code>role="switch"</code>), not On/Off text buttons.</li>
+      <li>Section nav on the left plus settings search, instead of six cramped tabs in a narrow modal.</li>
+      <li>Copy drops internal terms: "Notice calls" not "Call detection polling", "After a recording" not "Pipeline hooks", "What to tell people" not "Disclosure script". Config keys stay available under Advanced.</li>
+    </ol>
+  </div>
+</body>
+</html>

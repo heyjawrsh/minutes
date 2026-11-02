@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>02 · Recording — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">02 · Recording: the Record menu, then a meeting in progress</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <!-- ───────────── A. Record menu open (idle) ───────────── -->
+  <h2 class="text-sm font-semibold text-muted">A · Idle, Record menu open</h2>
+  <div class="wf-frame" style="height:440px">
+    <div class="h-14 flex items-center gap-3 px-4 border-b border-separator">
+      <span class="text-xl font-bold tracking-tight w-7 text-center">m</span>
+      <div class="button-group" role="group" aria-label="Record">
+        <button class="button button--primary button--sm">● Record meeting</button>
+        <span class="button-group__separator"></span>
+        <button class="button button--primary button--sm button--icon-only" aria-expanded="true" aria-label="More ways to record">▾</button>
+      </div>
+      <div class="ms-auto flex items-center gap-2">
+        <button class="button button--ghost button--sm">Activity</button>
+        <button class="button button--ghost button--sm">Assistant</button>
+      </div>
+    </div>
+
+    <div class="absolute left-[52px] top-[52px] w-[340px] rounded-xl border border-separator bg-overlay shadow-xl p-1" role="menu">
+      <div class="menu-item" role="menuitem">
+        <div class="flex flex-col py-1.5 px-2"><span class="font-medium">Meeting</span><span class="text-xs text-muted">Microphone + system audio</span></div>
+      </div>
+      <div class="menu-item rounded-lg hover:bg-default" role="menuitem">
+        <div class="flex flex-col py-1.5 px-2"><span class="font-medium">Memo</span><span class="text-xs text-muted">Just your voice · hold ⌘⇧M</span></div>
+      </div>
+      <div class="menu-item rounded-lg" role="menuitem">
+        <div class="flex flex-col py-1.5 px-2"><span class="font-medium">Meeting with live transcript</span><span class="text-xs text-muted">Transcribes as you go · ⌘⇧L</span></div>
+      </div>
+      <div class="menu-item rounded-lg" role="menuitem">
+        <div class="flex flex-col py-1.5 px-2"><span class="font-medium">Sensitive meeting</span><span class="text-xs text-muted">No audio saved, only your markers</span></div>
+      </div>
+      <div class="separator separator--horizontal my-1"></div>
+      <div class="menu-item rounded-lg" role="menuitem">
+        <div class="flex items-center justify-between py-1.5 px-2 text-sm"><span>Audio: Microphone + system audio</span><span class="text-muted">›</span></div>
+      </div>
+      <div class="menu-item rounded-lg" role="menuitem">
+        <div class="flex items-center justify-between py-1.5 px-2 text-sm"><span>Microphone: System default</span><span class="text-muted">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────── B. Recording in progress ───────────── -->
+  <h2 class="text-sm font-semibold text-muted">B · Recording in progress</h2>
+  <div class="wf-frame flex flex-col">
+
+    <!-- Top bar becomes the recording control -->
+    <div class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-separator">
+      <span class="text-xl font-bold tracking-tight w-7 text-center">m</span>
+      <div class="flex items-center gap-3 rounded-full bg-accent-soft ps-3 pe-1 py-1" role="group" aria-label="Recording">
+        <span class="size-2 rounded-full bg-accent" aria-hidden="true"></span>
+        <span class="text-sm font-medium tabular-nums text-accent-soft-foreground">Recording · 12:34</span>
+        <span class="flex items-end gap-0.5 h-4" aria-label="Input level">
+          <span class="w-1 h-1.5 rounded bg-accent"></span><span class="w-1 h-3 rounded bg-accent"></span><span class="w-1 h-4 rounded bg-accent"></span><span class="w-1 h-2 rounded bg-accent"></span><span class="w-1 h-1 rounded bg-accent/50"></span>
+        </span>
+        <button class="button button--ghost button--sm">Add note</button>
+        <button class="button button--ghost button--sm" aria-pressed="true">Coach on</button>
+        <button class="button button--primary button--sm">Stop</button>
+      </div>
+      <div class="ms-auto flex items-center gap-2">
+        <button class="button button--ghost button--sm">Activity</button>
+        <button class="button button--ghost button--sm">Assistant</button>
+      </div>
+    </div>
+
+    <!-- One banner at a time, with a count of what's queued -->
+    <div class="alert alert--warning rounded-none border-b border-separator" role="status">
+      <div class="alert__content flex-row! items-center gap-3 w-full">
+        <div><p class="alert__title">Live transcript hears only your microphone</p>
+        <p class="alert__description">The other side of this call isn't being transcribed. The recording still has both sides.</p></div>
+        <button class="button button--secondary button--sm ms-auto">Try again</button>
+        <span class="text-xs text-muted whitespace-nowrap">+1 more</span>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex">
+      <aside class="w-[256px] shrink-0 border-e border-separator p-3 text-sm flex flex-col gap-1">
+        <p class="px-2 pb-1 text-xs font-medium text-muted">Now</p>
+        <a class="block rounded-lg px-2 py-2 bg-accent-soft" aria-current="page">
+          <span class="block font-medium">Northwind weekly sync</span>
+          <span class="text-xs text-muted">Recording · from your calendar</span>
+        </a>
+        <p class="px-2 pt-3 pb-1 text-xs font-medium text-muted">Apr 17</p>
+        <a class="block rounded-lg px-2 py-2"><span class="block font-medium">Product Prioritization — Q2 Cut Lines</span><span class="text-xs text-muted">1:00 PM · 58 min</span></a>
+      </aside>
+
+      <main class="flex-1 min-w-0 flex flex-col">
+        <div class="px-5 pt-4 pb-2">
+          <h2 class="text-xl font-semibold">Northwind weekly sync</h2>
+          <p class="mt-1 text-sm text-muted">Started 2:00 PM · Riley, Priya, you</p>
+        </div>
+        <div class="px-5 tabs tabs--secondary" data-orientation="horizontal">
+          <div class="tabs__list-container">
+            <div class="tabs__list" role="tablist">
+              <button class="tabs__tab" role="tab" data-selected="true" aria-selected="true" data-panel="r-live">Live transcript<span class="tabs__indicator"></span></button>
+              <button class="tabs__tab" role="tab" aria-selected="false" data-panel="r-notes">Notes · 2<span class="tabs__indicator" hidden></span></button>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 overflow-auto px-5 py-4 text-sm max-w-[680px]">
+          <section id="r-live" class="flex flex-col gap-3">
+            <p><span class="font-medium">You</span> <span class="text-muted">11:58</span><br>So exports land May 2. Date-ranged CSV, nothing fancier.</p>
+            <p><span class="font-medium">Speaker 2</span> <span class="text-muted">12:20</span><br>That works for us if it covers the last quarter.</p>
+            <p class="text-muted italic">Listening…</p>
+          </section>
+          <section id="r-notes" class="flex flex-col gap-2" hidden>
+            <p><span class="text-muted">4:10</span> Riley wants quarterly ranges</p>
+            <p><span class="text-muted">9:02</span> Follow up on SSO</p>
+          </section>
+        </div>
+        <div class="px-5 pb-4 flex gap-2 max-w-[680px]">
+          <input class="input input--full-width" placeholder="Add a note (saved with a timestamp)">
+          <button class="button button--secondary button--sm">Save</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <ol class="wf-note list-decimal ps-5 flex flex-col gap-1">
+    <li>The <b>Record menu</b> names each kind of recording plainly and shows its shortcut. "Live" stops being a separate mode: it is a meeting with a live transcript. Audio source and microphone move here from the footer, next to the action they affect.</li>
+    <li>While recording, the <b>Record button becomes the recording control</b> in place: time, level, Add note, Coach, Stop. No separate recording bar, live bar, or footer state.</li>
+    <li>Capture state uses the accent (capture) color; red stays reserved for errors.</li>
+    <li>A recording <b>is a meeting from the first second</b>: it appears under "Now" in the list and opens in the meeting pane with Live transcript and Notes tabs. After Stop, the same pane becomes Overview / Transcript / Drafts.</li>
+    <li><b>One banner at a time</b>, by priority (blocking errors › capture problems › call detected › upcoming › info). "+1 more" opens the rest in Activity.</li>
+  </ol>
+</body>
+</html>

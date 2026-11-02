@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" class="dark" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <title>03 · This week — Minutes IA wireframes</title>
+  <link rel="stylesheet" href="dist/wireframes.css">
+  <script src="wf.js" defer></script>
+</head>
+<body class="bg-background-secondary text-foreground font-sans p-8 flex flex-col gap-6 items-start">
+
+  <header class="flex items-center gap-4 w-[1120px]">
+    <a href="index.html" class="link text-sm">← All screens</a>
+    <h1 class="text-lg font-semibold">03 · This week: the fixed Weekly view</h1>
+    <button class="button button--ghost button--sm ms-auto" data-theme-toggle>Light / dark</button>
+  </header>
+
+  <div class="wf-frame flex flex-col">
+    <div class="h-14 shrink-0 flex items-center gap-3 px-4 border-b border-separator">
+      <span class="text-xl font-bold tracking-tight w-7 text-center">m</span>
+      <div class="button-group" role="group" aria-label="Record">
+        <button class="button button--primary button--sm">● Record meeting</button>
+        <span class="button-group__separator"></span>
+        <button class="button button--primary button--sm button--icon-only" aria-label="More ways to record">▾</button>
+      </div>
+      <div class="ms-auto flex items-center gap-2">
+        <button class="button button--ghost button--sm">Activity</button>
+        <button class="button button--ghost button--sm">Assistant</button>
+      </div>
+    </div>
+
+    <div class="flex-1 min-h-0 flex">
+      <aside class="w-[256px] shrink-0 border-e border-separator p-3 flex flex-col gap-3 text-sm">
+        <a class="flex items-center justify-between rounded-lg px-3 py-2 bg-accent-soft" aria-current="page">
+          <span class="font-medium">This week</span>
+          <span class="text-xs text-muted">4 meetings · 6 open</span>
+        </a>
+        <div class="search-field search-field--full-width">
+          <div class="search-field__group search-field__group--full-width">
+            <svg class="search-field__search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="search-field__input" placeholder="Search meetings">
+          </div>
+        </div>
+        <p class="px-2 text-xs font-medium text-muted">Apr 17</p>
+        <a class="block rounded-lg px-2 py-1"><span class="block font-medium">Product Prioritization — Q2 Cut Lines</span></a>
+        <p class="px-2 text-xs font-medium text-muted">Apr 14</p>
+        <a class="block rounded-lg px-2 py-1"><span class="block font-medium">Customer Success Review — At-Risk Accounts</span></a>
+      </aside>
+
+      <main class="flex-1 min-w-0 overflow-auto px-6 py-5">
+        <div class="flex items-baseline gap-3">
+          <h2 class="text-2xl font-semibold">This week</h2>
+          <span class="text-muted">Apr 13 – 19</span>
+          <div class="ms-auto flex gap-2">
+            <button class="button button--ghost button--sm">‹ Previous week</button>
+            <button class="button button--secondary button--sm">Ask Assistant about this week</button>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-4 gap-3">
+          <div class="card card--secondary"><div class="card__content"><p class="text-2xl font-semibold">4</p><p class="text-sm text-muted">Meetings · 3h 18m</p></div></div>
+          <div class="card card--secondary"><div class="card__content"><p class="text-2xl font-semibold">2</p><p class="text-sm text-muted">Memos</p></div></div>
+          <div class="card card--secondary"><div class="card__content"><p class="text-2xl font-semibold">7</p><p class="text-sm text-muted">Decisions</p></div></div>
+          <div class="card card--secondary"><div class="card__content"><p class="text-2xl font-semibold">6</p><p class="text-sm text-muted">Open action items</p></div></div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-2 gap-6 text-sm">
+          <section>
+            <h3 class="font-semibold mb-2">Decisions</h3>
+            <ul class="flex flex-col gap-2">
+              <li><span class="block">Kill advanced analytics</span><span class="text-xs text-muted">Product Prioritization · Apr 17</span></li>
+              <li><span class="block">Ship date-ranged CSV export in Q2</span><span class="text-xs text-muted">Product Prioritization · Apr 17</span></li>
+              <li><span class="block">Weekly at-risk review cadence</span><span class="text-xs text-muted">Customer Success Review · Apr 14</span></li>
+            </ul>
+          </section>
+          <section>
+            <h3 class="font-semibold mb-2">Open action items</h3>
+            <ul class="flex flex-col gap-2">
+              <li class="flex items-start gap-2"><input type="checkbox" class="mt-1"><span class="flex-1">Ship date-ranged CSV export</span><span class="chip chip--sm chip--soft"><span class="chip__label">Alex · May 2</span></span></li>
+              <li class="flex items-start gap-2"><input type="checkbox" class="mt-1"><span class="flex-1">Finalize Q2 OKR doc</span><span class="chip chip--sm chip--soft chip--warning"><span class="chip__label">Mat · overdue</span></span></li>
+              <li class="flex items-start gap-2"><input type="checkbox" class="mt-1"><span class="flex-1">Reach out to all three at-risk accounts</span><span class="chip chip--sm chip--soft"><span class="chip__label">Priya · Apr 18</span></span></li>
+            </ul>
+          </section>
+          <section>
+            <h3 class="font-semibold mb-2">Needs a follow-up</h3>
+            <p class="text-muted">Commitments made over a week ago with no later mention.</p>
+            <ul class="mt-2 flex flex-col gap-2"><li>Send Northwind the SSO timeline <span class="text-xs text-muted">· Mar 30</span></li></ul>
+          </section>
+          <section>
+            <h3 class="font-semibold mb-2">People you met most</h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="chip chip--sm"><span class="chip__label">Priya R. · 3</span></span>
+              <span class="chip chip--sm"><span class="chip__label">Alex K. · 2</span></span>
+              <span class="chip chip--sm"><span class="chip__label">Riley · 1</span></span>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <ol class="wf-note list-decimal ps-5 flex flex-col gap-1">
+    <li><b>This week</b> is pinned at the top of the sidebar and opens in the main pane, like a meeting. It replaces the Weekly toggle inside the old Recall panel.</li>
+    <li>It is <b>computed from structured data</b> (decisions, action items, commitments, attendees), so it shows instantly with no AI call. "Ask Assistant about this week" opens the Assistant scoped to these meetings.</li>
+    <li>Items link to their source meeting. Overdue items use warning, not red.</li>
+    <li>Open question: is "People you met most" useful, or noise? It maps to today's relationship data.</li>
+  </ol>
+</body>
+</html>
