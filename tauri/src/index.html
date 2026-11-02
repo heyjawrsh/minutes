@@ -3996,6 +3996,115 @@
       line-height: 1.55;
     }
 
+    /* ── Activity drawer ── */
+    .activity-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--modal-scrim);
+      display: none;
+      justify-content: flex-end;
+      z-index: 128;
+    }
+
+    .activity-overlay.active {
+      display: flex;
+    }
+
+    .activity-drawer {
+      height: 100%;
+      width: min(440px, 100vw - 48px);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-elevated);
+      border-left: 1px solid var(--border-mid);
+      box-shadow: 0 24px 60px var(--shadow-stronger);
+      animation: activity-slide-in 180ms ease-out;
+    }
+
+    @keyframes activity-slide-in {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .activity-drawer { animation: none; }
+    }
+
+    .activity-header,
+    .activity-section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .activity-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .activity-header h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .activity-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .activity-section + .activity-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .activity-section h3 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .activity-section h3[tabindex="-1"] {
+      outline: none;
+    }
+
+    .activity-sub {
+      margin-top: 6px;
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .activity-section .recovery-scroll,
+    .activity-section .readiness-scroll {
+      overflow: visible;
+      padding: 10px 0 0;
+    }
+
+    .activity-section .recovery-bulk-errors {
+      margin: 10px 0 0;
+    }
+
+    .activity-badge {
+      min-width: 16px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: var(--orange-tint);
+      border: 1px solid var(--orange-border);
+      color: var(--text);
+      font-size: var(--text-xs);
+      text-align: center;
+    }
+
     /* ── Readiness view ── */
     .readiness-overlay {
       position: fixed;
@@ -6052,9 +6161,7 @@
       <div class="header-actions">
         <button class="header-chip" id="btn-dictation" type="button">Dictation</button>
         <button class="btn btn-icon" id="btn-settings">⚙</button>
-        <button class="header-chip readiness" id="btn-readiness">Readiness</button>
-        <button class="header-chip" id="btn-jobs">Jobs <span id="jobs-count">0</span></button>
-        <button class="header-chip" id="btn-recovery">Recovery <span id="recovery-count">0</span></button>
+        <button class="header-chip activity active" id="btn-activity" type="button" aria-haspopup="dialog" aria-controls="activity-overlay">Activity <span class="activity-badge" id="activity-badge" hidden></span></button>
         <span class="status-pill" id="status-pill">idle</span>
       </div>
     </div>
@@ -6548,21 +6655,6 @@
     </div>
   </div>
 
-  <!-- Readiness -->
-  <div class="readiness-overlay" id="readiness-overlay">
-    <div class="readiness-card" role="dialog" aria-modal="true" aria-labelledby="readiness-title">
-      <div class="readiness-header">
-        <div>
-          <div class="readiness-title" id="readiness-title">Readiness Center</div>
-          <div class="readiness-sub" id="readiness-sub">This view only reports what Minutes can verify right now. Optional items stay
-            optional, and unknown states are never hidden behind fake confidence.</div>
-        </div>
-        <button class="btn btn-secondary btn-sm" id="btn-readiness-close">Close</button>
-      </div>
-      <div class="readiness-scroll" id="readiness-scroll"></div>
-    </div>
-  </div>
-
   <!-- Recording consent confirmation -->
   <div class="consent-overlay" id="recording-consent-overlay">
     <div class="readiness-card" role="dialog" aria-modal="true" aria-labelledby="recording-consent-title">
@@ -6583,42 +6675,39 @@
     </div>
   </div>
 
-  <!-- Recovery -->
-  <div class="recovery-overlay" id="recovery-overlay">
-    <div class="recovery-card" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
-      <div class="recovery-header">
-        <div>
-          <div class="recovery-title" id="recovery-title">Recovery Center</div>
-          <div class="recovery-sub" id="recovery-subtitle">Retry preserved captures and watched files that failed to
-            process, or open them directly in a folder.</div>
-        </div>
-        <div class="recovery-header-actions">
-          <button class="btn btn-secondary btn-sm" id="btn-recovery-retry-all" disabled>Retry all</button>
-          <button class="btn btn-secondary btn-sm" id="btn-recovery-close">Close</button>
-        </div>
+  <!-- Activity -->
+  <div class="activity-overlay" id="activity-overlay">
+    <aside class="activity-drawer" id="activity-drawer" role="dialog" aria-modal="true" aria-labelledby="activity-title">
+      <div class="activity-header">
+        <h2 id="activity-title">Activity</h2>
+        <button class="btn btn-secondary btn-sm" id="btn-activity-close" type="button">Close</button>
       </div>
-      <div class="recovery-bulk-errors" id="recovery-bulk-errors" role="status" aria-live="polite" hidden></div>
-      <div class="recovery-scroll" id="recovery-scroll">
-        <div class="recovery-empty">No recovery items right now.</div>
+      <div class="activity-scroll">
+        <section class="activity-section" id="activity-section-attention">
+          <div class="activity-section-heading">
+            <h3 id="activity-attention-title" tabindex="-1">Recordings to retry</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-recovery-retry-all" disabled>Retry all</button>
+          </div>
+          <div class="activity-sub" id="recovery-subtitle">Preserved captures and watched files that didn't finish processing.</div>
+          <div class="recovery-bulk-errors" id="recovery-bulk-errors" role="status" aria-live="polite" hidden></div>
+          <div class="recovery-scroll" id="recovery-scroll">
+            <div class="recovery-empty">Nothing to retry.</div>
+          </div>
+        </section>
+        <section class="activity-section" id="activity-section-processing">
+          <h3 id="activity-processing-title" tabindex="-1">Processing <span id="activity-processing-count"></span></h3>
+          <div class="activity-sub">Background processing for recent recordings.</div>
+          <div class="recovery-scroll" id="jobs-scroll">
+            <div class="recovery-empty">Nothing processing right now.</div>
+          </div>
+        </section>
+        <section class="activity-section" id="activity-section-setup">
+          <h3 id="readiness-title" tabindex="-1">Setup checks</h3>
+          <div class="activity-sub" id="readiness-sub"></div>
+          <div class="readiness-scroll" id="readiness-scroll"></div>
+        </section>
       </div>
-    </div>
-  </div>
-
-  <!-- Jobs -->
-  <div class="recovery-overlay" id="jobs-overlay">
-    <div class="recovery-card" role="dialog" aria-modal="true" aria-labelledby="jobs-title">
-      <div class="recovery-header">
-        <div>
-          <div class="recovery-title" id="jobs-title">Jobs Center</div>
-          <div class="recovery-sub" id="jobs-subtitle">Background processing jobs for recent recordings. Open
-            transcripts early, retry failures, and keep moving.</div>
-        </div>
-        <button class="btn btn-secondary btn-sm" id="btn-jobs-close">Close</button>
-      </div>
-      <div class="recovery-scroll" id="jobs-scroll">
-        <div class="recovery-empty">No processing jobs right now.</div>
-      </div>
-    </div>
+    </aside>
   </div>
 
   <!-- About -->
@@ -7668,12 +7757,12 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         <div class="about-controls">
           <div class="about-controls-copy">System readiness and audio permission checks</div>
           <button class="btn btn-secondary btn-sm"
-            onclick="document.getElementById('settings-overlay').classList.remove('active');document.getElementById('btn-readiness').click();">Readiness</button>
+            onclick="document.getElementById('settings-overlay').classList.remove('active');openActivity('setup');">Setup checks</button>
         </div>
         <div class="about-controls">
           <div class="about-controls-copy">Retry failed captures and unprocessed audio files</div>
           <button class="btn btn-secondary btn-sm"
-            onclick="document.getElementById('settings-overlay').classList.remove('active');document.getElementById('btn-recovery').click();">Recovery</button>
+            onclick="document.getElementById('settings-overlay').classList.remove('active');openActivity('attention');">Recordings to retry</button>
         </div>
       </div>
 
@@ -7966,8 +8055,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const hotkeyToggle = document.getElementById('btn-toggle-hotkey');
     const hotkeySelect = document.getElementById('select-hotkey-shortcut');
     const hotkeyStatus = document.getElementById('hotkey-status');
-    const readinessOverlay = document.getElementById('readiness-overlay');
-    const readinessButton = document.getElementById('btn-readiness');
+    const activityOverlay = document.getElementById('activity-overlay');
+    const activityButton = document.getElementById('btn-activity');
+    const activityBadge = document.getElementById('activity-badge');
+    const activityProcessingCount = document.getElementById('activity-processing-count');
     const readinessScroll = document.getElementById('readiness-scroll');
     const readinessTitle = document.getElementById('readiness-title');
     const readinessSub = document.getElementById('readiness-sub');
@@ -7975,13 +8066,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const recordingConsentDisclosure = document.getElementById('recording-consent-disclosure');
     const recordingConsentConfirm = document.getElementById('recording-consent-confirm');
     const recordingConsentCancel = document.getElementById('recording-consent-cancel');
-    const jobsButton = document.getElementById('btn-jobs');
-    const jobsCount = document.getElementById('jobs-count');
-    const jobsOverlay = document.getElementById('jobs-overlay');
     const jobsScroll = document.getElementById('jobs-scroll');
-    const recoveryOverlay = document.getElementById('recovery-overlay');
-    const recoveryButton = document.getElementById('btn-recovery');
-    const recoveryCount = document.getElementById('recovery-count');
     const recoveryScroll = document.getElementById('recovery-scroll');
     const recoverySubtitle = document.getElementById('recovery-subtitle');
     const recoveryRetryAllButton = document.getElementById('btn-recovery-retry-all');
@@ -8607,12 +8692,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     function updateJobsChip(activeCount) {
-      setText(jobsCount, String(activeCount || 0));
-      jobsButton.classList.toggle('active', (activeCount || 0) > 0);
-    }
-
-    function closeJobs() {
-      jobsOverlay.classList.remove('active');
+      setText(activityProcessingCount, activeCount > 0 ? `· ${activeCount}` : '');
     }
 
     function formatJobTimestamp(isoString) {
@@ -9109,7 +9189,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             if (wasRecording || wasStarting || wasProcessing || wasLive) {
               stopFastPoll();
               loadMeetings(); // Refresh list
-              if (jobsOverlay.classList.contains('active')) loadProcessingJobsCenter();
+              if (activityOverlay.classList.contains('active')) loadProcessingJobsCenter();
 
               // Auto-open the result when processing completes successfully
               if (wasProcessing && latestOutput && latestOutput.kind === 'saved') {
@@ -9404,12 +9484,63 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
     }
 
-    function closeReadiness() {
-      readinessOverlay.classList.remove('active');
+    let activityReturnFocus = null;
+    let activityRecoveryCount = 0;
+    let activityRecoveryError = false;
+    let activityReadinessCount = 0;
+    let activityDictationNudge = false;
+
+    function updateActivityBadge() {
+      const count = activityRecoveryCount + activityReadinessCount + (activityDictationNudge ? 1 : 0);
+      const label = activityRecoveryError ? '!' : count > 0 ? String(count) : '';
+      activityBadge.textContent = label;
+      activityBadge.hidden = !label;
+      activityButton.setAttribute('aria-label', activityRecoveryError
+        ? 'Activity, recovery check failed'
+        : count > 0 ? `Activity, ${count} ${count === 1 ? 'needs' : 'need'} attention` : 'Activity');
     }
 
-    function closeRecovery() {
-      recoveryOverlay.classList.remove('active');
+    function setDictationNudge(on, label) {
+      activityDictationNudge = Boolean(on);
+      if (on) {
+        activityButton.dataset.scope = 'dictation';
+        activityButton.title = label;
+      } else {
+        delete activityButton.dataset.scope;
+        activityButton.removeAttribute('title');
+      }
+      updateActivityBadge();
+    }
+
+    function openActivity(section = 'attention', { readinessScope = 'all' } = {}) {
+      if (!activityOverlay.classList.contains('active')) {
+        const target = document.activeElement;
+        activityReturnFocus = !target || target === document.body || target.hidden || target.offsetParent === null
+          ? activityButton : target;
+      }
+      setReadinessScope(readinessScope);
+      activityOverlay.classList.add('active');
+      loadRecoveryItems();
+      loadProcessingJobsCenter();
+      const readinessPromise = loadReadinessItems();
+      const headingId = {
+        attention: 'activity-attention-title',
+        processing: 'activity-processing-title',
+        setup: 'readiness-title',
+      }[section] || 'activity-attention-title';
+      const heading = document.getElementById(headingId);
+      heading.scrollIntoView({ block: 'start' });
+      heading.focus({ preventScroll: true });
+      return readinessPromise;
+    }
+
+    window.openActivity = openActivity;
+
+    function closeActivity() {
+      if (!activityOverlay.classList.contains('active')) return;
+      activityOverlay.classList.remove('active');
+      const target = activityReturnFocus;
+      (target?.isConnected && !target.hidden && target.offsetParent !== null ? target : activityButton).focus();
     }
 
     function updateRecoveryRetryAllButton() {
@@ -9468,7 +9599,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           recoveryRetryAllButton.disabled = true;
           recoveryRetryAllButton.textContent = `Queued ${queuedCount}`;
           window.setTimeout(() => {
-            closeRecovery();
+            closeActivity();
             retryingAllRecovery = false;
             updateRecoveryRetryAllButton();
           }, 450);
@@ -9639,8 +9770,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         readinessTitle.textContent = 'Set up Type at cursor';
         readinessSub.textContent = 'Four separate capabilities, checked only for dictation. Minutes never asks recording-only users to configure them.';
       } else {
-        readinessTitle.textContent = 'Readiness Center';
-        readinessSub.textContent = 'This view only reports what Minutes can verify right now. Optional items stay optional, and unknown states are never hidden behind fake confidence.';
+        readinessTitle.textContent = 'Setup checks';
+        readinessSub.textContent = 'Only what Minutes can verify right now. Optional items are marked.';
       }
     }
 
@@ -9648,11 +9779,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!latestSettings || !desktopAppVersion) return;
       const destination = latestSettings?.dictation?.destination || 'insert';
       if (destination !== 'insert') {
-        if (readinessButton.dataset.scope === 'dictation') {
-          readinessButton.classList.remove('active');
-          readinessButton.textContent = 'Readiness';
-          readinessButton.dataset.scope = 'all';
-        }
+        if (activityButton.dataset.scope === 'dictation') setDictationNudge(false);
         return;
       }
 
@@ -9670,29 +9797,21 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         );
 
         if (!needsAttention) {
-          if (readinessButton.dataset.scope === 'dictation') {
-            readinessButton.classList.remove('active');
-            readinessButton.textContent = 'Readiness';
-            readinessButton.dataset.scope = 'all';
-          }
+          if (activityButton.dataset.scope === 'dictation') setDictationNudge(false);
           return;
         }
 
         const markerKey = 'minutes.dictationPermissionNudgeVersion';
         if (!allowShow || (!force && localStorage.getItem(markerKey) === desktopAppVersion)) return;
         localStorage.setItem(markerKey, desktopAppVersion);
-        readinessButton.textContent = force ? 'Dictation needs setup' : 'Dictation setup';
-        readinessButton.dataset.scope = 'dictation';
-        readinessButton.classList.add('active');
+        setDictationNudge(true, force ? 'Dictation needs setup' : 'Dictation setup');
       } catch (error) {
         console.error('Dictation permission nudge:', error);
       }
     }
 
     async function openReadiness(scope = 'all') {
-      setReadinessScope(scope);
-      readinessOverlay.classList.add('active');
-      await loadReadinessItems();
+      await openActivity('setup', { readinessScope: scope });
     }
 
     window.openDictationPermissionHelp = () => { closeSettings(); openReadiness('dictation'); };
@@ -9750,6 +9869,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
 
       readinessItems = [...permissionItems, ...items];
+      if (readinessScope === 'all') {
+        activityReadinessCount = readinessItems.filter(item => item.state === 'attention' && !item.optional).length;
+        updateActivityBadge();
+      }
 
       readinessScroll.replaceChildren();
       const list = document.createElement('div');
@@ -9853,8 +9976,9 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function renderRecoveryItemsResult(items, recoveryLoadError, generation) {
       if (generation !== recoveryLoadGeneration) return;
       recoveryItems = Array.isArray(items) ? items : [];
-      recoveryCount.textContent = recoveryLoadError ? '!' : recoveryItems.length;
-      recoveryButton.classList.toggle('active', recoveryLoadError !== null || recoveryItems.length > 0);
+      activityRecoveryCount = recoveryItems.length;
+      activityRecoveryError = recoveryLoadError !== null;
+      updateActivityBadge();
       updateRecoveryRetryAllButton();
 
       recoveryScroll.replaceChildren();
@@ -9930,7 +10054,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             });
             // Processing now runs in background — close recovery panel
             // and let status polling pick up the processing state + result
-            closeRecovery();
+            closeActivity();
             startFastPoll();
           } catch (e) {
             console.error('Retry recovery:', e);
@@ -9977,7 +10101,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     async function loadRecoveryItems() {
       const generation = ++recoveryLoadGeneration;
-      recoveryCount.textContent = '…';
       recoveryScroll.replaceChildren();
       const checking = document.createElement('div');
       checking.className = 'recovery-empty';
@@ -11036,27 +11159,20 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       runActionToastUndo();
     });
 
-    readinessButton.addEventListener('click', () => {
-      const scope = readinessButton.dataset.scope || 'all';
-      if (scope === 'dictation' && desktopAppVersion) {
-        localStorage.setItem('minutes.dictationPermissionNudgeVersion', desktopAppVersion);
-        readinessButton.classList.remove('active');
-        readinessButton.textContent = 'Readiness';
-        readinessButton.dataset.scope = 'all';
+    activityButton.addEventListener('click', () => {
+      if (activityButton.dataset.scope === 'dictation') {
+        if (desktopAppVersion) {
+          localStorage.setItem('minutes.dictationPermissionNudgeVersion', desktopAppVersion);
+        }
+        setDictationNudge(false);
+        openActivity('setup', { readinessScope: 'dictation' });
+      } else {
+        openActivity('attention');
       }
-      openReadiness(scope);
     });
-    document.getElementById('btn-readiness-close').addEventListener('click', closeReadiness);
-    readinessOverlay.addEventListener('click', (e) => {
-      if (e.target === readinessOverlay) closeReadiness();
-    });
-    jobsButton.addEventListener('click', () => {
-      loadProcessingJobsCenter();
-      jobsOverlay.classList.add('active');
-    });
-    document.getElementById('btn-jobs-close').addEventListener('click', closeJobs);
-    jobsOverlay.addEventListener('click', (e) => {
-      if (e.target === jobsOverlay) closeJobs();
+    document.getElementById('btn-activity-close').addEventListener('click', closeActivity);
+    activityOverlay.addEventListener('click', (e) => {
+      if (e.target === activityOverlay) closeActivity();
     });
 
     notificationToggle?.addEventListener('click', async () => {
@@ -11081,15 +11197,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       await syncHotkey(hotkeyEnabled, hotkeySelect?.value || hotkeyShortcut);
     });
 
-    recoveryButton.addEventListener('click', () => {
-      loadRecoveryItems();
-      recoveryOverlay.classList.add('active');
-    });
     recoveryRetryAllButton.addEventListener('click', retryAllRecoveryItems);
-    document.getElementById('btn-recovery-close').addEventListener('click', closeRecovery);
-    recoveryOverlay.addEventListener('click', (e) => {
-      if (e.target === recoveryOverlay) closeRecovery();
-    });
 
     // ── Inline note ──
     document.getElementById('btn-note-inline').addEventListener('click', () => {
@@ -15562,22 +15670,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         closeSettings();
         return;
       }
-      if (e.key === 'Escape' && readinessOverlay.classList.contains('active')) {
+      if (e.key === 'Escape' && activityOverlay.classList.contains('active')) {
         e.preventDefault();
         e.stopPropagation();
-        closeReadiness();
-        return;
-      }
-      if (e.key === 'Escape' && recoveryOverlay.classList.contains('active')) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeRecovery();
-        return;
-      }
-      if (e.key === 'Escape' && jobsOverlay.classList.contains('active')) {
-        e.preventDefault();
-        e.stopPropagation();
-        closeJobs();
+        closeActivity();
         return;
       }
       if (e.key === 'Escape' && detailOverlay.classList.contains('active')) {
@@ -19622,9 +19718,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         aboutOverlay,
         settingsOverlay,
         coachOnboardingOverlay,
-        readinessOverlay,
-        recoveryOverlay,
-        jobsOverlay,
+        activityOverlay,
         detailOverlay,
         recordingConsentOverlay,
         cliSetupScrim,
