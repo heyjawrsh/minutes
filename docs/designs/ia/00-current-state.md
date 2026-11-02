@@ -108,5 +108,6 @@ Without one vocabulary, navigation labels can't be predictable and the CLI/MCP c
 | 7 | Memos in the meetings list? | **Filtered out by default**; shown under the Memos or All scope | 2026-11-02 |
 | 8 | Weekly summary | **A fixed view**, not just an Assistant prompt | 2026-11-02 |
 | 9 | Rename "recall" in skill/MCP names? | **No.** `minutes-mcp-recall` uses "recall" as a verb; only the panel name "Recall" goes away (UI and help text) | 2026-11-02 |
+| 10 | Wireframes 01–08 (main window, recording, This week, Settings, Activity, draft beside meeting, first run, tray and palette) | **Approved** as the target structure, including: Live as "Meeting with live transcript", a recording is a meeting from the start, audio/mic pickers in the Record menu, state-aware tray, Coach intro on first enable | 2026-11-02 |
 
 Proposed structure: [04 — proposed structure](04-proposed-structure.md).
