@@ -4430,7 +4430,6 @@
       font-family: var(--font-mono);
       font-size: var(--text-2xs);
       letter-spacing: 0.06em;
-      text-transform: uppercase;
       padding: 6px 4px;
       border: 0;
       border-radius: calc(var(--radius) - 2px);
@@ -4551,7 +4550,6 @@
       background: var(--surface-fill-hover);
       color: var(--text);
       border: 1px solid var(--border-mid);
-      text-transform: uppercase;
       letter-spacing: 0.4px;
       font-weight: 600;
       font-size: var(--text-meta);
@@ -6144,11 +6142,11 @@
         <!-- Recall opens a panel; it is navigation, not capture, so it lives
              with the other pane controls rather than beside Start Recording.
              Same id and nudge element: every existing handler keeps working. -->
-        <button class="list-toggle-btn recall-toggle-btn" id="btn-assistant" type="button" aria-expanded="false" title="Open Recall">Recall <span class="recall-nudge"
-            id="recall-nudge" aria-label="Recall has new content"></span></button>
-        <button class="list-toggle-btn" id="btn-documents-toggle" type="button" aria-pressed="false">Documents</button>
+        <button class="list-toggle-btn recall-toggle-btn" id="btn-assistant" type="button" aria-expanded="false" title="Open Assistant">Assistant <span class="recall-nudge"
+            id="recall-nudge" aria-label="Assistant has new content"></span></button>
+        <button class="list-toggle-btn" id="btn-documents-toggle" type="button" aria-pressed="false">Drafts</button>
       </div>
-      <input class="search-box" type="text" placeholder="Search recordings..." id="search-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <input class="search-box" type="text" placeholder="Search meetings…" id="search-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       <div class="search-error" id="search-error" hidden></div>
     </div>
 
@@ -6355,9 +6353,9 @@
                tooltip, disabled-state update and the live transition label
                targets them by id, and the primary button forwards to them. -->
           <button class="btn btn-secondary" id="btn-live" hidden
-            title="Start live transcription — ask your agent in Recall for coaching"
+            title="Start a live transcript"
             aria-label="Start live transcription">Live</button>
-          <button class="btn btn-secondary" id="btn-quick-thought" hidden>Quick Thought</button>
+          <button class="btn btn-secondary" id="btn-quick-thought" hidden>Memo</button>
         </div>
       </div>
     </div>
@@ -6375,8 +6373,8 @@
   <div class="recall-panel" id="recall-panel" aria-hidden="true" inert>
     <div class="recall-header" data-tauri-drag-region>
       <div class="recall-header-info" data-tauri-drag-region>
-        <div class="recall-phase-dot" id="recall-dot" aria-label="Phase: Recall" data-tauri-drag-region></div>
-        <span class="recall-phase-label" id="recall-phase-label" data-tauri-drag-region>Recall</span>
+        <div class="recall-phase-dot" id="recall-dot" aria-label="Phase: Assistant" data-tauri-drag-region></div>
+        <span class="recall-phase-label" id="recall-phase-label" data-tauri-drag-region>Assistant</span>
         <span class="recall-context-label" id="recall-context-label" data-tauri-drag-region></span>
       </div>
       <div class="recall-header-actions">
@@ -6395,7 +6393,7 @@
     </div>
     <div class="recall-status" id="recall-loading">
       <div class="processing-spinner" aria-hidden="true"></div>
-      <span>Starting Recall...</span>
+      <span>Starting Assistant…</span>
     </div>
     <div class="recall-provider-notice" id="recall-provider-notice" role="status" aria-live="polite"></div>
     <div class="recall-weekly-view" id="recall-weekly-view">
@@ -6427,7 +6425,7 @@
   <div class="md-viewer" id="md-viewer">
     <div class="md-viewer-header">
       <div class="md-viewer-header-main">
-        <button class="md-viewer-back" id="md-viewer-back" title="Close document">×</button>
+        <button class="md-viewer-back" id="md-viewer-back" title="Close draft">×</button>
         <span class="md-viewer-filename" id="md-viewer-filename"></span>
         <span class="md-viewer-kind" id="md-viewer-kind">MD</span>
       </div>
@@ -6473,7 +6471,7 @@
           <div class="detail-meta" id="detail-meta"></div>
         </div>
         <div class="detail-actions">
-          <button class="btn btn-secondary btn-sm" id="btn-discuss-ai">Discuss with Agent</button>
+          <button class="btn btn-secondary btn-sm" id="btn-discuss-ai">Ask Assistant</button>
           <button class="btn btn-primary btn-sm" id="btn-create-artifact">Create Draft</button>
           <button class="detail-more-btn" id="btn-detail-more" type="button" aria-haspopup="menu" aria-label="More actions" title="More actions">
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="3.5" cy="8" r="1.35"/><circle cx="8" cy="8" r="1.35"/><circle cx="12.5" cy="8" r="1.35"/></svg>
@@ -6498,7 +6496,7 @@
   <div class="artifact-template-overlay" id="artifact-template-overlay">
     <div class="artifact-template-card" role="dialog" aria-modal="true" aria-labelledby="artifact-template-title">
       <div class="artifact-template-title" id="artifact-template-title">Create Draft</div>
-      <div class="artifact-template-sub">Choose a draft based on this meeting. Read it, edit any paragraph, or refine it with Recall.</div>
+      <div class="artifact-template-sub">Choose a draft based on this meeting. Read it, edit any paragraph, or refine it with the Assistant.</div>
       <div class="artifact-template-list">
         <button class="artifact-template-option" data-artifact-kind="debrief-memo">
           <span class="artifact-template-option-title">Debrief Memo</span>
@@ -6663,7 +6661,7 @@
         <div class="about-cli-actions" id="about-cli-actions"></div>
       </div>
       <div class="about-footer" id="about-tray-copy">
-        Minutes is open source, markdown-backed, and designed so the artifact remains valuable even outside this app.
+        Minutes is open source, markdown-backed, and designed so your meeting notes stay useful even outside this app.
         Power-user tray actions copy the latest summary or transcript and try to paste it into your previous app when
         macOS automation allows it.
       </div>
@@ -6744,7 +6742,7 @@
           <button class="btn btn-secondary btn-sm toggle-btn" id="settings-notifications">On</button>
         </div>
         <div class="about-controls">
-          <div class="about-controls-copy">Critical Coach alerts when the HUD is hidden</div>
+          <div class="about-controls-copy">Urgent Coach alerts when the Coach panel is hidden</div>
           <button class="btn btn-secondary btn-sm toggle-btn" id="settings-copilot-notifications">Off</button>
         </div>
         <div class="about-controls">
@@ -6758,7 +6756,7 @@
         <!-- Quick Thought shortcut (unified recorder) -->
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Quick Thought shortcut</div>
+            <div class="about-controls-copy">Memo shortcut</div>
             <div class="settings-section-inline">
               <button id="shortcut-recorder-quick_thought"
                 class="btn btn-secondary btn-sm shortcut-recorder-btn settings-shortcut-key"
@@ -6766,7 +6764,7 @@
               <span class="special-key-link settings-hint-link" data-slot="quick_thought">or <u>Caps Lock</u> /
                 <u>fn</u></span>
             </div>
-            <div class="about-controls-meta" id="shortcut-status-quick_thought">Hold to record a quick thought, or tap
+            <div class="about-controls-meta" id="shortcut-status-quick_thought">Hold to record a memo, or tap
               to lock and tap again to stop.</div>
           </div>
           <button class="btn btn-secondary btn-sm toggle-btn" id="shortcut-toggle-quick_thought">Off</button>
@@ -6783,7 +6781,7 @@
           <div class="about-controls-group">
             <div class="about-controls-copy">Backend</div>
             <select id="settings-live-backend" class="settings-field">
-              <option value="inherit">Inherit main transcription engine</option>
+              <option value="inherit">Same as main transcription engine</option>
               <option value="whisper">Whisper — built-in, broad language support</option>
               <option value="parakeet" disabled>Parakeet — unavailable</option>
               <option value="apple-speech" disabled>Apple Speech — unavailable, using Whisper</option>
@@ -7287,10 +7285,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         <div class="about-item-title">AUTO-SUMMARIZATION</div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Automatic pipeline summarization</div>
-            <div class="about-controls-meta settings-meta-inline">By default, Claude summarizes your meetings
-              conversationally via MCP — no configuration needed. Turn this on only if you want summaries generated
-              automatically in the recording pipeline.</div>
+            <div class="about-controls-copy">Summarize recordings automatically</div>
+            <div class="about-controls-meta settings-meta-inline">By default, Claude summarizes a meeting when you ask it to, through MCP. Turn this on to summarize every recording automatically.</div>
             <select id="settings-summarization-engine" class="settings-field">
               <option value="none">Off — Claude summarizes when you ask (recommended)</option>
               <option value="auto">Auto-detect an agent CLI — advanced</option>
@@ -7376,10 +7372,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
       <!-- Pipeline Hooks -->
       <div class="settings-section">
-        <div class="about-item-title">PIPELINE HOOKS</div>
+        <div class="about-item-title">AFTER A RECORDING</div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Post-record command</div>
+            <div class="about-controls-copy">Run a command after each recording</div>
             <div class="about-controls-meta">Shell command run after each recording is processed. The transcript file path is appended as the final argument. Leave blank to disable.</div>
             <input type="text" id="settings-hooks-post-record" class="settings-field" placeholder="/path/to/script.sh" spellcheck="false">
             <div class="about-controls-meta" id="settings-hooks-post-record-status"></div>
@@ -7514,8 +7510,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         </div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Default frontmatter basis</div>
-            <div class="about-controls-meta">Optional value stamped into meeting frontmatter when no per-recording basis is supplied.</div>
+            <div class="about-controls-copy">Default recording basis</div>
+            <div class="about-controls-meta">Saved with each meeting unless you choose a different basis when you record.</div>
             <select id="settings-consent-default-basis" class="settings-field">
               <option value="">Unattested unless supplied</option>
               <option value="verbal_all_parties">Verbal, all parties</option>
@@ -7604,7 +7600,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         <div class="about-item-title">RECALL AGENT</div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">AI agent for the Recall panel</div>
+            <div class="about-controls-copy">App the Assistant uses</div>
             <select id="settings-agent" class="settings-field">
             </select>
             <div class="about-controls-meta" id="settings-agent-status"></div>
@@ -8136,8 +8132,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
       if (aboutTrayCopy) {
         aboutTrayCopy.textContent = desktopCapabilities.supportsTrayArtifactCopy
-          ? 'Minutes is open source, markdown-backed, and designed so the artifact remains valuable even outside this app. Power-user tray actions copy the latest summary or transcript and try to paste it into your previous app when macOS automation allows it.'
-          : 'Minutes is open source, markdown-backed, and designed so the artifact remains valuable even outside this app. This desktop build focuses on recording, transcription, search, and Recall today; tray copy/paste automation remains macOS-only for now.';
+          ? 'Minutes is open source, markdown-backed, and designed so your meeting notes stay useful even outside this app. Power-user tray actions copy the latest summary or transcript and try to paste it into your previous app when macOS automation allows it.'
+          : 'Minutes is open source, markdown-backed, and designed so your meeting notes stay useful even outside this app. This desktop build focuses on recording, transcription, search, and the Assistant today; tray copy/paste automation remains macOS-only for now.';
       }
     }
 
@@ -8370,11 +8366,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     function currentModeLabel(mode) {
-      return mode === 'quick-thought' ? 'Quick Thought' : 'Recording';
+      return mode === 'quick-thought' ? 'Memo' : 'Recording';
     }
 
     function currentProcessingTitle(mode) {
-      if (mode === 'quick-thought') return 'Processing quick thought';
+      if (mode === 'quick-thought') return 'Processing memo';
       if (mode === 'live-transcript') return 'Processing meeting';
       return 'Processing recording';
     }
@@ -8436,7 +8432,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function processingJobMeta(job) {
       const mode = job.mode === 'quick-thought'
-        ? 'Quick thought'
+        ? 'Memo'
         : job.mode === 'live-transcript'
           ? 'Live meeting'
           : 'Meeting';
@@ -8465,7 +8461,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function processingTitleFallback(job) {
       switch (job?.mode) {
-        case 'quick-thought': return 'Quick thought';
+        case 'quick-thought': return 'Memo';
         case 'dictation': return 'Dictation';
         case 'live-transcript': return 'Live meeting';
         case 'meeting':
@@ -8490,7 +8486,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       const processingMode = job?.mode || mode;
       switch (job?.state) {
         case 'transcribing':
-          return processingMode === 'quick-thought' ? 'Transcribing quick thought' : 'Transcribing meeting';
+          return processingMode === 'quick-thought' ? 'Transcribing memo' : 'Transcribing meeting';
         case 'transcript-only':
           return 'Transcript ready, summarizing';
         case 'diarizing':
@@ -8498,7 +8494,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         case 'summarizing':
           return processingMode === 'quick-thought' ? 'Generating memo summary' : 'Generating meeting summary';
         case 'saving':
-          return processingMode === 'quick-thought' ? 'Saving quick thought' : 'Saving meeting';
+          return processingMode === 'quick-thought' ? 'Saving memo' : 'Saving meeting';
         default:
           return status.processingTitle
             ? `Processing ${status.processingTitle}`
@@ -8669,7 +8665,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           meta.className = 'recovery-item-detail';
           meta.style.marginTop = '6px';
           const stamp = formatJobTimestamp(job.finishedAt || job.startedAt || job.createdAt);
-          const mode = job.mode === 'quick-thought' ? 'Quick thought' : 'Meeting';
+          const mode = job.mode === 'quick-thought' ? 'Memo' : 'Meeting';
           const elapsed = ['queued', 'transcribing', 'transcript-only', 'diarizing', 'summarizing', 'saving'].includes(job.state)
             ? processingJobMeta(job)
             : mode;
@@ -8896,7 +8892,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           statusPill.className = 'status-pill recording';
           const queueCount = status.processingJobCount || 0;
           const callHealth = status.callCaptureHealth;
-          statusPill.textContent = stopRequested ? 'stopping' : (mode === 'quick-thought' ? 'quick thought' : 'recording');
+          statusPill.textContent = stopRequested ? 'stopping' : (mode === 'quick-thought' ? 'memo' : 'recording');
           const statusBits = [];
           if (status.autoRecordApp) statusBits.push(`Auto-record: ${status.autoRecordApp}`);
           if (queueCount > 0) {
@@ -9230,7 +9226,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         setTitle(quickThoughtButton, tooltip);
       } else {
         setTitle(recordButton, '');
-        setTitle(liveButton, 'Start live transcription — ask your agent in Recall for coaching');
+        setTitle(liveButton, 'Start a live transcript');
         setTitle(quickThoughtButton, '');
       }
       queueMicrotask(renderMeetingAudioChoice);
@@ -9255,11 +9251,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
         button.setAttribute(
           'aria-label',
-          active ? 'Stop the Coach HUD' : 'Start the Coach HUD for this meeting'
+          active ? 'Stop Coach' : 'Start Coach for this meeting'
         );
         button.title = active
-          ? (paused ? 'Coach is paused. Click to stop it; resume from the HUD.' : 'Coach is active. Click to stop it.')
-          : 'Start the private, glanceable Coach HUD';
+          ? (paused ? 'Coach is paused. Click to stop it; resume from the Coach panel.' : 'Coach is active. Click to stop it.')
+          : 'Start Coach: private suggestions only you can see';
       });
     }
 
@@ -10713,7 +10709,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         const notice = document.getElementById('output-notice');
         if (noticeIcon) noticeIcon.textContent = '\u{1F399}';
         if (noticeTitle) noticeTitle.textContent = 'Live Transcript';
-        if (noticeDetail) noticeDetail.textContent = 'Transcribes your meeting in real time, including the other side of a call. Ask your agent in Recall for coaching during the call.';
+        if (noticeDetail) noticeDetail.textContent = 'Transcribes your meeting in real time, including the other side of a call. Ask the Assistant about it during the call.';
         if (notice) notice.classList.add('active');
         // Auto-dismiss after 3 seconds, then proceed with start
         await new Promise(r => setTimeout(r, 3000));
@@ -10839,8 +10835,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         items.push(
           { text: menuLabel('Open'), action: action('Open', () => openMeetingDetail(meeting.path)) },
           {
-            text: menuLabel('Discuss with Agent'),
-            action: action('Discuss with Agent', () => discussMeetingWithAgent(meeting.path, meeting.title)),
+            text: menuLabel('Ask Assistant'),
+            action: action('Ask Assistant', () => discussMeetingWithAgent(meeting.path, meeting.title)),
           },
           { item: 'Separator' },
         );
@@ -11839,7 +11835,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       ctaText.textContent = 'Have questions about this ' + (detail.content_type || 'meeting') + '?';
       const ctaBtn = document.createElement('button');
       ctaBtn.className = 'btn btn-primary btn-sm';
-      ctaBtn.textContent = 'Discuss with Agent';
+      ctaBtn.textContent = 'Ask Assistant';
       ctaBtn.addEventListener('click', () => {
         document.getElementById('btn-discuss-ai').click();
       });
@@ -11951,7 +11947,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!documents || documents.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'document-empty';
-        empty.textContent = 'No documents yet.';
+        empty.textContent = 'No drafts yet.';
         meetingsScroll.appendChild(empty);
         return;
       }
@@ -12065,13 +12061,13 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       documentsToggle.setAttribute('aria-pressed', active ? 'true' : 'false');
       // Label the button with its DESTINATION so returning to meetings is
       // self-evident: it reads "Meetings" while documents are showing.
-      documentsToggle.textContent = active ? 'Meetings' : 'Documents';
+      documentsToggle.textContent = active ? 'Meetings' : 'Drafts';
       documentsToggle.setAttribute(
         'aria-label',
-        active ? 'Back to meetings' : 'Show documents',
+        active ? 'Back to meetings' : 'Show drafts',
       );
       searchInput.disabled = active;
-      searchInput.placeholder = active ? 'Documents' : 'Search recordings...';
+      searchInput.placeholder = active ? 'Drafts' : 'Search meetings…';
       if (active) {
         searchInput.value = '';
         activeSearchQuery = '';
@@ -12263,8 +12259,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
       const chatBtn = document.createElement('button');
       chatBtn.className = 'meeting-chat-btn';
-      chatBtn.setAttribute('aria-label', 'Discuss with Agent');
-      chatBtn.setAttribute('title', 'Discuss with Agent');
+      chatBtn.setAttribute('aria-label', 'Ask Assistant');
+      chatBtn.setAttribute('title', 'Ask Assistant');
       chatBtn.textContent = '\u279C';
       chatBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
@@ -13086,7 +13082,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
                 <span class="step-status" id="step-first-artifact-status"></span>
               </div>
               <div class="step-body">
-                <p>Make a quick 10-second test recording. Say one sentence, stop, and let Minutes save its first markdown artifact.</p>
+                <p>Record a few words to check capture and transcription. Minutes will save it as a regular meeting note. (Minutes won't learn your voice.)</p>
                 <div class="footer-device-picker onboarding-audio-choice">
                   <label class="footer-device-label" for="onboarding-meeting-audio-source">Meeting audio</label>
                   <select id="onboarding-meeting-audio-source" class="device-picker" aria-describedby="onboarding-meeting-audio-help">
@@ -13106,7 +13102,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
                 <span class="step-status" id="step-watch-artifact-status"></span>
               </div>
               <div class="step-body">
-                <p>As soon as the test recording finishes processing, this setup card disappears and your first saved artifact takes its place.</p>
+                <p>When processing finishes, your test appears here as your first meeting.</p>
               </div>
             </div>
           </div>
@@ -14251,7 +14247,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function updateSumStatus(s) {
       const el = document.getElementById('settings-summarization-status');
       if (s.summarization.engine === 'none') el.textContent = '';
-      else if (s.summarization.engine === 'auto') el.textContent = 'Advanced: Minutes will auto-detect an installed agent CLI for pipeline summaries.';
+      else if (s.summarization.engine === 'auto') el.textContent = 'Advanced: Minutes will find an installed agent CLI and use it for summaries.';
       else if (s.summarization.engine === 'agent') el.textContent = 'Using: ' + (s.summarization.agent_command || 'claude') + ' — no API key needed, uses your existing subscription';
       else if (s.summarization.engine === 'ollama') el.textContent = s.summarization.ollama_reachable ? 'Ollama reachable (' + s.summarization.ollama_model + ')' : 'Ollama not reachable at ' + s.summarization.ollama_url;
       else if (isOpenAiCompatibleEngine(s.summarization.engine)) el.textContent = openAiCompatibleStatusText(s);
@@ -15135,7 +15131,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       } else {
         const defaultMsg = slot === 'dictation'
           ? 'Hold to dictate, or tap to lock and tap again to stop.'
-          : 'Hold to record a quick thought, or tap to lock and tap again to stop.';
+          : 'Hold to record a memo, or tap to lock and tap again to stop.';
         statusEl.textContent = status.message === 'Off.' ? defaultMsg : status.message;
         statusEl.classList.toggle('error', status.message !== 'Off.' && !status.enabled);
       }
@@ -16082,13 +16078,13 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         recallDot.classList.add(phase);
         recallPhaseLabel.classList.add(phase);
       }
-      const labels = { recall: 'Recall', prep: 'Prep', listening: 'Listening', debrief: 'Debrief' };
+      const labels = { recall: 'Assistant', prep: 'Prep', listening: 'Listening', debrief: 'Debrief' };
       if (phase === 'weekly') {
         labels.weekly = 'Weekly';
       }
-      recallPhaseLabel.textContent = labels[phase] || 'Recall';
+      recallPhaseLabel.textContent = labels[phase] || 'Assistant';
       recallContextLabel.textContent = context ? `\u2014 ${context}` : '';
-      recallDot.setAttribute('aria-label', 'Phase: ' + (labels[phase] || 'Recall'));
+      recallDot.setAttribute('aria-label', 'Phase: ' + (labels[phase] || 'Assistant'));
 
       recallWeeklyView.classList.toggle('active', phase === 'weekly');
       if (phase === 'weekly') {
@@ -16536,7 +16532,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           await registerChatListeners();
         } catch (error) {
           console.error('Recall chat listener setup:', error);
-          setRecallProviderNotice('Chat could not start. Close Recall and reopen it to try again.', 'error');
+          setRecallProviderNotice('Chat could not start. Close the Assistant and reopen it to try again.', 'error');
         }
       }
     }
@@ -18518,7 +18514,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             );
           } catch (e) {
             console.error('Open recent artifact:', e);
-            setMdViewerStatus('Could not reopen artifact', 'warning');
+            setMdViewerStatus('Could not reopen draft', 'warning');
           } finally {
             // The strip is re-rendered on a successful open, discarding this
             // button — but on failure it survives, and a permanently disabled
@@ -19429,7 +19425,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       let bypassDiscardPrompt = false;
       if (mdViewer.classList.contains('active') && openArtifactDirty && openArtifactPath) {
         const { ask } = window.__TAURI__.dialog;
-        const discard = await ask('Discard unsaved changes to the current artifact before creating a draft?', { title: 'Unsaved Changes', kind: 'warning' });
+        const discard = await ask('Discard unsaved changes to this draft before creating another?', { title: 'Unsaved Changes', kind: 'warning' });
         if (!discard) return;
         bypassDiscardPrompt = true;
       }
@@ -19457,7 +19453,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!openArtifactPath || openArtifactSaving) return;
       {
         const { ask } = window.__TAURI__.dialog;
-        const restore = await ask('Restore the most recent snapshot for this artifact?\nYour current file contents will be replaced.', { title: 'Revert to Snapshot', kind: 'warning' });
+        const restore = await ask('Restore the most recent snapshot of this draft?\nYour current file contents will be replaced.', { title: 'Revert to Snapshot', kind: 'warning' });
         if (!restore) return;
       }
       openArtifactSaving = true;
@@ -19503,8 +19499,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       try {
         const { open } = window.__TAURI__.dialog;
         const selected = await open({
-          title: 'Open artifact file',
-          filters: [{ name: 'Artifacts', extensions: ['md', 'txt', 'markdown', 'json'] }],
+          title: 'Open draft file',
+          filters: [{ name: 'Drafts', extensions: ['md', 'txt', 'markdown', 'json'] }],
         });
         if (!selected) return;
         const path = Array.isArray(selected) ? selected[0] : selected;

@@ -393,7 +393,7 @@ pub fn commands() -> Vec<Command> {
         },
         Command {
             id: ActionId::AddNote { text: None },
-            title: "Add note to current recording",
+            title: "Add note",
             description: "Insert a timestamped note into the active session",
             keywords: &["annotate", "mark", "highlight", "remember"],
             section: Section::Recording,
@@ -521,7 +521,7 @@ pub fn commands() -> Vec<Command> {
         },
         Command {
             id: ActionId::ShowUpcomingMeetings,
-            title: "Show upcoming meetings",
+            title: "Upcoming meetings",
             description: "Calendar-aware preview of what's next",
             keywords: &["calendar", "next", "upcoming", "schedule"],
             section: Section::Navigation,
@@ -549,7 +549,7 @@ pub fn commands() -> Vec<Command> {
         // ── Search / research ────────────────────────────────────────
         Command {
             id: ActionId::SearchTranscripts { query: None },
-            title: "Search transcripts…",
+            title: "Search meetings…",
             description: "Full-text search across meetings and memos",
             keywords: &["find", "grep", "lookup"],
             section: Section::Search,
@@ -558,7 +558,7 @@ pub fn commands() -> Vec<Command> {
         },
         Command {
             id: ActionId::ResearchTopic { query: None },
-            title: "Research topic…",
+            title: "Research a topic…",
             description: "Cross-meeting research with decisions and follow-ups",
             keywords: &["research", "topic", "cross-meeting"],
             section: Section::Search,
@@ -567,7 +567,7 @@ pub fn commands() -> Vec<Command> {
         },
         Command {
             id: ActionId::FindOpenActionItems,
-            title: "Find open action items",
+            title: "Open action items",
             description: "Unresolved commitments across all meetings",
             keywords: &["action", "todo", "tasks", "followup"],
             section: Section::Search,
@@ -576,7 +576,7 @@ pub fn commands() -> Vec<Command> {
         },
         Command {
             id: ActionId::FindRecentDecisions,
-            title: "Find recent decisions",
+            title: "Recent decisions",
             description: "All recorded decisions, newest first",
             keywords: &["decisions", "choices", "recent"],
             section: Section::Search,
@@ -589,8 +589,8 @@ pub fn commands() -> Vec<Command> {
         // `current_meeting` in PaletteUiContext).
         Command {
             id: ActionId::OpenAssistantWorkspace,
-            title: "Open assistant workspace",
-            description: "Reveal the assistant's current meeting folder",
+            title: "Show Assistant workspace in Finder",
+            description: "Reveal the Assistant's current meeting folder",
             keywords: &["ai", "assistant", "chat", "claude", "workspace"],
             section: Section::Navigation,
             visibility: Visibility::always(),
@@ -598,7 +598,7 @@ pub fn commands() -> Vec<Command> {
         },
         Command {
             id: ActionId::CopyMeetingMarkdown,
-            title: "Copy meeting markdown",
+            title: "Copy meeting as Markdown",
             description: "Copy the current meeting's markdown to clipboard",
             keywords: &["copy", "clipboard", "export"],
             section: Section::Meeting,
