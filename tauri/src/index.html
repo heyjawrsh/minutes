@@ -6696,10 +6696,12 @@
 
       <nav class="settings-tabs" role="tablist" aria-label="Settings sections">
         <button class="settings-tab is-active" role="tab" id="tab-general" aria-selected="true" aria-controls="panel-general" tabindex="0" data-tab="general">General</button>
-        <button class="settings-tab" role="tab" id="tab-capture" aria-selected="false" aria-controls="panel-capture" tabindex="-1" data-tab="capture">Capture</button>
-        <button class="settings-tab" role="tab" id="tab-dictation" aria-selected="false" aria-controls="panel-dictation" tabindex="-1" data-tab="dictation">Dictation</button>
+        <button class="settings-tab" role="tab" id="tab-recording" aria-selected="false" aria-controls="panel-recording" tabindex="-1" data-tab="recording">Recording</button>
         <button class="settings-tab" role="tab" id="tab-transcription" aria-selected="false" aria-controls="panel-transcription" tabindex="-1" data-tab="transcription">Transcription</button>
-        <button class="settings-tab" role="tab" id="tab-ai" aria-selected="false" aria-controls="panel-ai" tabindex="-1" data-tab="ai">AI &amp; Privacy</button>
+        <button class="settings-tab" role="tab" id="tab-dictation" aria-selected="false" aria-controls="panel-dictation" tabindex="-1" data-tab="dictation">Dictation</button>
+        <button class="settings-tab" role="tab" id="tab-ai" aria-selected="false" aria-controls="panel-ai" tabindex="-1" data-tab="ai">Assistant &amp; AI</button>
+        <button class="settings-tab" role="tab" id="tab-privacy" aria-selected="false" aria-controls="panel-privacy" tabindex="-1" data-tab="privacy">Privacy &amp; data</button>
+        <button class="settings-tab" role="tab" id="tab-shortcuts" aria-selected="false" aria-controls="panel-shortcuts" tabindex="-1" data-tab="shortcuts">Shortcuts</button>
         <button class="settings-tab" role="tab" id="tab-advanced" aria-selected="false" aria-controls="panel-advanced" tabindex="-1" data-tab="advanced">Advanced</button>
       </nav>
 
@@ -6750,10 +6752,6 @@
           <button class="btn btn-secondary btn-sm toggle-btn" id="settings-notifications">On</button>
         </div>
         <div class="about-controls">
-          <div class="about-controls-copy">Urgent Coach alerts when the Coach panel is hidden</div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-copilot-notifications">Off</button>
-        </div>
-        <div class="about-controls">
           <div class="about-controls-copy">Play sound cues for start, stop, and complete</div>
           <button class="btn btn-secondary btn-sm toggle-btn" id="settings-cues">On</button>
         </div>
@@ -6761,27 +6759,11 @@
           <div class="about-controls-copy">Open Minutes at login</div>
           <button class="btn btn-secondary btn-sm toggle-btn" id="settings-autostart">Off</button>
         </div>
-        <!-- Quick Thought shortcut (unified recorder) -->
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Memo shortcut</div>
-            <div class="settings-section-inline">
-              <button id="shortcut-recorder-quick_thought"
-                class="btn btn-secondary btn-sm shortcut-recorder-btn settings-shortcut-key"
-                data-slot="quick_thought">&#8984; Shift M</button>
-              <span class="special-key-link settings-hint-link" data-slot="quick_thought">or <u>Caps Lock</u> /
-                <u>fn</u></span>
-            </div>
-            <div class="about-controls-meta" id="shortcut-status-quick_thought">Hold to record a memo, or tap
-              to lock and tap again to stop.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="shortcut-toggle-quick_thought">Off</button>
-        </div>
       </div>
 
       </div><!-- /panel-general -->
 
-      <div class="settings-tab-panel" role="tabpanel" id="panel-capture" data-panel="capture" aria-labelledby="tab-capture">
+      <div class="settings-tab-panel" role="tabpanel" id="panel-recording" data-panel="recording" aria-labelledby="tab-recording">
       <!-- Live Transcript -->
       <div class="settings-section">
         <div class="about-item-title">LIVE TRANSCRIPT</div>
@@ -6797,38 +6779,236 @@
             <div class="about-controls-meta" id="settings-live-backend-detail">Standalone live transcript currently inherits your main transcription engine.</div>
           </div>
         </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Keyboard shortcut</div>
-            <select class="shortcut-select settings-field" id="settings-live-shortcut-select">
-              <option value="CmdOrCtrl+Shift+L">Cmd+Shift+L</option>
-              <option value="CmdOrCtrl+Alt+L">Cmd+Option+L</option>
-              <option value="CmdOrCtrl+Shift+T">Cmd+Shift+T</option>
-            </select>
-            <div class="about-controls-meta">Toggle live transcript on/off from any app.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-live-shortcut">Off</button>
-        </div>
       </div>
 
-      <!-- Command Palette -->
+      <!-- Coach settings start -->
+      <div class="settings-section coach-settings-section" id="settings-coach-section">
+        <div class="coach-section-heading">
+          <div>
+            <div class="coach-kicker">COACH</div>
+            <div class="coach-section-title">A quiet nudge, right when it helps.</div>
+            <div class="coach-section-subtitle">Private live coaching during meetings. Coach listens alongside your recording and never controls it.</div>
+          </div>
+          <button class="coach-info-button" id="settings-coach-info" type="button" aria-haspopup="dialog">How it works</button>
+        </div>
+
+        <div class="about-controls coach-master-row">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Coach</div>
+            <div class="about-controls-meta">Turn live meeting guidance on or off.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-coach-enabled" type="button">Off</button>
+        </div>
+
+        <div id="settings-coach-config" class="coach-config-body">
+          <div class="about-controls">
+            <div class="about-controls-group">
+              <label class="about-controls-copy" for="settings-coach-goal">Meeting goal <span class="about-controls-meta">(optional)</span></label>
+              <div class="about-controls-meta">What do you want out of this meeting?</div>
+              <input type="text" id="settings-coach-goal" class="settings-field" maxlength="500" placeholder="e.g. Agree on the next step" autocomplete="off">
+            </div>
+          </div>
+
+          <fieldset class="about-controls" id="settings-coach-models">
+            <legend class="about-controls-copy">AI model</legend>
+            <div class="coach-model-grid" id="settings-coach-model-grid">
+              <label class="coach-choice">
+                <input type="radio" name="settings-coach-model" value="on-device" checked>
+                <span class="coach-choice-copy">
+                  <span class="coach-choice-title">On-device (private, recommended)</span>
+                  <span class="coach-choice-meta">Meeting speech stays on this Mac.</span>
+                </span>
+              </label>
+              <label class="coach-choice is-hidden" id="settings-coach-cloud-choice">
+                <input type="radio" name="settings-coach-model" value="cloud">
+                <span class="coach-choice-copy">
+                  <span class="coach-choice-title">Cloud</span>
+                  <span class="coach-choice-meta">Uses the connection you already configured.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="coach-setup-card is-hidden" id="settings-coach-setup" role="status" aria-live="polite">
+            <div class="coach-setup-title">One quick setup</div>
+            <div class="coach-setup-copy" id="settings-coach-setup-copy">Coach needs a small on-device AI model to run privately on your Mac.</div>
+            <div class="coach-setup-actions">
+              <button class="btn btn-primary btn-sm" type="button" data-coach-setup>Set up on-device</button>
+              <button class="btn btn-secondary btn-sm is-hidden" type="button" data-coach-use-cloud>Use cloud</button>
+              <button class="coach-info-button" type="button" data-coach-download>Download it yourself</button>
+            </div>
+            <div class="coach-setup-copy" data-coach-setup-status></div>
+          </div>
+
+          <div class="coach-cloud-note is-hidden" id="settings-coach-cloud-note" role="status"></div>
+
+          <div class="about-controls">
+            <div class="about-controls-group">
+              <label class="about-controls-copy" for="settings-coach-arming">When recording starts</label>
+              <select id="settings-coach-arming" class="settings-field">
+                <option value="automatic">Start Coach automatically when I record</option>
+                <option value="ask-each-meeting">Ask each meeting</option>
+                <option value="off">Off</option>
+              </select>
+              <div class="about-controls-meta">Off keeps manual starts available.</div>
+            </div>
+          </div>
+
+          <div class="about-controls">
+            <div class="about-controls-group">
+              <div class="about-controls-copy">Only alert me when it matters</div>
+              <div class="about-controls-meta">Keep routine suggestions quiet; show critical coaching alerts.</div>
+            </div>
+            <button class="btn btn-secondary btn-sm toggle-btn" id="settings-coach-critical" type="button">On</button>
+          </div>
+
+          <div class="coach-save-status" id="settings-coach-save-status" role="status" aria-live="polite"></div>
+          <details class="coach-advanced">
+            <summary>Advanced</summary>
+            <div class="coach-advanced-copy" id="settings-coach-advanced">Provider and model details will appear here.</div>
+          </details>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-copy">Urgent Coach alerts when the Coach panel is hidden</div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-copilot-notifications">Off</button>
+        </div>
+      </div>
+      <!-- Coach settings end -->
+
+      <!-- Call Detection -->
       <div class="settings-section">
-        <div class="about-item-title">COMMAND PALETTE</div>
+        <div class="about-item-title">CALL DETECTION</div>
+        <div class="about-controls">
+          <div class="about-controls-copy">Detect calls automatically</div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection">On</button>
+        </div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Keyboard shortcut</div>
-            <select class="shortcut-select settings-field" id="settings-palette-shortcut-select">
-              <option value="CmdOrCtrl+Shift+K">Cmd+Shift+K</option>
-              <option value="CmdOrCtrl+Shift+O">Cmd+Shift+O</option>
-              <option value="CmdOrCtrl+Shift+U">Cmd+Shift+U</option>
-            </select>
-            <div class="about-controls-meta" id="settings-palette-shortcut-status">Open the Minutes command palette from any app.</div>
+            <div class="about-controls-copy">Polling interval</div>
+            <div class="about-controls-meta">How often to check for active calls (seconds).</div>
+            <input type="number" id="settings-call-detection-polling-interval" min="1" class="settings-field">
           </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-palette-shortcut">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Cooldown</div>
+            <div class="about-controls-meta">Minutes to wait before re-triggering call detection.</div>
+            <input type="number" id="settings-call-detection-cooldown" min="0" class="settings-field">
+          </div>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Google Meet detection (experimental)</div>
+            <div class="about-controls-meta">Opt-in browser integration for Meet in Chrome/Safari. Uses stronger
+              meeting-URL matching, may require macOS browser automation permission, and backs off after failures
+              instead of probing every second.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection-google-meet">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Microsoft Teams (web) detection (experimental)</div>
+            <div class="about-controls-meta">Opt-in browser integration for Teams meetings in Arc, Chrome, and Safari.
+              Matches Teams meeting URLs only (chat/calendar pages are ignored). Requires macOS browser automation
+              permission on first use, and backs off after failures instead of probing every second.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection-teams-web">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Record detected calls automatically</div>
+            <div class="about-controls-meta">Opt in to recording your microphone and Mac audio for selected desktop apps. Requires call detection and native capture access. Stop at any time. If consent confirmation is required, start manually.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-auto-record">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Apps to record automatically</div>
+            <div class="about-controls-meta">Other apps and browser calls keep their manual start.</div>
+            <div class="about-controls-copy"><label><input type="checkbox" id="settings-call-auto-teams"> Microsoft Teams desktop</label></div>
+            <div class="about-controls-copy"><label><input type="checkbox" id="settings-call-auto-zoom"> Zoom desktop</label></div>
+            <div class="about-controls-meta" id="settings-call-auto-status" role="status"></div>
+          </div>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Stop when call ends</div>
+            <div class="about-controls-meta">When the detected call app exits mid-recording, show a countdown prompt
+              with Stop now and Keep recording. Applies to automatic recordings and recordings started from the call-detection banner.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection-stop-when-call-ends">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Auto-stop countdown</div>
+            <div class="about-controls-meta">Seconds to wait before stopping when the call ends.</div>
+            <input type="number" id="settings-call-detection-countdown-secs" min="1" class="settings-field">
+          </div>
         </div>
       </div>
 
-      </div><!-- /panel-capture -->
+      <!-- Calendar -->
+      <div class="settings-section" id="settings-calendar-section">
+        <div class="about-item-title">CALENDAR</div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Only suggest events with other people or a meeting link</div>
+            <div class="about-controls-meta">Off by default, because events you add yourself for in-person meetings often have no invitees. This only changes upcoming-meeting suggestions and which event a recording is matched to. You can always record.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-calendar-require-attendees">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Hidden calendars</div>
+            <div class="about-controls-meta">Events from these calendars are never suggested. Add one from the × on a suggestion.</div>
+            <div class="settings-chip-list" id="settings-calendar-hidden-calendars"></div>
+          </div>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Hidden events</div>
+            <div class="about-controls-meta">Events whose title contains any of these are never suggested.</div>
+            <div class="settings-chip-list" id="settings-calendar-hidden-titles"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="about-item-title">CONSENT</div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Recording consent reminder</div>
+            <div class="about-controls-meta">Shows a local-transcription disclosure before recording a meeting. A disclosure aid, not advice; make sure everyone present has agreed where required.</div>
+            <select id="settings-consent-mode" class="settings-field">
+              <option value="off">Off</option>
+              <option value="remind">Remind me (default)</option>
+              <option value="require">Require confirmation (CLI blocks; app reminds for now)</option>
+            </select>
+          </div>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Disclosure script</div>
+            <input type="text" id="settings-consent-disclosure" class="settings-field" spellcheck="false">
+          </div>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Default recording basis</div>
+            <div class="about-controls-meta">Saved with each meeting unless you choose a different basis when you record.</div>
+            <select id="settings-consent-default-basis" class="settings-field">
+              <option value="">Unattested unless supplied</option>
+              <option value="verbal_all_parties">Verbal, all parties</option>
+              <option value="notice_in_invite">Notice in invite</option>
+              <option value="recorded_disclosed">Recording disclosed</option>
+              <option value="na">Not applicable</option>
+              <option value="unattested">Unattested</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /panel-recording -->
 
       <div class="settings-tab-panel" role="tabpanel" id="panel-transcription" data-panel="transcription" aria-labelledby="tab-transcription">
       <!-- Transcription -->
@@ -7002,7 +7182,7 @@
 
       </div><!-- /panel-transcription -->
 
-<div class="settings-tab-panel" role="tabpanel" id="panel-dictation" data-panel="dictation" aria-labelledby="tab-dictation"><div class="dictation-page"><h2>Dictation</h2><p class="dictation-intro">Speak in any app. Your words stay on this device.</p><nav class="dictation-nav" role="tablist" aria-label="Dictation preferences"><button role="tab" id="dictation-nav-writing" aria-controls="dictation-pane-writing" aria-selected="true" data-dictation-pane="writing">Writing</button><button role="tab" id="dictation-nav-words" aria-controls="dictation-pane-words" aria-selected="false" tabindex="-1" data-dictation-pane="words">Words &amp; snippets</button><button role="tab" id="dictation-nav-mic" aria-controls="dictation-pane-mic" aria-selected="false" tabindex="-1" data-dictation-pane="mic">Microphone</button><button role="tab" id="dictation-nav-recent" aria-controls="dictation-pane-recent" aria-selected="false" tabindex="-1" data-dictation-pane="recent">Recent text</button></nav><div id="dictation-save-status" class="dictation-save-status" role="status" aria-live="polite"></div><div id="dictation-pane-writing" class="dictation-pane" role="tabpanel" aria-labelledby="dictation-nav-writing">      <!-- Dictation -->
+      <div class="settings-tab-panel" role="tabpanel" id="panel-dictation" data-panel="dictation" aria-labelledby="tab-dictation"><div class="dictation-page"><h2>Dictation</h2><p class="dictation-intro">Speak in any app. Your words stay on this device.</p><nav class="dictation-nav" role="tablist" aria-label="Dictation preferences"><button role="tab" id="dictation-nav-writing" aria-controls="dictation-pane-writing" aria-selected="true" data-dictation-pane="writing">Writing</button><button role="tab" id="dictation-nav-words" aria-controls="dictation-pane-words" aria-selected="false" tabindex="-1" data-dictation-pane="words">Words &amp; snippets</button><button role="tab" id="dictation-nav-mic" aria-controls="dictation-pane-mic" aria-selected="false" tabindex="-1" data-dictation-pane="mic">Microphone</button><button role="tab" id="dictation-nav-recent" aria-controls="dictation-pane-recent" aria-selected="false" tabindex="-1" data-dictation-pane="recent">Recent text</button></nav><div id="dictation-save-status" class="dictation-save-status" role="status" aria-live="polite"></div><div id="dictation-pane-writing" class="dictation-pane" role="tabpanel" aria-labelledby="dictation-nav-writing">      <!-- Dictation -->
       <section class="dictation-readiness" aria-labelledby="dictation-ready-title">
         <div class="dictation-ready-heading"><div><h3 id="dictation-ready-title">Checking dictation…</h3><p id="dictation-ready-summary" class="dictation-note" role="status" aria-live="polite">Checking your shortcut, microphone and model on this device.</p></div><div class="dictation-ready-controls"><button id="dictation-ready-toggle" type="button" class="btn btn-secondary btn-sm" aria-controls="dictation-ready-body" aria-expanded="true">Hide checks</button><button id="dictation-ready-refresh" type="button" class="btn btn-secondary btn-sm">Check again</button></div></div>
         <div id="dictation-ready-body"><div id="dictation-ready-rows" class="dictation-ready-rows" aria-busy="true"></div></div>
@@ -7185,6 +7365,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         </div>
 
 </div></div></div>
+
       <div class="settings-tab-panel" role="tabpanel" id="panel-ai" data-panel="ai" aria-labelledby="tab-ai">
       <!-- Search by meaning -->
       <div class="settings-section">
@@ -7198,95 +7379,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         </div>
         <div class="about-controls-meta" id="settings-semantic-status" role="status" hidden></div>
       </div>
-      <!-- Coach settings start -->
-      <div class="settings-section coach-settings-section" id="settings-coach-section">
-        <div class="coach-section-heading">
-          <div>
-            <div class="coach-kicker">COACH</div>
-            <div class="coach-section-title">A quiet nudge, right when it helps.</div>
-            <div class="coach-section-subtitle">Private live coaching during meetings. Coach listens alongside your recording and never controls it.</div>
-          </div>
-          <button class="coach-info-button" id="settings-coach-info" type="button" aria-haspopup="dialog">How it works</button>
-        </div>
-
-        <div class="about-controls coach-master-row">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Coach</div>
-            <div class="about-controls-meta">Turn live meeting guidance on or off.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-coach-enabled" type="button">Off</button>
-        </div>
-
-        <div id="settings-coach-config" class="coach-config-body">
-          <div class="about-controls">
-            <div class="about-controls-group">
-              <label class="about-controls-copy" for="settings-coach-goal">Meeting goal <span class="about-controls-meta">(optional)</span></label>
-              <div class="about-controls-meta">What do you want out of this meeting?</div>
-              <input type="text" id="settings-coach-goal" class="settings-field" maxlength="500" placeholder="e.g. Agree on the next step" autocomplete="off">
-            </div>
-          </div>
-
-          <fieldset class="about-controls" id="settings-coach-models">
-            <legend class="about-controls-copy">AI model</legend>
-            <div class="coach-model-grid" id="settings-coach-model-grid">
-              <label class="coach-choice">
-                <input type="radio" name="settings-coach-model" value="on-device" checked>
-                <span class="coach-choice-copy">
-                  <span class="coach-choice-title">On-device (private, recommended)</span>
-                  <span class="coach-choice-meta">Meeting speech stays on this Mac.</span>
-                </span>
-              </label>
-              <label class="coach-choice is-hidden" id="settings-coach-cloud-choice">
-                <input type="radio" name="settings-coach-model" value="cloud">
-                <span class="coach-choice-copy">
-                  <span class="coach-choice-title">Cloud</span>
-                  <span class="coach-choice-meta">Uses the connection you already configured.</span>
-                </span>
-              </label>
-            </div>
-          </fieldset>
-
-          <div class="coach-setup-card is-hidden" id="settings-coach-setup" role="status" aria-live="polite">
-            <div class="coach-setup-title">One quick setup</div>
-            <div class="coach-setup-copy" id="settings-coach-setup-copy">Coach needs a small on-device AI model to run privately on your Mac.</div>
-            <div class="coach-setup-actions">
-              <button class="btn btn-primary btn-sm" type="button" data-coach-setup>Set up on-device</button>
-              <button class="btn btn-secondary btn-sm is-hidden" type="button" data-coach-use-cloud>Use cloud</button>
-              <button class="coach-info-button" type="button" data-coach-download>Download it yourself</button>
-            </div>
-            <div class="coach-setup-copy" data-coach-setup-status></div>
-          </div>
-
-          <div class="coach-cloud-note is-hidden" id="settings-coach-cloud-note" role="status"></div>
-
-          <div class="about-controls">
-            <div class="about-controls-group">
-              <label class="about-controls-copy" for="settings-coach-arming">When recording starts</label>
-              <select id="settings-coach-arming" class="settings-field">
-                <option value="automatic">Start Coach automatically when I record</option>
-                <option value="ask-each-meeting">Ask each meeting</option>
-                <option value="off">Off</option>
-              </select>
-              <div class="about-controls-meta">Off keeps manual starts available.</div>
-            </div>
-          </div>
-
-          <div class="about-controls">
-            <div class="about-controls-group">
-              <div class="about-controls-copy">Only alert me when it matters</div>
-              <div class="about-controls-meta">Keep routine suggestions quiet; show critical coaching alerts.</div>
-            </div>
-            <button class="btn btn-secondary btn-sm toggle-btn" id="settings-coach-critical" type="button">On</button>
-          </div>
-
-          <div class="coach-save-status" id="settings-coach-save-status" role="status" aria-live="polite"></div>
-          <details class="coach-advanced">
-            <summary>Advanced</summary>
-            <div class="coach-advanced-copy" id="settings-coach-advanced">Provider and model details will appear here.</div>
-          </details>
-        </div>
-      </div>
-      <!-- Coach settings end -->
 
       <!-- Summarization -->
       <div class="settings-section">
@@ -7391,104 +7483,41 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         </div>
       </div>
 
-      <!-- Calendar -->
-      <div class="settings-section" id="settings-calendar-section">
-        <div class="about-item-title">CALENDAR</div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Only suggest events with other people or a meeting link</div>
-            <div class="about-controls-meta">Off by default, because events you add yourself for in-person meetings often have no invitees. This only changes upcoming-meeting suggestions and which event a recording is matched to. You can always record.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-calendar-require-attendees">Off</button>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Hidden calendars</div>
-            <div class="about-controls-meta">Events from these calendars are never suggested. Add one from the × on a suggestion.</div>
-            <div class="settings-chip-list" id="settings-calendar-hidden-calendars"></div>
-          </div>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Hidden events</div>
-            <div class="about-controls-meta">Events whose title contains any of these are never suggested.</div>
-            <div class="settings-chip-list" id="settings-calendar-hidden-titles"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Call Detection -->
+      <!-- Assistant -->
       <div class="settings-section">
-        <div class="about-item-title">CALL DETECTION</div>
-        <div class="about-controls">
-          <div class="about-controls-copy">Detect calls automatically</div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection">On</button>
-        </div>
+        <div class="about-item-title">ASSISTANT</div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Polling interval</div>
-            <div class="about-controls-meta">How often to check for active calls (seconds).</div>
-            <input type="number" id="settings-call-detection-polling-interval" min="1" class="settings-field">
+            <div class="about-controls-copy">App the Assistant uses</div>
+            <select id="settings-agent" class="settings-field">
+            </select>
+            <div class="about-controls-meta" id="settings-agent-status"></div>
           </div>
         </div>
+        <div class="about-controls" id="settings-skip-permissions-row">
+          <div class="about-controls-copy">Auto-approve all tool calls</div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-skip-permissions">Off</button>
+        </div>
+        <div class="about-controls-meta settings-compact-meta" id="settings-skip-permissions-hint"></div>
         <div class="about-controls">
           <div class="about-controls-group">
-            <div class="about-controls-copy">Cooldown</div>
-            <div class="about-controls-meta">Minutes to wait before re-triggering call detection.</div>
-            <input type="number" id="settings-call-detection-cooldown" min="0" class="settings-field">
+            <div class="about-controls-copy">Extra launch flags</div>
+            <div class="about-controls-meta">Additional CLI arguments passed when starting the agent</div>
+            <input type="text" id="settings-agent-args" placeholder="e.g. --model sonnet" class="settings-field">
+            <div class="about-controls-meta settings-meta-inline" id="settings-agent-args-status"></div>
+            <div class="about-controls-meta" id="settings-agent-args-help"></div>
           </div>
         </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Google Meet detection (experimental)</div>
-            <div class="about-controls-meta">Opt-in browser integration for Meet in Chrome/Safari. Uses stronger
-              meeting-URL matching, may require macOS browser automation permission, and backs off after failures
-              instead of probing every second.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection-google-meet">Off</button>
+        <div class="about-controls is-hidden" id="settings-recall-mode-row">
+          <div class="about-controls-copy">Use Terminal instead</div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-recall-dev-mode">Off</button>
         </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Microsoft Teams (web) detection (experimental)</div>
-            <div class="about-controls-meta">Opt-in browser integration for Teams meetings in Arc, Chrome, and Safari.
-              Matches Teams meeting URLs only (chat/calendar pages are ignored). Requires macOS browser automation
-              permission on first use, and backs off after failures instead of probing every second.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection-teams-web">Off</button>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Record detected calls automatically</div>
-            <div class="about-controls-meta">Opt in to recording your microphone and Mac audio for selected desktop apps. Requires call detection and native capture access. Stop at any time. If consent confirmation is required, start manually.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-auto-record">Off</button>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Apps to record automatically</div>
-            <div class="about-controls-meta">Other apps and browser calls keep their manual start.</div>
-            <div class="about-controls-copy"><label><input type="checkbox" id="settings-call-auto-teams"> Microsoft Teams desktop</label></div>
-            <div class="about-controls-copy"><label><input type="checkbox" id="settings-call-auto-zoom"> Zoom desktop</label></div>
-            <div class="about-controls-meta" id="settings-call-auto-status" role="status"></div>
-          </div>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Stop when call ends</div>
-            <div class="about-controls-meta">When the detected call app exits mid-recording, show a countdown prompt
-              with Stop now and Keep recording. Applies to automatic recordings and recordings started from the call-detection banner.</div>
-          </div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-call-detection-stop-when-call-ends">Off</button>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Auto-stop countdown</div>
-            <div class="about-controls-meta">Seconds to wait before stopping when the call ends.</div>
-            <input type="number" id="settings-call-detection-countdown-secs" min="1" class="settings-field">
-          </div>
-        </div>
+        <div class="about-controls-meta settings-compact-meta is-hidden" id="settings-recall-mode-hint">Chat is the simpler experience. Terminal keeps the assistant's full controls for power users.</div>
       </div>
 
+      </div><!-- /panel-ai -->
+
+      <div class="settings-tab-panel" role="tabpanel" id="panel-privacy" data-panel="privacy" aria-labelledby="tab-privacy">
       <!-- Privacy -->
       <div class="settings-section">
         <div class="about-item-title">PRIVACY</div>
@@ -7498,37 +7527,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             <div class="about-controls-meta">Also keeps them out of screenshots. Coach stays hidden either way.</div>
           </div>
           <button class="btn btn-secondary btn-sm toggle-btn" id="settings-screen-share">On</button>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Recording consent reminder</div>
-            <div class="about-controls-meta">Shows a local-transcription disclosure before recording a meeting. A disclosure aid, not advice; make sure everyone present has agreed where required.</div>
-            <select id="settings-consent-mode" class="settings-field">
-              <option value="off">Off</option>
-              <option value="remind">Remind me (default)</option>
-              <option value="require">Require confirmation (CLI blocks; app reminds for now)</option>
-            </select>
-          </div>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Disclosure script</div>
-            <input type="text" id="settings-consent-disclosure" class="settings-field" spellcheck="false">
-          </div>
-        </div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Default recording basis</div>
-            <div class="about-controls-meta">Saved with each meeting unless you choose a different basis when you record.</div>
-            <select id="settings-consent-default-basis" class="settings-field">
-              <option value="">Unattested unless supplied</option>
-              <option value="verbal_all_parties">Verbal, all parties</option>
-              <option value="notice_in_invite">Notice in invite</option>
-              <option value="recorded_disclosed">Recording disclosed</option>
-              <option value="na">Not applicable</option>
-              <option value="unattested">Unattested</option>
-            </select>
-          </div>
         </div>
         <div class="about-controls">
           <div class="about-controls-group">
@@ -7603,41 +7601,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         </div>
       </div>
 
-      <!-- Recall Agent -->
-      <div class="settings-section">
-        <div class="about-item-title">RECALL AGENT</div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">App the Assistant uses</div>
-            <select id="settings-agent" class="settings-field">
-            </select>
-            <div class="about-controls-meta" id="settings-agent-status"></div>
-          </div>
-        </div>
-        <div class="about-controls" id="settings-skip-permissions-row">
-          <div class="about-controls-copy">Auto-approve all tool calls</div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-skip-permissions">Off</button>
-        </div>
-        <div class="about-controls-meta settings-compact-meta" id="settings-skip-permissions-hint"></div>
-        <div class="about-controls">
-          <div class="about-controls-group">
-            <div class="about-controls-copy">Extra launch flags</div>
-            <div class="about-controls-meta">Additional CLI arguments passed when starting the agent</div>
-            <input type="text" id="settings-agent-args" placeholder="e.g. --model sonnet" class="settings-field">
-            <div class="about-controls-meta settings-meta-inline" id="settings-agent-args-status"></div>
-            <div class="about-controls-meta" id="settings-agent-args-help"></div>
-          </div>
-        </div>
-        <div class="about-controls is-hidden" id="settings-recall-mode-row">
-          <div class="about-controls-copy">Use Terminal instead</div>
-          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-recall-dev-mode">Off</button>
-        </div>
-        <div class="about-controls-meta settings-compact-meta is-hidden" id="settings-recall-mode-hint">Chat is the simpler experience. Terminal keeps the assistant's full controls for power users.</div>
-      </div>
-
-      </div><!-- /panel-ai -->
-
-      <div class="settings-tab-panel" role="tabpanel" id="panel-advanced" data-panel="advanced" aria-labelledby="tab-advanced">
       <!-- Storage -->
       <div class="settings-section settings-section-tight">
         <div class="about-item-title">STORAGE</div>
@@ -7646,6 +7609,57 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         </div>
       </div>
 
+      </div><!-- /panel-privacy -->
+
+      <div class="settings-tab-panel" role="tabpanel" id="panel-shortcuts" data-panel="shortcuts" aria-labelledby="tab-shortcuts">
+      <div class="settings-section">
+        <div class="about-item-title">SHORTCUTS</div>
+        <!-- Quick Thought shortcut (unified recorder) -->
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Memo shortcut</div>
+            <div class="settings-section-inline">
+              <button id="shortcut-recorder-quick_thought"
+                class="btn btn-secondary btn-sm shortcut-recorder-btn settings-shortcut-key"
+                data-slot="quick_thought">&#8984; Shift M</button>
+              <span class="special-key-link settings-hint-link" data-slot="quick_thought">or <u>Caps Lock</u> /
+                <u>fn</u></span>
+            </div>
+            <div class="about-controls-meta" id="shortcut-status-quick_thought">Hold to record a memo, or tap
+              to lock and tap again to stop.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="shortcut-toggle-quick_thought">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Live transcript</div>
+            <select class="shortcut-select settings-field" id="settings-live-shortcut-select">
+              <option value="CmdOrCtrl+Shift+L">Cmd+Shift+L</option>
+              <option value="CmdOrCtrl+Alt+L">Cmd+Option+L</option>
+              <option value="CmdOrCtrl+Shift+T">Cmd+Shift+T</option>
+            </select>
+            <div class="about-controls-meta">Toggle live transcript on/off from any app.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-live-shortcut">Off</button>
+        </div>
+        <div class="about-controls">
+          <div class="about-controls-group">
+            <div class="about-controls-copy">Command palette</div>
+            <select class="shortcut-select settings-field" id="settings-palette-shortcut-select">
+              <option value="CmdOrCtrl+Shift+K">Cmd+Shift+K</option>
+              <option value="CmdOrCtrl+Shift+O">Cmd+Shift+O</option>
+              <option value="CmdOrCtrl+Shift+U">Cmd+Shift+U</option>
+            </select>
+            <div class="about-controls-meta" id="settings-palette-shortcut-status">Open the Minutes command palette from any app.</div>
+          </div>
+          <button class="btn btn-secondary btn-sm toggle-btn" id="settings-palette-shortcut">Off</button>
+        </div>
+        <div class="about-controls-meta">Dictation shortcuts are in the Dictation tab.</div>
+      </div>
+
+      </div><!-- /panel-shortcuts -->
+
+      <div class="settings-tab-panel" role="tabpanel" id="panel-advanced" data-panel="advanced" aria-labelledby="tab-advanced">
       <!-- Diagnostics (Readiness + Recovery moved from header) -->
       <div class="settings-section">
         <div class="about-item-title">DIAGNOSTICS</div>
@@ -13198,7 +13212,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             .catch((e) => showActionToast(`Could not hide it: ${e?.message || e}`, { tone: 'error' })),
         });
       }
-      items.push({ item: 'Separator' }, { text: 'Calendar settings…', action: () => openSettings({ tab: 'ai', section: 'settings-calendar-section' }) });
+      items.push({ item: 'Separator' }, { text: 'Calendar settings…', action: () => openSettings({ tab: 'recording', section: 'settings-calendar-section' }) });
       const button = document.getElementById('btn-dismiss-upcoming');
       const rect = button.getBoundingClientRect();
       const menu = await Menu.new({ items });
@@ -13397,8 +13411,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         console.error('Remember Coach onboarding:', error);
       }
       if (openCoachSettings) {
-        openSettings();
-        document.getElementById('tab-ai').click();
+        openSettings({ tab: 'recording', section: 'settings-coach-section' });
         document.getElementById('settings-coach-enabled').focus();
       }
     }
