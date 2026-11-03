@@ -11422,16 +11422,34 @@ fn recall_focused_meeting_context(
     Ok((section, snapshot))
 }
 
+/// The meeting a Chat question is about. The Assistant pane sends its scope
+/// with each question: a path for one meeting, an empty string for all
+/// meetings. Older callers send nothing and get the meeting open in the
+/// detail view, as before. The path is still authorized by
+/// `recall_focused_meeting_context` before anything is read.
+fn recall_chat_scope_path(
+    explicit: Option<&str>,
+    workspace_current: Option<String>,
+) -> Option<String> {
+    match explicit {
+        Some(path) if path.trim().is_empty() => None,
+        Some(path) => Some(path.to_string()),
+        None => workspace_current,
+    }
+}
+
 fn collect_recall_agent_safe_context(
     message: &str,
     config: &Config,
+    scope_path: Option<&str>,
 ) -> Result<RecallAgentSafeContext, String> {
     let mut sections = Vec::new();
     let mut sources = Vec::new();
 
-    if let Some(raw_path) =
-        load_recall_workspace_state_from(&recall_workspace_state_path()).current_meeting_path
-    {
+    if let Some(raw_path) = recall_chat_scope_path(
+        scope_path,
+        load_recall_workspace_state_from(&recall_workspace_state_path()).current_meeting_path,
+    ) {
         let (section, snapshot) = recall_focused_meeting_context(Path::new(&raw_path), config)?;
         push_unique_recall_source(&mut sources, &snapshot)?;
         sections.push(section);
@@ -12249,6 +12267,7 @@ pub async fn cmd_recall_chat_send(
     app: tauri::AppHandle,
     state: tauri::State<'_, AppState>,
     message: String,
+    meeting_path: Option<String>,
 ) -> Result<(), String> {
     use std::io::{BufRead, BufReader, Read};
 
@@ -12284,7 +12303,8 @@ pub async fn cmd_recall_chat_send(
     };
 
     // ── Step 1: inject meeting context ────────────────────────────────────────
-    let safe_context = collect_recall_agent_safe_context(&message, &config)?;
+    let safe_context =
+        collect_recall_agent_safe_context(&message, &config, meeting_path.as_deref())?;
     let screen_context = current_screen_context_prompt();
     let enriched_message = format!(
         "{}{}User question: {}",
@@ -15179,6 +15199,22 @@ mod tests {
             html.contains("await invoke('cmd_prepare_recall_terminal_meeting', { meetingPath });")
         );
         assert!(html.contains("No meeting context was read"));
+    }
+
+    #[test]
+    fn recall_chat_scope_prefers_the_assistant_scope_over_the_open_meeting() {
+        let open = Some("/m/open.md".to_string());
+        assert_eq!(
+            recall_chat_scope_path(Some("/m/scoped.md"), open.clone()).as_deref(),
+            Some("/m/scoped.md")
+        );
+        assert_eq!(recall_chat_scope_path(Some(""), open.clone()), None);
+        assert_eq!(recall_chat_scope_path(Some("  "), open.clone()), None);
+        assert_eq!(
+            recall_chat_scope_path(None, open).as_deref(),
+            Some("/m/open.md")
+        );
+        assert_eq!(recall_chat_scope_path(None, None), None);
     }
 
     #[test]
