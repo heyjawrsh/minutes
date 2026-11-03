@@ -102,7 +102,8 @@ test('completed meetings lead with decisions and next steps without losing speak
   const ctx = context({
     document: { createElement: tag => new Element(tag) },
     detailTitle: new Element('div'), detailMeta: new Element('div'), detailScroll: scroll,
-    detailOverlay: new Element('div'), activeSearchQuery: '',
+    detailOverlay: new Element('div'), weeklyRow: { removeAttribute() {} }, arrangeDetailTabs: () => {}, markOpenMeetingRow: () => {}, syncNarrowLayout: () => {},
+    activeSearchQuery: '',
     formatDetailDate: date => date,
     setHighlightedText: (element, text) => { element.textContent = text; },
     renderMarkdownToElement: (element, text) => { element.textContent = text; },

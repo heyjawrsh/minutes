@@ -3736,7 +3736,7 @@ mod tray_activity_tests {
             ) && index_html.contains(
                 "background: var(--capture-tint);\n      color: var(--capture);",
             ) && index_html.contains(
-                "html[data-platform=\"macos\"] .header .status-pill.recording {\n      background: var(--capture);",
+                "html[data-platform=\"macos\"] .top-bar .status-pill.recording {\n      background: var(--capture);",
             ),
             "compact recorder states should share the same capture semantics"
         );
