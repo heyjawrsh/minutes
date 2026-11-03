@@ -217,7 +217,10 @@ try {
   await page.evaluate(code => {
     const original = new DOMParser().parseFromString(source, 'text/html');
     const panel = document.getElementById('recall-panel');
-    for (const selector of ['.app-left', '#btn-sidebar-expand', '#split-handle']) {
+    // The list toggle, Record and Assistant live in the window-wide top bar;
+    // the meeting pane sits between the list and the split handle.
+    for (const selector of ['#top-bar', '.app-left', '#detail-overlay', '#btn-sidebar-expand', '#split-handle']) {
+      if (document.querySelector(selector)) continue;
       document.body.insertBefore(document.importNode(original.querySelector(selector), true), panel);
     }
     const documentPane = document.importNode(original.getElementById('md-viewer'), true);
@@ -228,6 +231,7 @@ try {
     let sidebarAutoCollapsed = false;
     let userExpandedSidebarThisSession = false;
     const sidebarCollapseButton = document.getElementById('btn-sidebar-collapse');
+    const detailOverlay = document.getElementById('detail-overlay');
     const policy = eval('(function(){' + code + ';return {syncNarrowLayout,applySidebarCollapsed};})()');
     window.fixture.syncLayout = policy.syncNarrowLayout;
     window.fixture.collapseSidebar = policy.applySidebarCollapsed;
