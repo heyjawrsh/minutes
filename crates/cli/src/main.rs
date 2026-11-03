@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use chrono::{Local, TimeZone};
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
 use minutes_core::apple_speech::{
     self, AppleSpeechBenchmarkArtifactPaths, AppleSpeechBenchmarkRequest,
 };
@@ -325,6 +325,188 @@ struct Cli {
     command: Commands,
 }
 
+// Only membership and order live here; descriptions and aliases come from clap.
+const COMMAND_GROUPS: &[(&str, &[&str])] = &[
+    (
+        "Record",
+        &[
+            "record",
+            "stop",
+            "note",
+            "live",
+            "sensitive",
+            "extend",
+            "mic-toggle",
+            "dictate",
+        ],
+    ),
+    (
+        "Meetings",
+        &[
+            "list",
+            "get",
+            "search",
+            "delete",
+            "export",
+            "import",
+            "process",
+            "transcribe",
+            "resummarize",
+            "template",
+            "clean",
+            "redo-speaker-mapping",
+            "ingest",
+        ],
+    ),
+    (
+        "Insights",
+        &[
+            "actions",
+            "insights",
+            "commitments",
+            "consistency",
+            "research",
+            "people",
+            "person",
+        ],
+    ),
+    (
+        "Assistant & Coach",
+        &[
+            "coach",
+            "transcript",
+            "context",
+            #[cfg(feature = "voice-live")]
+            "talk",
+        ],
+    ),
+    ("People & voices", &["voice", "confirm", "vocabulary"]),
+    (
+        "Setup & status",
+        &[
+            "setup", "health", "status", "jobs", "devices", "logs", "paths", "storage", "cleanup",
+            "service", "watch", "vault", "semantic", "automate",
+        ],
+    ),
+    (
+        "Developer",
+        &[
+            "recover-stem",
+            "apple-speech",
+            "capabilities",
+            "schema",
+            "events",
+            "agent-annotate",
+            "qmd",
+            "demo",
+            "dashboard",
+        ],
+    ),
+];
+
+fn cli_command() -> clap::Command {
+    use std::fmt::Write as _;
+
+    let command = Cli::command();
+    let styles = command.get_styles();
+    let heading = styles.get_header();
+    let literal = styles.get_literal();
+    let hint = styles.get_context();
+    let width = COMMAND_GROUPS
+        .iter()
+        .flat_map(|(_, names)| *names)
+        .map(|name| name.len())
+        .max()
+        .unwrap_or(0);
+    let mut template =
+        String::from("{before-help}{about-with-newline}\n{usage-heading} {usage}\n\n");
+    for (group, names) in COMMAND_GROUPS {
+        writeln!(template, "{heading}{group}:{heading:#}").unwrap();
+        for name in *names {
+            let subcommand = command
+                .find_subcommand(name)
+                .expect("grouped command exists");
+            let name = subcommand.get_name();
+            let about = subcommand
+                .get_about()
+                .map(|about| about.ansi().to_string())
+                .unwrap_or_default();
+            write!(template, "  {literal}{name:width$}{literal:#}  {about}").unwrap();
+            let aliases: Vec<_> = subcommand.get_visible_aliases().collect();
+            if !aliases.is_empty() {
+                write!(template, " {hint}[alias: {}]{hint:#}", aliases.join(", ")).unwrap();
+            }
+            template.push('\n');
+        }
+        template.push('\n');
+    }
+    writeln!(template, "{heading}Options:{heading:#}").unwrap();
+    template.push_str("{options}{after-help}");
+    command.help_template(template)
+}
+
+/// Decide whether a legacy invocation warrants a terminal-only migration hint.
+fn deprecated_notice(command: &str, is_terminal: bool) -> Option<&'static str> {
+    if !is_terminal {
+        return None;
+    }
+    match command {
+        "enroll" => Some("Note: `minutes enroll` is now `minutes voice enroll`; the old name still works."),
+        "voices" => Some("Note: `minutes voices` is now `minutes voice list`; the old name still works."),
+        "sources" => Some("Note: `minutes sources` is now `minutes devices --grouped`; the old name still works."),
+        "copilot" => Some("Note: `minutes copilot` is now `minutes coach`; the old name still works."),
+        "record --mode quick-thought" => Some("Note: `minutes record --mode quick-thought` is now `minutes record --memo`; the old form still works."),
+        _ => None,
+    }
+}
+
+/// Apply presentation and compatibility shorthands before command dispatch.
+fn parse_cli_from<I, T>(
+    args: I,
+    is_terminal: bool,
+) -> Result<(Cli, Option<&'static str>), clap::Error>
+where
+    I: IntoIterator<Item = T>,
+    T: Into<std::ffi::OsString> + Clone,
+{
+    let args: Vec<std::ffi::OsString> = args.into_iter().map(Into::into).collect();
+    // All root options are switches, so the first non-option is the spelling
+    // used for the subcommand (ArgMatches canonicalizes visible aliases).
+    let invoked = args
+        .iter()
+        .skip(1)
+        .filter_map(|arg| arg.to_str())
+        .find(|arg| !arg.starts_with('-'))
+        .unwrap_or("");
+    let mut command = cli_command();
+    let matches = command.try_get_matches_from_mut(&args)?;
+    let mut cli = Cli::from_arg_matches(&matches)?;
+    let mut legacy = invoked;
+    if let Commands::Record { mode, memo, .. } = &mut cli.command {
+        if mode == "quick-thought" {
+            legacy = "record --mode quick-thought";
+        }
+        if *memo {
+            let record = matches
+                .subcommand_matches("record")
+                .expect("record matches");
+            if mode == "meeting"
+                && record.value_source("mode") == Some(clap::parser::ValueSource::CommandLine)
+            {
+                return Err(command
+                    .find_subcommand_mut("record")
+                    .expect("record command")
+                    .error(
+                        clap::error::ErrorKind::ArgumentConflict,
+                        "--memo cannot be used with --mode meeting",
+                    ));
+            }
+            *mode = "quick-thought".into();
+        }
+    }
+    Ok((cli, deprecated_notice(legacy, is_terminal)))
+}
+
 #[derive(Subcommand)]
 enum Commands {
     /// Recover a native WAV/RF64/BW64 stem into lossless, processable WAV parts
@@ -348,9 +530,16 @@ enum Commands {
         #[arg(short, long)]
         context: Option<String>,
 
-        /// Live capture mode: meeting or quick-thought
-        #[arg(long, default_value = "meeting", value_parser = ["meeting", "quick-thought"])]
+        /// Live capture mode (use --memo to record a memo)
+        #[arg(long, default_value = "meeting", value_parser = clap::builder::PossibleValuesParser::new([
+            clap::builder::PossibleValue::new("meeting"),
+            clap::builder::PossibleValue::new("quick-thought").hide(true),
+        ]))]
         mode: String,
+
+        /// Record a memo
+        #[arg(long)]
+        memo: bool,
 
         /// Recording intent: auto, memo, room, or call.
         #[arg(long, default_value = "auto", value_parser = ["auto", "memo", "room", "call"])]
@@ -606,6 +795,7 @@ enum Commands {
     Status,
 
     /// Inspect background processing jobs
+    #[command(visible_alias = "activity")]
     Jobs {
         /// Include completed and failed jobs
         #[arg(long)]
@@ -1084,9 +1274,14 @@ enum Commands {
     },
 
     /// List available audio input devices
-    Devices,
+    Devices {
+        /// Group devices by category (Microphones / System Audio / Virtual)
+        #[arg(long)]
+        grouped: bool,
+    },
 
     /// List audio input devices grouped by category (Microphones / System Audio / Virtual)
+    #[command(hide = true)]
     Sources,
 
     /// Install, restart, uninstall, or check the folder watcher as a login service.
@@ -1175,7 +1370,7 @@ enum Commands {
     },
 
     /// Get private, real-time meeting coaching
-    #[command(visible_alias = "coach")]
+    #[command(name = "coach", visible_alias = "copilot")]
     Copilot {
         #[command(subcommand)]
         action: CopilotAction,
@@ -1288,6 +1483,7 @@ enum Commands {
     },
 
     /// Enroll your voice for automatic speaker identification
+    #[command(hide = true)]
     Enroll {
         /// Enroll from an existing audio file instead of recording
         #[arg(long)]
@@ -1298,6 +1494,7 @@ enum Commands {
     },
 
     /// List and manage enrolled voice profiles
+    #[command(hide = true)]
     Voices {
         /// Delete your voice profile
         #[arg(long)]
@@ -1986,13 +2183,18 @@ fn main() -> Result<()> {
     if let Some(result) = local_work_fast_path() {
         return result;
     }
-    let mut cli = Cli::parse();
+    let (mut cli, deprecation) =
+        parse_cli_from(std::env::args_os(), std::io::stderr().is_terminal())
+            .unwrap_or_else(|error| error.exit());
     let verbose = cli.verbose;
     // This must remain the first action after parsing. In particular, do not
     // move logging, config loading, readiness checks, or any subprocess work
     // above the fd claim.
     let mut claimed_authorized_process_input = claim_authorized_process_input(&mut cli.command)?;
     install_authorized_process_containment(claimed_authorized_process_input.is_some())?;
+    if let Some(message) = deprecation {
+        eprintln!("{message}");
+    }
 
     #[cfg(feature = "voice-live")]
     if let Commands::Talk {
@@ -2064,6 +2266,7 @@ fn main() -> Result<()> {
             title,
             context,
             mode,
+            memo: _,
             intent,
             allow_degraded,
             skip_audio_probe,
@@ -2502,7 +2705,8 @@ fn main() -> Result<()> {
                 cmd_dictate(stdout, note_only, &config)
             }
         }
-        Commands::Devices => cmd_devices(),
+        Commands::Devices { grouped: false } => cmd_devices(),
+        Commands::Devices { grouped: true } => cmd_sources(),
         Commands::Sources => cmd_sources(),
         Commands::Setup {
             model,
@@ -7063,7 +7267,7 @@ fn cmd_diagnose(path: &Path, title: Option<&str>, config: &Config) -> Result<()>
             .unwrap_or_default();
 
         if profiles.is_empty() {
-            eprintln!("  No enrolled voice profiles. Run `minutes enroll` first.");
+            eprintln!("  No enrolled voice profiles. Run `minutes voice enroll` first.");
         } else {
             eprintln!("  Enrolled profiles: {}", profiles.len());
             for p in &profiles {
@@ -7853,7 +8057,7 @@ fn cmd_devices() -> Result<()> {
     #[cfg(target_os = "linux")]
     eprintln!(
         "\nTip: System audio capture works automatically when PipeWire or PulseAudio is running. \
-         Run `minutes sources` for the categorized view."
+         Run `minutes devices --grouped` for the categorized view."
     );
 
     Ok(())
@@ -9733,6 +9937,178 @@ mod input_meter_tests {
 #[allow(clippy::items_after_test_module)]
 mod tests {
 
+    #[test]
+    fn grouped_help_covers_every_visible_command_exactly_once() {
+        std::thread::Builder::new()
+            .name("cli-help-test".into())
+            .stack_size(16 * 1024 * 1024)
+            .spawn(|| {
+                let command = Cli::command();
+                let mut grouped = std::collections::HashSet::new();
+                for (_, names) in COMMAND_GROUPS {
+                    for name in *names {
+                        assert!(grouped.insert(*name), "duplicate grouped command: {name}");
+                        let subcommand = command
+                            .get_subcommands()
+                            .find(|sub| sub.get_name() == *name)
+                            .unwrap_or_else(|| panic!("unknown grouped command: {name}"));
+                        assert!(!subcommand.is_hide_set(), "hidden grouped command: {name}");
+                    }
+                }
+                for subcommand in command.get_subcommands().filter(|sub| !sub.is_hide_set()) {
+                    assert!(
+                        grouped.contains(subcommand.get_name()),
+                        "ungrouped command: {}",
+                        subcommand.get_name()
+                    );
+                }
+            })
+            .expect("spawn cli help thread")
+            .join()
+            .expect("cli help thread panicked");
+    }
+
+    #[test]
+    fn grouped_help_is_used_by_all_root_help_forms() {
+        for args in [
+            vec!["minutes", "--help"],
+            vec!["minutes", "help"],
+            vec!["minutes", "-h"],
+        ] {
+            let error = parse_cli(args).err().expect("help exits through clap");
+            assert_eq!(error.kind(), clap::error::ErrorKind::DisplayHelp);
+            let help = error.to_string();
+            assert!(help.contains("Usage: minutes"));
+            assert!(help.contains("Options:"));
+            let mut previous = 0;
+            for (heading, _) in COMMAND_GROUPS {
+                let offset = help.find(&format!("{heading}:\n")).expect("group heading");
+                assert!(offset > previous);
+                previous = offset;
+            }
+            assert!(help.contains("[alias: copilot]"));
+            assert!(help.contains("[alias: activity]"));
+            assert!(!help.contains('\u{1b}'));
+        }
+    }
+
+    #[test]
+    fn deprecated_enroll_names_voice_enroll() {
+        assert_eq!(
+            deprecated_notice("enroll", true),
+            Some("Note: `minutes enroll` is now `minutes voice enroll`; the old name still works.")
+        );
+    }
+
+    #[test]
+    fn deprecated_voices_names_voice_list() {
+        assert_eq!(
+            deprecated_notice("voices", true),
+            Some("Note: `minutes voices` is now `minutes voice list`; the old name still works.")
+        );
+    }
+
+    #[test]
+    fn deprecated_sources_names_grouped_devices() {
+        assert_eq!(deprecated_notice("sources", true), Some("Note: `minutes sources` is now `minutes devices --grouped`; the old name still works."));
+    }
+
+    #[test]
+    fn deprecated_copilot_names_coach() {
+        assert_eq!(
+            deprecated_notice("copilot", true),
+            Some("Note: `minutes copilot` is now `minutes coach`; the old name still works.")
+        );
+    }
+
+    #[test]
+    fn deprecated_quick_thought_names_memo() {
+        assert_eq!(deprecated_notice("record --mode quick-thought", true), Some("Note: `minutes record --mode quick-thought` is now `minutes record --memo`; the old form still works."));
+    }
+
+    #[test]
+    fn deprecated_not_a_terminal_is_silent() {
+        for command in [
+            "enroll",
+            "voices",
+            "sources",
+            "copilot",
+            "record --mode quick-thought",
+        ] {
+            assert_eq!(deprecated_notice(command, false), None);
+        }
+    }
+
+    #[test]
+    fn deprecated_new_forms_are_silent() {
+        for command in [
+            "voice enroll",
+            "voice list",
+            "devices --grouped",
+            "coach",
+            "record --memo",
+            "record",
+        ] {
+            assert_eq!(deprecated_notice(command, true), None);
+        }
+    }
+
+    #[test]
+    fn memo_normalizes_to_legacy_mode_and_rejects_explicit_meeting() {
+        for args in [
+            vec!["minutes", "record", "--memo"],
+            vec!["minutes", "record", "--mode", "quick-thought"],
+            vec!["minutes", "record", "--memo", "--mode=quick-thought"],
+            vec!["minutes", "record", "--mode", "quick-thought", "--memo"],
+        ] {
+            let cli = parse_cli(args).unwrap();
+            assert!(
+                matches!(cli.command, Commands::Record { mode, .. } if mode == "quick-thought")
+            );
+        }
+        for args in [
+            vec!["minutes", "record", "--memo", "--mode", "meeting"],
+            vec!["minutes", "record", "--mode=meeting", "--memo"],
+        ] {
+            let error = parse_cli(args).err().expect("conflicting modes");
+            assert_eq!(error.kind(), clap::error::ErrorKind::ArgumentConflict);
+            assert!(error
+                .to_string()
+                .contains("--memo cannot be used with --mode meeting"));
+        }
+        assert!(parse_cli(["minutes", "record", "--mode", "bogus"]).is_err());
+        let cli = parse_cli(["minutes", "record"]).unwrap();
+        assert!(matches!(cli.command, Commands::Record { mode, .. } if mode == "meeting"));
+    }
+
+    #[test]
+    fn legacy_voice_options_and_grouped_devices_still_parse() {
+        let cli = parse_cli([
+            "minutes",
+            "enroll",
+            "--file",
+            "sample.wav",
+            "--duration",
+            "7",
+        ])
+        .unwrap();
+        assert!(
+            matches!(cli.command, Commands::Enroll { file: Some(file), duration: 7 } if file == Path::new("sample.wav"))
+        );
+        let cli = parse_cli(["minutes", "voices", "--delete", "--json"]).unwrap();
+        assert!(matches!(
+            cli.command,
+            Commands::Voices {
+                delete: true,
+                json: true
+            }
+        ));
+        let cli = parse_cli(["minutes", "devices", "--grouped"]).unwrap();
+        assert!(matches!(cli.command, Commands::Devices { grouped: true }));
+        let cli = parse_cli(["minutes", "activity", "--json"]).unwrap();
+        assert!(matches!(cli.command, Commands::Jobs { json: true, .. }));
+    }
+
     /// Issue #1000: `--sherpa` must not spend 639 MB and rewrite the engine on a
     /// build that cannot run sherpa. This asserts the guard exists and refuses
     /// before either side effect, rather than warning after both.
@@ -9809,7 +10185,7 @@ mod tests {
         std::thread::Builder::new()
             .name("cli-parse-test".into())
             .stack_size(16 * 1024 * 1024)
-            .spawn(move || Cli::try_parse_from(args))
+            .spawn(move || parse_cli_from(args, false).map(|(cli, _)| cli))
             .expect("spawn cli parse thread")
             .join()
             .expect("cli parse thread panicked")
@@ -18767,7 +19143,7 @@ fn cmd_enroll(file: Option<&Path>, duration: u64, config: &Config) -> Result<()>
     if !minutes_core::diarize::models_installed(config) {
         eprintln!("Speaker diarization models aren't installed yet.");
         eprintln!("Run this first:  minutes setup --diarization");
-        eprintln!("Then try:        minutes enroll");
+        eprintln!("Then try:        minutes voice enroll");
         return Err(anyhow::anyhow!(
             "Diarization models required for voice enrollment."
         ));
@@ -18903,8 +19279,10 @@ fn cmd_enroll(file: Option<&Path>, duration: u64, config: &Config) -> Result<()>
             "  \x1b[2m›\x1b[0m Your lines show as \x1b[1m[{}]\x1b[0m instead of [SPEAKER_X]",
             p.name
         );
-        eprintln!("  \x1b[2m›\x1b[0m Run \x1b[33mminutes enroll\x1b[0m again to improve accuracy");
-        eprintln!("  \x1b[2m›\x1b[0m Run \x1b[33mminutes voices\x1b[0m to see your profile");
+        eprintln!(
+            "  \x1b[2m›\x1b[0m Run \x1b[33mminutes voice enroll\x1b[0m again to improve accuracy"
+        );
+        eprintln!("  \x1b[2m›\x1b[0m Run \x1b[33mminutes voice list\x1b[0m to see your profile");
     }
 
     if let Some((directory, sample)) = captured_clip {
@@ -18941,7 +19319,7 @@ fn cmd_voices(delete: bool, json: bool) -> Result<()> {
         return Ok(());
     }
     if profiles.is_empty() {
-        eprintln!("No voice profiles enrolled.\nRun: minutes enroll");
+        eprintln!("No voice profiles enrolled.\nRun: minutes voice enroll");
         return Ok(());
     }
     eprintln!("Voice profiles:");
