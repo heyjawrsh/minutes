@@ -739,9 +739,6 @@
       .recall-header .recall-context-label {
         display: none;
       }
-      #btn-recall-weekly {
-        display: none;
-      }
       .recall-note {
         display: none;
       }
@@ -2047,6 +2044,85 @@
       color: var(--text-secondary);
       pointer-events: none;
       z-index: 1;
+    }
+
+    .list-scope {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+    }
+
+    .list-scope-chip {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 3px 10px;
+      background: transparent;
+      font: inherit;
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .list-scope-chip:hover {
+      color: var(--text);
+    }
+
+    .list-scope-chip.is-active {
+      color: var(--text);
+      background: var(--surface-fill);
+      border-color: var(--border);
+    }
+
+    .list-scope-chip:focus-visible,
+    .weekly-row:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 2px;
+    }
+
+    .list-scope-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
+    .weekly-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin: 4px 16px 6px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: transparent;
+      color: var(--text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .weekly-row:hover,
+    .weekly-row[aria-current="true"] {
+      background: var(--bg-hover);
+    }
+
+    .weekly-row[hidden] {
+      display: none;
+    }
+
+    .weekly-row-sub {
+      color: var(--text-tertiary);
+      font-size: var(--text-xs);
+    }
+
+    #detail-overlay[data-view="weekly"] .detail-tabs,
+    #detail-overlay[data-view="weekly"] .detail-actions {
+      display: none;
+    }
+
+    .detail-weekly {
+      padding-top: 16px;
     }
 
     /* ── Meeting list ── */
@@ -6464,10 +6540,16 @@
              Same id and nudge element: every existing handler keeps working. -->
         <button class="list-toggle-btn recall-toggle-btn" id="btn-assistant" type="button" aria-expanded="false" title="Open Assistant">Assistant <span class="recall-nudge"
             id="recall-nudge" aria-label="Assistant has new content"></span></button>
-        <button class="list-toggle-btn" id="btn-documents-toggle" type="button" aria-pressed="false">Drafts</button>
       </div>
       <input class="search-box" type="text" placeholder="Search meetings…" id="search-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       <div class="search-error" id="search-error" hidden></div>
+      <div class="list-scope" id="list-scope" role="radiogroup" aria-label="Show">
+        <button class="list-scope-chip is-active" type="button" role="radio" data-scope="meetings" aria-checked="true" tabindex="0">Meetings</button>
+        <button class="list-scope-chip" type="button" role="radio" data-scope="memos" aria-checked="false" tabindex="-1">Memos</button>
+        <button class="list-scope-chip" type="button" role="radio" data-scope="all" aria-checked="false" tabindex="-1">All</button>
+        <span class="list-scope-divider" aria-hidden="true"></span>
+        <button class="list-scope-chip" type="button" role="radio" data-scope="drafts" aria-checked="false" tabindex="-1">Drafts</button>
+      </div>
     </div>
 
     <section class="config-warning" id="config-warning" role="alert" hidden>
@@ -6617,6 +6699,8 @@
 
     <!-- Markdown viewer (replaces meeting list when a file is open) -->
 
+    <button class="weekly-row" id="btn-weekly-view" type="button"><span class="weekly-row-title">This week</span><span class="weekly-row-sub">Last 7 days</span></button>
+
     <!-- Meeting list -->
     <div class="meetings-scroll" id="meetings-scroll" aria-busy="true">
       <div class="meeting-list-loading" id="meeting-list-loading" role="status" aria-live="polite">
@@ -6730,7 +6814,6 @@
         <span class="recall-context-label" id="recall-context-label" data-tauri-drag-region></span>
       </div>
       <div class="recall-header-actions">
-        <button class="btn btn-secondary btn-sm" id="btn-recall-weekly">Weekly</button>
         <button class="btn btn-secondary btn-sm recall-end-btn" id="btn-recall-end">End Session</button>
         <button class="recall-mode-toggle" id="btn-recall-mode-toggle" title="Switch to Terminal"
           hidden aria-hidden="true"></button>
@@ -8240,7 +8323,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const footer = document.getElementById('footer');
     const meetingsScroll = document.getElementById('meetings-scroll');
     const meetingInventoryLoadingTemplate = document.getElementById('meeting-list-loading').cloneNode(true);
-    const documentsToggle = document.getElementById('btn-documents-toggle');
+    const listScopeGroup = document.getElementById('list-scope');
+    const weeklyRow = document.getElementById('btn-weekly-view');
+    const LIST_SCOPES = ['meetings', 'memos', 'all'];
+    let listScope = localStorage.getItem('minutes.listScope');
+    if (!LIST_SCOPES.includes(listScope)) listScope = 'meetings';
     const sidebarCollapseButton = document.getElementById('btn-sidebar-collapse');
     const sidebarExpandRail = document.getElementById('btn-sidebar-expand');
     const searchInput = document.getElementById('search-input');
@@ -11589,10 +11676,52 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       });
     }
 
+    async function openWeeklyView() {
+      const requestId = ++detailOpenRequestId;
+      detailReturnFocusPath = null;
+      currentMeetingPath = null;
+      currentMeetingDetail = null;
+      persistRecallWorkspaceState({ currentMeetingPath: '' });
+      resetResummarizeButton();
+      clearDetailFeedback();
+      detailOverlay.dataset.view = 'weekly';
+      detailTitle.textContent = 'This week';
+      detailTitle.title = 'This week';
+      const meta = document.createElement('span');
+      meta.className = 'detail-meta-chip';
+      meta.textContent = 'Last 7 days';
+      detailMeta.replaceChildren(meta);
+      const loading = document.createElement('div');
+      loading.className = 'detail-empty';
+      loading.textContent = 'Loading this week…';
+      detailScroll.replaceChildren(loading);
+      detailOverlay.classList.add('active');
+      markOpenMeetingRow();
+      weeklyRow.setAttribute('aria-current', 'true');
+      syncNarrowLayout();
+      const content = document.createElement('div');
+      content.className = 'md-prose detail-weekly';
+      try {
+        const summary = await invoke('cmd_weekly_summary');
+        if (requestId !== detailOpenRequestId || detailOverlay.dataset.view !== 'weekly') return;
+        if (summary?.markdown) renderMarkdownToElement(content, summary.markdown);
+        else content.textContent = 'No weekly summary available.';
+      } catch (e) {
+        if (requestId !== detailOpenRequestId || detailOverlay.dataset.view !== 'weekly') return;
+        content.textContent = `Could not load this week: ${e?.message || e}`;
+      }
+      detailScroll.replaceChildren(content);
+    }
+
     function closeDetailView() {
       const wasOpen = detailOverlay.classList.contains('active');
+      const wasWeekly = detailOverlay.dataset.view === 'weekly';
       detailOverlay.classList.remove('active');
-      if (wasOpen && detailReturnFocusPath) {
+      delete detailOverlay.dataset.view;
+      weeklyRow.removeAttribute('aria-current');
+      if (wasOpen && wasWeekly) {
+        weeklyRow.focus();
+      } else if (wasOpen && detailReturnFocusPath) {
         const row = [...meetingsScroll.querySelectorAll('.meeting-item')]
           .find((candidate) => candidate.dataset.path === detailReturnFocusPath);
         row?.focus({ preventScroll: false });
@@ -11821,6 +11950,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     function renderDetailSections(detail) {
+      delete detailOverlay.dataset.view;
+      weeklyRow.removeAttribute('aria-current');
       currentMeetingDetail = detail;
       const detailTitleText = detail.title || 'Untitled';
       detailTitle.textContent = detailTitleText;
@@ -12527,6 +12658,37 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
     }
 
+    function inListScope(m) {
+      if (listScope === 'all') return true;
+      const memoLike = m.content_type === 'memo' || m.content_type === 'dictation';
+      return listScope === 'memos' ? memoLike : !memoLike;
+    }
+
+    function syncScopeChips() {
+      const scope = documentsViewActive ? 'drafts' : listScope;
+      listScopeGroup.querySelectorAll('[role="radio"]').forEach((chip) => {
+        const checked = chip.dataset.scope === scope;
+        chip.classList.toggle('is-active', checked);
+        chip.setAttribute('aria-checked', String(checked));
+        chip.tabIndex = checked ? 0 : -1;
+      });
+      weeklyRow.hidden = documentsViewActive;
+    }
+
+    function setListScope(scope) {
+      if (scope === 'drafts') {
+        if (!documentsViewActive) setDocumentsView(true);
+        syncScopeChips();
+        return;
+      }
+      if (!LIST_SCOPES.includes(scope)) return;
+      listScope = scope;
+      localStorage.setItem('minutes.listScope', scope);
+      if (documentsViewActive) setDocumentsView(false);
+      else refreshMeetingsForCurrentView();
+      syncScopeChips();
+    }
+
     function setDocumentsView(active) {
       documentsViewActive = active;
       // While the Documents view is showing, pick up files the assistant (or
@@ -12539,15 +12701,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (active) {
         documentsRefreshTimer = setInterval(() => loadDocuments({ quiet: true }), 4000);
       }
-      documentsToggle.classList.toggle('is-active', active);
-      documentsToggle.setAttribute('aria-pressed', active ? 'true' : 'false');
-      // Label the button with its DESTINATION so returning to meetings is
-      // self-evident: it reads "Meetings" while documents are showing.
-      documentsToggle.textContent = active ? 'Meetings' : 'Drafts';
-      documentsToggle.setAttribute(
-        'aria-label',
-        active ? 'Back to meetings' : 'Show drafts',
-      );
+      syncScopeChips();
       searchInput.disabled = active;
       searchInput.placeholder = active ? 'Drafts' : 'Search meetings…';
       if (active) {
@@ -12570,8 +12724,18 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       meetingsScroll.replaceChildren();
       const sameList = meetingRowsState !== null && meetingRowsState.query === activeSearchQuery;
       meetingRowsState = null;
+      const unscoped = meetings || [];
+      meetings = unscoped.filter(inListScope);
+      if (unscoped.length && !meetings.length && !activeSearchQuery) {
+        footer.classList.remove('footer-hidden');
+        const empty = document.createElement('div');
+        empty.className = 'document-empty';
+        empty.textContent = listScope === 'memos' ? 'No memos yet.' : 'No meetings yet.';
+        meetingsScroll.appendChild(empty);
+        return;
+      }
 
-      if (!meetings || meetings.length === 0) {
+      if (!meetings.length) {
         // No matches is not "no meetings": the first-run screen here hid the
         // record controls and read like a reset app.
         if (activeSearchQuery) {
@@ -12618,7 +12782,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (end === state.rows.length && !state.query) {
         const listEnd = document.createElement('div');
         listEnd.className = 'meeting-list-end';
-        listEnd.textContent = `${state.rows.length.toLocaleString('en-US')} ${state.rows.length === 1 ? 'meeting' : 'meetings'}`;
+        const noun = listScope === 'memos' ? 'memo' : listScope === 'all' ? 'item' : 'meeting';
+        listEnd.textContent = `${state.rows.length.toLocaleString('en-US')} ${noun}${state.rows.length === 1 ? '' : 's'}`;
         meetingsScroll.appendChild(listEnd);
       }
     }
@@ -12918,10 +13083,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
     }
 
-    // A chip search fills the sidebar, which the full-window detail overlay
-    // covers; close it (and leave Documents) so the results are visible.
+    // A chip search fills the sidebar beside the open meeting pane.
     function searchFromDetail(term) {
-      closeDetailView();
       if (documentsViewActive) setDocumentsView(false);
       if (document.body.classList.contains('sidebar-collapsed')) {
         document.getElementById('btn-sidebar-expand')?.click();
@@ -13014,7 +13177,23 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     // results when responses arrive out of order.
     let searchTimeout;
     let searchRequestId = 0;
-    documentsToggle.addEventListener('click', () => setDocumentsView(!documentsViewActive));
+    listScopeGroup.addEventListener('click', (event) => {
+      const chip = event.target.closest('[role="radio"]');
+      if (chip) setListScope(chip.dataset.scope);
+    });
+    listScopeGroup.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+      const chips = [...listScopeGroup.querySelectorAll('[role="radio"]')];
+      const index = chips.indexOf(event.target.closest('[role="radio"]'));
+      if (index < 0) return;
+      event.preventDefault();
+      const step = event.key === 'ArrowRight' ? 1 : -1;
+      const next = chips[(index + step + chips.length) % chips.length];
+      setListScope(next.dataset.scope);
+      next.focus();
+    });
+    weeklyRow.addEventListener('click', () => openWeeklyView());
+    syncScopeChips();
     // Each backend search reads the whole corpus and searches run one at a
     // time behind a single lease, so firing one per keystroke queued them:
     // typing a short word took 20+ seconds to show anything. Wait for a pause,
@@ -13078,7 +13257,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
       if (reqId !== searchRequestId || activeSearchQuery !== query || documentsViewActive) return;
       const words = contentSearchTokens(query);
-      const titleMatches = (lexical || []).filter((m) => instantTitleTier(m.title, words) > 0);
+      const titleMatches = (lexical || []).filter((m) => inListScope(m) && instantTitleTier(m.title, words) > 0);
       const inTitles = new Set(titleMatches.map((m) => m.path));
       const related = hits
         .filter((hit) => !inTitles.has(hit.path))
@@ -13088,10 +13267,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           date: hit.date,
           content_type: hit.contentType,
           snippet: hit.snippet,
-        }));
+        }))
+        .filter(inListScope);
       if (!related.length) return;
       const inRelated = new Set(related.map((m) => m.path));
-      const others = (lexical || []).filter((m) => !inTitles.has(m.path) && !inRelated.has(m.path));
+      const others = (lexical || []).filter((m) => inListScope(m) && !inTitles.has(m.path) && !inRelated.has(m.path));
       meetingsScroll.replaceChildren();
       footer.classList.remove('footer-hidden');
       meetingRowsState = {
@@ -16095,7 +16275,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const recallWeeklyContent = document.getElementById('recall-weekly-content');
     const recallExitBanner = document.getElementById('recall-exit-banner');
     const recallNudge = document.getElementById('recall-nudge');
-    const recallWeeklyBtn = document.getElementById('btn-recall-weekly');
     const recallEndBtn = document.getElementById('btn-recall-end');
     const assistantBtn = document.getElementById('btn-assistant');
     const splitHandle = document.getElementById('split-handle');
@@ -16556,6 +16735,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     // ── Phase management ──
     function setRecallPhase(phase, context) {
+      if (phase === 'weekly') {
+        phase = 'recall';
+        context = null;
+      }
       recallPhase = phase;
       const dotClasses = ['prep', 'listening', 'debrief', 'weekly'];
       recallDot.classList.remove(...dotClasses);
@@ -16592,17 +16775,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     async function openWeeklyPhase() {
-      await expandRecallPanel();
-      setRecallPhase('weekly', 'Last 7 days');
-      recallWeeklyContent.textContent = 'Loading weekly summary…';
-      try {
-        const summary = await invoke('cmd_weekly_summary');
-        if (summary.markdown) renderMarkdownToElement(recallWeeklyContent, summary.markdown);
-        else recallWeeklyContent.textContent = 'No weekly summary available.';
-      } catch (e) {
-        console.error('Weekly summary:', e);
-        recallWeeklyContent.textContent = `Could not load weekly summary: ${e}`;
-      }
+      await openWeeklyView();
     }
 
     function getTerminalFontSize() {
@@ -18730,14 +18903,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     // ── Button handlers ──
     assistantBtn.addEventListener('click', () => toggleRecallPanel());
-    recallWeeklyBtn.addEventListener('click', () => {
-      if (recallPhase === 'weekly') {
-        setRecallPhase('recall');
-        applyRecallMode();
-      } else {
-        openWeeklyPhase();
-      }
-    });
 
     document.getElementById('btn-recall-close').addEventListener('click', () => {
       userExplicitlyCollapsed = true;
@@ -18745,7 +18910,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     });
 
     // Ending a session while the agent is still writing loses the answer, and
-    // the button sits beside Weekly. While output is arriving, the first click
+    // the button stays in the Assistant header. While output is arriving, the first click
     // only arms it; an idle session ends at once.
     let recallEndArmTimer = null;
     recallEndBtn.addEventListener('click', async () => {
