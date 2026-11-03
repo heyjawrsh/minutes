@@ -516,81 +516,149 @@
       border-top-right-radius: 18px;
       flex-shrink: 0;
       -webkit-app-region: drag;
-      /* Actions wrap under the title at narrow widths instead of crushing it
-         to "Reca". */
-      flex-wrap: wrap;
-      row-gap: 8px;
+      flex-wrap: nowrap;
+      gap: 6px;
+      position: relative;
     }
 
     .recall-header-info {
       display: flex;
       align-items: center;
-      gap: 8px;
-      /* Never squeezed past a readable stub ("Reca" was the whole title). */
-      min-width: 9ch;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
     }
 
-    .recall-phase-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      background: var(--text-secondary);
-    }
-
-    .recall-phase-dot.prep {
-      background: var(--accent);
-    }
-
-    .recall-phase-dot.listening {
-      background: var(--capture);
-      animation: recording-glow 1.8s ease-in-out infinite;
-    }
-
-    .recall-phase-dot.debrief {
-      background: var(--green);
-    }
-
-    .recall-phase-dot.weekly {
-      background: var(--accent-2);
-    }
-
-    .recall-phase-label {
+    .assistant-title {
       font-size: var(--text-xs);
+      color: var(--text);
       font-weight: 600;
-      color: var(--text-secondary);
-      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .recall-phase-label.prep {
-      color: var(--accent);
+    #assistant-scope {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      max-width: 100%;
+      -webkit-app-region: no-drag;
     }
 
-    .recall-phase-label.listening {
-      color: var(--capture);
-    }
-
-    .recall-phase-label.debrief {
-      color: var(--green);
-    }
-
-    .recall-phase-label.weekly {
-      color: var(--accent-2);
-    }
-
-    .recall-context-label {
-      font-size: var(--text-xs);
-      color: var(--text-tertiary);
-      white-space: nowrap;
+    #assistant-scope-label {
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #assistant-scope, #assistant-scope-menu button, #assistant-prompts button,
+    #assistant-scope-offer button {
+      border: 1px solid var(--border-mid);
+      border-radius: 6px;
+      padding: 5px 6px;
+      font-family: var(--font-sans);
+      font-size: var(--text-xs);
+      color: var(--text);
+      background: var(--bg-elevated);
+      cursor: pointer;
+    }
+
+    #assistant-scope-menu {
+      position: absolute;
+      top: 100%;
+      left: 8px;
+      right: 8px;
+      z-index: 20;
+      padding: 6px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-mid);
+      border-radius: 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    #assistant-scope-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      overflow-wrap: anywhere;
+      margin: 2px 0;
+    }
+
+    #assistant-scope-menu button[aria-checked="true"] {
+      background: var(--bg-hover);
+      font-weight: 600;
+    }
+
+    #assistant-scope-offer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: var(--text-xs);
+    }
+
+    #assistant-scope-offer span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #assistant-scope-offer button { flex-shrink: 0; }
+
+    #assistant-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 12px;
+      flex-shrink: 0;
+    }
+
+    #assistant-prompts button {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #assistant-setup {
+      padding: 20px;
+      color: var(--text-secondary);
+      font-size: var(--text-body);
+      line-height: 1.6;
+      overflow: auto;
+    }
+
+    #assistant-setup .assistant-setup-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    #assistant-scope-menu[hidden], #assistant-scope-offer[hidden],
+    #assistant-setup[hidden], #assistant-setup button[hidden] { display: none; }
+
+    #recall-panel button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    #assistant-scope:hover, #assistant-scope-menu button:hover,
+    #assistant-prompts button:hover, #assistant-scope-offer button:hover {
+      background: var(--bg-hover);
     }
 
     .recall-header-actions {
       display: flex;
-      gap: 8px;
+      gap: 4px;
       -webkit-app-region: no-drag;
       flex-shrink: 0;
+    }
+
+    .recall-header-actions .recall-end-btn { padding: 3px 5px; white-space: nowrap; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .recall-panel, .recall-panel.expanded, #recall-panel button {
+        transition: none;
+        animation: none;
+      }
     }
 
     .recall-weekly-view {
@@ -784,12 +852,6 @@
       .recall-header {
         padding: 5px 12px;
       }
-      .recall-header .recall-context-label {
-        display: none;
-      }
-      .recall-note {
-        display: none;
-      }
     }
 
     .chat-bubble {
@@ -976,18 +1038,6 @@
       align-self: flex-end;
     }
 
-    /* Quick note inside recall panel during recording */
-    .recall-note {
-      display: none;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .recall-note.active {
-      display: block;
-    }
-
     /* ── Recall mode toggle: a visible labeled button switching between the chat
        panel and the terminal. Was a near-invisible faint keyboard glyph — now a
        clear bordered control that reads the mode it switches TO. */
@@ -1021,34 +1071,6 @@
       color: var(--text);
       background: var(--bg-hover);
       border-color: var(--text-tertiary);
-    }
-
-    .recall-note-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .recall-note-row input {
-      flex: 1;
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg-elevated);
-      color: var(--text);
-      font-family: inherit;
-      font-size: var(--text-xs);
-      outline: none;
-      -webkit-user-select: text;
-      user-select: text;
-    }
-
-    .recall-note-row input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--focus-ring-soft);
-    }
-
-    .recall-note-row input::placeholder {
-      color: var(--text-tertiary);
     }
 
     /* Loading / error states */
@@ -1447,8 +1469,7 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .live-dot,
-      .recall-phase-dot.listening {
+      .live-dot {
         animation: none;
       }
     }
@@ -6821,21 +6842,23 @@
   <div class="recall-panel" id="recall-panel" aria-hidden="true" inert>
     <div class="recall-header" data-tauri-drag-region>
       <div class="recall-header-info" data-tauri-drag-region>
-        <div class="recall-phase-dot" id="recall-dot" aria-label="Phase: Assistant" data-tauri-drag-region></div>
-        <span class="recall-phase-label" id="recall-phase-label" data-tauri-drag-region>Assistant</span>
-        <span class="recall-context-label" id="recall-context-label" data-tauri-drag-region></span>
+        <span class="assistant-title" data-tauri-drag-region>Assistant</span>
+        <button id="assistant-scope" aria-haspopup="menu" aria-expanded="false" aria-controls="assistant-scope-menu" title="All meetings"><span id="assistant-scope-label">All meetings</span><span aria-hidden="true">▾</span></button>
       </div>
       <div class="recall-header-actions">
-        <button class="btn btn-secondary btn-sm recall-end-btn" id="btn-recall-end">End Session</button>
+        <button class="btn btn-secondary btn-sm recall-end-btn" id="btn-recall-end">End session</button>
         <button class="recall-mode-toggle" id="btn-recall-mode-toggle" title="Switch to Terminal"
           hidden aria-hidden="true"></button>
         <button class="recall-close" id="btn-recall-close" title="Close panel">&times;</button>
       </div>
+      <div id="assistant-scope-menu" role="menu" aria-label="Assistant scope" hidden></div>
     </div>
-    <div class="recall-note" id="recall-note">
-      <div class="recall-note-row">
-        <input type="text" id="recall-note-input" placeholder="Quick note..." />
-        <button class="btn btn-secondary btn-sm" id="btn-recall-note-save">Save</button>
+    <div id="assistant-scope-offer" hidden><span></span><button>Ask about it instead</button></div>
+    <div id="assistant-setup" hidden>
+      <p id="assistant-setup-message"></p>
+      <div class="assistant-setup-actions">
+        <button class="btn btn-secondary btn-sm" id="btn-assistant-open-terminal">Open in Terminal</button>
+        <button class="btn btn-secondary btn-sm" id="btn-assistant-settings">Assistant settings</button>
       </div>
     </div>
     <div class="recall-status" id="recall-loading">
@@ -6851,6 +6874,7 @@
     <div class="recall-chat-container" id="recall-chat-panel" style="display:none;">
       <div class="chat-messages" id="recall-chat-messages"></div>
       <button class="chat-jump-latest" id="recall-chat-jump" style="display:none;" aria-label="Jump to latest message">↓ new messages</button>
+      <div id="assistant-prompts" aria-label="Suggested questions"></div>
       <div class="chat-input-row">
         <textarea id="recall-chat-input" placeholder="Ask about this meeting…" rows="2"></textarea>
         <button class="btn btn-secondary btn-sm" id="recall-chat-send">Send</button>
@@ -13890,10 +13914,12 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         upcoming.classList.remove('active');
         return;
       }
-      if (isRecording) return;
       try {
         const events = (await invoke('cmd_upcoming_meetings') || [])
           .filter((event) => !isUpcomingDismissed(event));
+        assistantUpcomingMeeting = events[0] || null;
+        renderAssistantPrompts();
+        if (isRecording) return;
         if (events.length > 0) {
           const next = events[0];
           document.getElementById('btn-dismiss-upcoming').onclick = () => dismissUpcoming(next);
@@ -13922,6 +13948,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
       } catch (e) {
         // Calendar access may not be granted — silently hide
+        assistantUpcomingMeeting = null;
+        renderAssistantPrompts();
         upcoming.classList.remove('active');
       }
     }
@@ -16299,13 +16327,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     });
 
     const recallPanel = document.getElementById('recall-panel');
-    const recallDot = document.getElementById('recall-dot');
-    const recallPhaseLabel = document.getElementById('recall-phase-label');
-    const recallContextLabel = document.getElementById('recall-context-label');
     const recallTerminalContainer = document.getElementById('recall-terminal-container');
     const recallLoading = document.getElementById('recall-loading');
-    const recallNote = document.getElementById('recall-note');
-    const recallNoteInput = document.getElementById('recall-note-input');
     const recallWeeklyView = document.getElementById('recall-weekly-view');
     const recallWeeklyContent = document.getElementById('recall-weekly-content');
     const recallExitBanner = document.getElementById('recall-exit-banner');
@@ -16365,7 +16388,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       recallTerminalSessionDark = null;
       applyRecallTerminalTheme();
     }
-    let recallPhase = 'recall';
     let userExplicitlyCollapsed = false;
     let recallInitialized = false;
     let recallResizeObserver = null;
@@ -16393,7 +16415,172 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const recallChatSendBtn = document.getElementById('recall-chat-send');
     const recallProviderNotice = document.getElementById('recall-provider-notice');
     let recallReadiness = null;
-    let recallSelectedMeetingPath = null;
+    // Assistant scope is independent of the meeting pane / command palette.
+    let assistantScope = null;
+    let assistantHasAsked = false;
+    let assistantOfferDismissedPath = null;
+    let assistantUpcomingMeeting = null;
+    let assistantSetupActive = false;
+    let assistantTerminalChosen = false;
+    const assistantScopeChip = document.getElementById('assistant-scope');
+    const assistantScopeMenu = document.getElementById('assistant-scope-menu');
+    const assistantScopeOffer = document.getElementById('assistant-scope-offer');
+    const assistantSetup = document.getElementById('assistant-setup');
+
+    // Watch the document surface without coupling its renderer to Assistant.
+    let assistantObservedMeetingPath = null;
+    const assistantMeetingObserver = new MutationObserver(() => {
+      const path = openAssistantMeeting()?.path || null;
+      if (path !== assistantObservedMeetingPath) assistantOfferDismissedPath = null;
+      assistantObservedMeetingPath = path;
+      updateAssistantScopeOffer();
+    });
+    assistantMeetingObserver.observe(detailOverlay, { attributes: true, attributeFilter: ['class'] });
+    assistantMeetingObserver.observe(detailTitle, { childList: true, subtree: true, characterData: true });
+
+    function openAssistantMeeting() {
+      if (!detailOverlay.classList.contains('active') || !currentMeetingPath) return null;
+      return { path: currentMeetingPath, title: currentMeetingDetail?.title || detailTitle.textContent || 'Meeting' };
+    }
+
+    function updateAssistantScopeOffer() {
+      const meeting = openAssistantMeeting();
+      assistantScopeOffer.hidden = !meeting || meeting.path === assistantScope?.path
+        || meeting.path === assistantOfferDismissedPath;
+      assistantScopeOffer.querySelector('span').textContent = meeting ? `${meeting.title} is open.` : '';
+      assistantScopeOffer.querySelector('span').title = meeting?.title || '';
+    }
+
+    function renderAssistantPrompts() {
+      const prompts = assistantScope ? [
+        ['Debrief', 'Debrief this meeting: what was decided, what is still open, and who owes what.'],
+        ['Draft follow-up email', 'Draft a follow-up email for this meeting.'],
+        ['Prep the next meeting', 'Help me prep the next meeting in this series: open items to follow up on and a short agenda.'],
+      ] : [
+        ...(assistantUpcomingMeeting && !isUpcomingDismissed(assistantUpcomingMeeting) ? [[
+          `Prep for ${assistantUpcomingMeeting.title}`,
+          `Prep me for “${assistantUpcomingMeeting.title}”: what happened last time, open items, and what to raise.`,
+        ]] : []),
+        ['This week', 'What happened in my meetings this week? Decisions, open items, and anything overdue.'],
+        ['Open action items', 'List my open action items across meetings, with owners and dates.'],
+      ];
+      document.getElementById('assistant-prompts').replaceChildren(...prompts.map(([label, question]) => {
+        const button = document.createElement('button');
+        button.textContent = label;
+        button.title = label;
+        button.addEventListener('click', () => {
+          if (assistantSetupActive) return;
+          if (recallDevMode) {
+            recallTerminal?.focus();
+            recallTerminal?.paste(question);
+          } else if (!recallChatInput.disabled) {
+            recallChatInput.value = question;
+            void recallChatController.send();
+          }
+        });
+        return button;
+      }));
+    }
+
+    function renderAssistantScope() {
+      const label = assistantScope ? `About: ${assistantScope.title}` : 'All meetings';
+      document.getElementById('assistant-scope-label').textContent = label;
+      assistantScopeChip.title = label;
+      recallChatInput.placeholder = assistantScope ? 'Ask about this meeting…' : 'Ask about your meetings…';
+      renderAssistantPrompts();
+      updateAssistantScopeOffer();
+    }
+
+    async function setAssistantScope(meeting) {
+      if ((assistantScope?.path || '') === (meeting?.path || '') && Boolean(assistantScope) === Boolean(meeting)) return;
+      assistantScope = meeting ? { path: meeting.path, title: meeting.title || 'Meeting' } : null;
+      pendingRecallTerminalMeetingPath = assistantScope?.path || null;
+      recallTerminalContextPending = true;
+      renderAssistantScope();
+      await resetRecallChat();
+    }
+
+    function closeAssistantScopeMenu({ focus = false } = {}) {
+      assistantScopeMenu.hidden = true;
+      assistantScopeChip.setAttribute('aria-expanded', 'false');
+      if (focus) assistantScopeChip.focus();
+    }
+
+    function openAssistantScopeMenu() {
+      const openMeeting = openAssistantMeeting();
+      const scopes = [
+        ...(assistantScope ? [assistantScope] : []),
+        ...(openMeeting && openMeeting.path !== assistantScope?.path ? [openMeeting] : []),
+        null,
+      ];
+      assistantScopeMenu.replaceChildren(...scopes.map(meeting => {
+        const button = document.createElement('button');
+        button.setAttribute('role', 'menuitemradio');
+        button.setAttribute('aria-checked', String(Boolean(meeting) === Boolean(assistantScope)
+          && (meeting?.path || '') === (assistantScope?.path || '')));
+        button.textContent = meeting?.title || 'All meetings';
+        button.addEventListener('click', () => {
+          assistantOfferDismissedPath = openAssistantMeeting()?.path || null;
+          closeAssistantScopeMenu({ focus: true });
+          void setAssistantScope(meeting);
+          updateAssistantScopeOffer();
+        });
+        return button;
+      }));
+      assistantScopeMenu.hidden = false;
+      assistantScopeChip.setAttribute('aria-expanded', 'true');
+      assistantScopeMenu.querySelector('[aria-checked="true"]').focus();
+    }
+
+    assistantScopeChip.addEventListener('click', () => {
+      if (assistantScopeMenu.hidden) openAssistantScopeMenu();
+      else closeAssistantScopeMenu();
+    });
+    assistantScopeChip.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        openAssistantScopeMenu();
+      }
+    });
+    // Capture Escape before the app's other shortcuts can close a pane.
+    document.addEventListener('keydown', event => {
+      if (assistantScopeMenu.hidden) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        closeAssistantScopeMenu({ focus: true });
+      } else if (assistantScopeMenu.contains(event.target)) {
+        const items = [...assistantScopeMenu.querySelectorAll('button')];
+        const index = items.indexOf(document.activeElement);
+        if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
+            : (index + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+          items[next].focus();
+        } else if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          document.activeElement.click();
+        } else if (event.key === 'Tab') closeAssistantScopeMenu();
+      }
+    }, true);
+    document.addEventListener('click', event => {
+      if (!assistantScopeMenu.contains(event.target) && !assistantScopeChip.contains(event.target)) closeAssistantScopeMenu();
+    });
+    assistantScopeOffer.querySelector('button').addEventListener('click', () => {
+      void setAssistantScope(openAssistantMeeting());
+    });
+    document.getElementById('btn-assistant-settings').addEventListener('click', () => openSettings({ tab: 'ai' }));
+    document.getElementById('btn-assistant-open-terminal').addEventListener('click', async () => {
+      assistantTerminalChosen = true;
+      assistantSetupActive = false;
+      recallDevMode = true;
+      pendingRecallTerminalMeetingPath = assistantScope?.path || null;
+      recallTerminalContextPending = true;
+      syncRecallModeControls({ persist: false });
+      await applyAssistantExperience();
+    });
     let pendingRecallTerminalMeetingPath = null;
     // True while a Terminal session still owes its first real question the
     // context it is allowed to see (the selected meeting, or the general
@@ -16494,19 +16681,18 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
 
       if (!nextDevMode && !readiness?.nativeAvailable) {
-        recallDevMode = true;
-        syncRecallModeControls({ persist: false });
-        setRecallProviderNotice(
-          readiness?.message || 'Private Chat is not available for this assistant yet.'
-        );
-        if (recallExpanded) await applyRecallMode();
+        assistantTerminalChosen = false;
+        recallDevMode = false;
+        await chooseRecallExperience();
+        if (recallExpanded) await applyAssistantExperience();
         return;
       }
 
+      assistantSetupActive = false;
       recallDevMode = nextDevMode;
       recallModePreferenceExplicit = true;
       localStorage.setItem('minutes.recallModePreferenceExplicit', 'true');
-      pendingRecallTerminalMeetingPath = recallDevMode ? recallSelectedMeetingPath : null;
+      pendingRecallTerminalMeetingPath = recallDevMode ? assistantScope?.path || null : null;
       recallTerminalContextPending = recallDevMode;
       recallTerminalInputDraft = '';
       recallTerminalInputReliable = true;
@@ -16517,7 +16703,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           : readiness?.message || '',
         recallDevMode && readiness && !readiness.terminalAvailable ? 'error' : 'info'
       );
-      if (recallExpanded) await applyRecallMode();
+      if (recallExpanded) await applyAssistantExperience();
     }
 
     function terminalNoticeForReadiness(readiness) {
@@ -16534,58 +16720,33 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       return recallReadyNoticeText;
     }
 
-    async function chooseRecallExperience(mode, meetingPath) {
-      if (mode !== 'assistant' && mode !== 'meeting') {
-        return { mode, meetingPath };
-      }
-      recallSelectedMeetingPath = mode === 'meeting' ? meetingPath : null;
-      recallChatInput.placeholder = recallSelectedMeetingPath
-        ? 'Ask about this meeting…'
-        : 'Ask about your meetings…';
+    async function chooseRecallExperience() {
       let readiness;
       try {
         readiness = await refreshRecallReadiness();
       } catch (error) {
         console.error('Recall provider readiness:', error);
-        recallDevMode = true;
-        syncRecallModeControls({ persist: false });
-        setRecallProviderNotice(
-          'Minutes could not verify private Chat, so it opened your assistant in Terminal without reading the meeting.',
-          'error'
-        );
-        pendingRecallTerminalMeetingPath = mode === 'meeting' ? meetingPath : null;
-        recallTerminalContextPending = true;
-        recallTerminalInputDraft = '';
-        recallTerminalInputReliable = true;
-        return { mode: 'deferred', meetingPath: null };
+        readiness = { nativeAvailable: false, terminalAvailable: false,
+          assistantName: recallReadiness?.assistantName || 'Your assistant' };
+        recallReadiness = readiness;
       }
-
-      if (!readiness.nativeAvailable) {
-        recallDevMode = true;
-      } else if (!recallModePreferenceExplicit) {
-        // Earlier builds persisted Terminal when Chat was unavailable. Once a
-        // verified private provider becomes available, restore the simple
-        // experience unless the user explicitly chose Terminal themselves.
-        recallDevMode = false;
+      assistantSetupActive = !readiness?.nativeAvailable
+        && !(readiness?.terminalAvailable && (assistantTerminalChosen || (recallModePreferenceExplicit && recallDevMode)));
+      if (readiness?.nativeAvailable && !recallModePreferenceExplicit) recallDevMode = false;
+      else if (!readiness?.nativeAvailable) recallDevMode = !assistantSetupActive;
+      syncRecallModeControls({ persist: Boolean(readiness?.nativeAvailable) });
+      setRecallProviderNotice('');
+      if (assistantSetupActive) {
+        const name = readiness?.assistantName || 'Your assistant';
+        document.getElementById('assistant-setup-message').textContent = readiness?.terminalAvailable
+          ? `Private Chat isn't available for ${name}. You can use it in Terminal. Minutes reads a meeting only when you send a question.${readiness.terminalAuthenticated === false ? ` You'll sign in to ${name} in Terminal first.` : ''}`
+          : `${name} isn't installed. Install it, or choose another assistant in Settings.`;
+        document.getElementById('btn-assistant-open-terminal').hidden = !readiness?.terminalAvailable;
       }
-      syncRecallModeControls({ persist: readiness.nativeAvailable });
-
       if (recallDevMode) {
-        pendingRecallTerminalMeetingPath = mode === 'meeting' ? meetingPath : null;
+        pendingRecallTerminalMeetingPath = assistantScope?.path || null;
         recallTerminalContextPending = true;
-        recallTerminalInputDraft = '';
-        recallTerminalInputReliable = true;
-        setRecallProviderNotice(
-          terminalNoticeForReadiness(readiness),
-          readiness.terminalAvailable ? 'info' : 'error'
-        );
-        return { mode: 'deferred', meetingPath: null };
       }
-
-      pendingRecallTerminalMeetingPath = null;
-      recallTerminalContextPending = false;
-      setRecallProviderNotice(readiness.message);
-      return { mode, meetingPath };
     }
 
     // Render a safe markdown subset for assistant replies (#404 follow-up).
@@ -16605,13 +16766,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         console.error('Open chat link:', e);
       }
     });
-    // Tracks which meeting the *currently displayed* native chat conversation
-    // belongs to. Deliberately separate from currentMeetingPath: other flows
-    // (e.g. closeDetailView()) null out currentMeetingPath transiently before
-    // openRecall() re-sets it, which would cause a false "meeting changed"
-    // read if we compared against currentMeetingPath directly.
-    let recallChatMeetingPath = null;
-
     function applySidebarCollapsed(collapsed, { explicit = false } = {}) {
       // Never hide the sole pane, including when restoring an old preference.
       collapsed = collapsed && hasVisibleSecondaryPane();
@@ -16767,47 +16921,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       persistRecallWorkspaceState({ recallRatio: ratio });
       if (recallFitAddon) recallFitAddon.fit();
     });
-
-    // ── Phase management ──
-    function setRecallPhase(phase, context) {
-      if (phase === 'weekly') {
-        phase = 'recall';
-        context = null;
-      }
-      recallPhase = phase;
-      const dotClasses = ['prep', 'listening', 'debrief', 'weekly'];
-      recallDot.classList.remove(...dotClasses);
-      recallPhaseLabel.classList.remove(...dotClasses);
-      if (phase !== 'recall') {
-        recallDot.classList.add(phase);
-        recallPhaseLabel.classList.add(phase);
-      }
-      const labels = { recall: 'Assistant', prep: 'Prep', listening: 'Listening', debrief: 'Debrief' };
-      if (phase === 'weekly') {
-        labels.weekly = 'Weekly';
-      }
-      recallPhaseLabel.textContent = labels[phase] || 'Assistant';
-      recallContextLabel.textContent = context ? `\u2014 ${context}` : '';
-      recallDot.setAttribute('aria-label', 'Phase: ' + (labels[phase] || 'Assistant'));
-
-      recallWeeklyView.classList.toggle('active', phase === 'weekly');
-      if (phase === 'weekly') {
-        recallLoading.classList.remove('active');
-      }
-      // Keep the (flex:1) terminal container hidden whenever it isn't the active
-      // surface: in weekly view, and — critically — in native chat mode. Without
-      // the `!recallDevMode` guard a recording/restore phase change unhid the
-      // empty terminal, which then split the panel's vertical space 50/50 with
-      // the chat container and pushed the welcome/messages into the middle
-      // (looked "vertically centered" instead of top-anchored).
-      recallTerminalContainer.classList.toggle('hidden', phase === 'weekly' || !recallDevMode);
-      // Hide chat panel in weekly view regardless of mode; restore it when leaving.
-      if (recallChatPanel) {
-        recallChatPanel.style.display = (phase === 'weekly' || recallDevMode) ? 'none' : 'flex';
-      }
-      recallNote.classList.toggle('active', phase === 'listening');
-      persistRecallWorkspaceState({ recallPhase: phase });
-    }
 
     async function openWeeklyPhase() {
       await openWeeklyView();
@@ -17099,6 +17212,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           }
         }
 
+        if (!isAccountCommand && (question || !recallTerminalInputReliable)) assistantHasAsked = true;
         await invoke('cmd_pty_input', { sessionId: SESSION_ID, data: char });
         recallTerminalInputDraft = '';
         recallTerminalInputReliable = true;
@@ -17158,7 +17272,14 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       input: recallChatInput,
       sendButton: recallChatSendBtn,
       jumpButton: document.getElementById('recall-chat-jump'),
-      invoke,
+      invoke: (command, args) => {
+        if (command === 'cmd_recall_chat_send') assistantHasAsked = true;
+        return invoke(command, args);
+      },
+      scope: () => ({ meetingPath: assistantScope?.path || '' }),
+      welcome: () => assistantScope
+        ? `Ask me about “${assistantScope.title}”, including decisions, action items and key moments from this meeting.`
+        : 'Ask me about your meetings, including decisions, open action items and what to prepare for next.',
       listen: (name, handler) => currentWindow.listen(name, handler),
       renderMarkdown: renderMarkdownToElement,
     });
@@ -17175,6 +17296,22 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     ///
     /// Previously the dev branch only hid the chat panel and never spun up a
     /// PTY, so toggling to terminal mode mid-session showed a black pane.
+    async function applyAssistantExperience() {
+      assistantSetup.hidden = !assistantSetupActive;
+      if (assistantSetupActive) {
+        recallChatPanel.style.display = 'none';
+        recallTerminalContainer.classList.add('hidden');
+        recallLoading.classList.remove('active');
+        recallExitBanner.classList.remove('active');
+        setRecallProviderNotice('');
+        document.getElementById('btn-assistant-open-terminal').hidden
+          ? document.getElementById('btn-assistant-settings').focus()
+          : document.getElementById('btn-assistant-open-terminal').focus();
+        return;
+      }
+      await applyRecallMode();
+    }
+
     async function applyRecallMode() {
       if (recallDevMode) {
         // Terminal (developer) mode — mirror openRecall()'s dev path.
@@ -17201,6 +17338,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             recallEndBtn.classList.add('active');
           } else {
             console.error('Recall terminal spawn:', e);
+            const missing = /not found on PATH|not found in PATH|not found in common install/i.test(msg);
+            setRecallProviderNotice(missing
+              ? `${recallReadiness?.assistantName || 'Your assistant'} isn't installed. Install it, or choose another assistant in Settings.`
+              : `Terminal could not start: ${msg}`, 'error');
           }
         }
         recallLoading.classList.remove('active');
@@ -17304,23 +17445,14 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       localStorage.setItem('minutes.recallExpanded', 'true');
       persistRecallWorkspaceState({ recallExpanded: true });
 
-      if (recallDevMode) {
-        initRecallTerminal();
-        await registerPtyListeners();
-        setTimeout(() => {
-          if (recallFitAddon) recallFitAddon.fit();
-          if (recallTerminal) recallTerminal.focus();
-        }, 260);
-      } else {
-        applyRecallMode();
-        await registerChatListeners();
-      }
     }
 
     async function collapseRecallPanel() {
       if (!recallExpanded || expandAnimating) return;
       expandAnimating = true;
 
+      document.getElementById('assistant-scope-menu').hidden = true;
+      document.getElementById('assistant-scope').setAttribute('aria-expanded', 'false');
       recallPanel.classList.remove('expanded');
       syncNarrowLayout();
       recallPanel.setAttribute('inert', '');
@@ -17351,110 +17483,18 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     // ── Open Recall (spawn PTY if needed, then expand) ──
-    async function openRecall(mode, meetingPath) {
-      const experience = await chooseRecallExperience(mode, meetingPath);
-      mode = experience.mode;
-      meetingPath = experience.meetingPath;
-      recallLoading.classList.add('active');
-      recallTerminalContainer.classList.add('hidden');
+    async function openRecall(mode, meetingPath, meetingTitle) {
+      if (mode === 'meeting' && meetingPath) {
+        await setAssistantScope({ path: meetingPath,
+          title: meetingTitle || (currentMeetingPath === meetingPath ? currentMeetingDetail?.title : null) || 'Meeting' });
+      } else if (!assistantHasAsked) {
+        await setAssistantScope(openAssistantMeeting());
+      }
+      renderAssistantScope();
+      await chooseRecallExperience();
       recallExitBanner.classList.remove('active');
-
       await expandRecallPanel();
-
-      if (!recallDevMode) {
-        // Native chat mode: apply layout and register listeners.
-        // expandRecallPanel already called applyRecallMode() + registerChatListeners()
-        // but handle the case where the panel was already expanded (bailed early).
-        // Unlike the terminal branch below, this path never forwarded
-        // meetingPath anywhere, so the backend chat handler had no way to
-        // know which meeting was focused ("Discuss with Agent" opened the
-        // chat but cmd_recall_chat_send saw no current_meeting_path).
-        if (meetingPath) {
-          // Only reset the conversation when switching to a *different*
-          // meeting. Re-focusing the same meeting (closing/reopening the
-          // panel, clicking "Discuss with Agent" again) must preserve the
-          // ongoing chat. Compare against recallChatMeetingPath rather than
-          // currentMeetingPath — some callers (closeDetailView) null out
-          // currentMeetingPath transiently right before invoking openRecall,
-          // which would otherwise look like a meeting switch every time.
-          const switchedMeeting = meetingPath !== recallChatMeetingPath;
-          currentMeetingPath = meetingPath;
-          recallChatMeetingPath = meetingPath;
-          persistRecallWorkspaceState({ currentMeetingPath: meetingPath });
-          if (switchedMeeting) {
-            await resetRecallChat();
-          }
-        }
-        applyRecallMode();
-        await registerChatListeners();
-        return;
-      }
-
-      // Terminal mode, using the original PTY path.
-      // If the panel was already expanded, expandRecallPanel bailed out
-      // and skipped initRecallTerminal. Ensure it's initialized.
-      initRecallTerminal();
-      await registerPtyListeners();
-
-      try {
-        const opts = { mode, themeDark: isEffectiveDarkTheme() };
-        if (meetingPath) opts.meetingPath = meetingPath;
-        await invoke('cmd_spawn_terminal', opts);
-        markRecallPtyAlive();
-        recallEndBtn.classList.add('active');
-        if (mode === 'assistant' && !meetingPath) {
-          try {
-            const bundle = await invoke('cmd_proactive_context_bundle');
-            recallContextLabel.textContent = bundle.summary ? `\u2014 ${bundle.summary}` : '';
-          } catch (contextError) {
-            console.error('Recall proactive context:', contextError);
-          }
-        }
-      } catch (e) {
-        const msg = typeof e === 'string' ? e : String(e);
-        if (msg.includes('already running') || msg.includes('Already')) {
-          markRecallPtyAlive();
-          recallLoading.classList.remove('active');
-          recallTerminalContainer.classList.remove('hidden');
-          recallEndBtn.classList.add('active');
-          // Re-fit after reveal so xterm uses the full panel width
-          if (recallFitAddon) {
-            requestAnimationFrame(() => {
-              recallFitAddon.fit();
-              if (recallPtyAlive && recallTerminal) {
-                invoke('cmd_pty_resize', {
-                  sessionId: SESSION_ID,
-                  cols: recallTerminal.cols,
-                  rows: recallTerminal.rows,
-                }).catch(() => { });
-              }
-            });
-          }
-        } else if (/not found on PATH|not found in PATH|not found in common install/i.test(msg)) {
-          // The assistant needs an external agent CLI (Claude Code by
-          // default). It's OPTIONAL — the rest of the app works without it —
-          // so degrade with a calm note instead of a scary "Could not start"
-          // error for users who don't have an agent installed.
-          console.info('Recall: assistant agent not installed (optional):', msg);
-          recallLoading.querySelector('span').textContent =
-            'AI assistant is optional; install Claude Code to enable it.';
-        } else {
-          console.error('Recall spawn:', e);
-          recallLoading.querySelector('span').textContent = 'Could not start: ' + msg;
-        }
-      }
-    }
-
-    // ── Auto-expand triggers ──
-    function autoExpandRecall(mode, context) {
-      if (userExplicitlyCollapsed) {
-        recallNudge.classList.add('active');
-        return;
-      }
-      const conversationMode = mode === 'prep' || mode === 'debrief' ? 'assistant' : mode;
-      openRecall(conversationMode);
-      if (mode === 'prep') setRecallPhase('prep', context);
-      else if (mode === 'debrief') setRecallPhase('debrief', context);
+      await applyAssistantExperience();
     }
 
     // ── Call detection banner ──
@@ -18906,19 +18946,25 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     });
 
     // ── Listen for recall:expand events from Rust backend ──
-    currentWindow.listen('recall:expand', (event) => {
-      const { title, mode } = event.payload;
+    currentWindow.listen('recall:expand', async (event) => {
+      const { title, mode, path } = event.payload;
       const context = (title || '').replace('Minutes Assistant', '').replace('Discussing: ', '').trim();
-      if (mode === 'meeting') {
-        setRecallPhase('debrief', context);
-      } else {
-        setRecallPhase('recall', context || null);
+      if (mode === 'meeting' && path) {
+        // The backend opened the session on this meeting (e.g. a sensitive
+        // meeting's debrief), so the pane is about it too.
+        await setAssistantScope({ path, title: context || 'Meeting' });
       }
+      assistantSetupActive = false;
+      assistantSetup.hidden = true;
       markRecallPtyAlive();
+      await expandRecallPanel();
       recallLoading.classList.remove('active');
-      // Only reveal the terminal when it's the active surface (dev mode); in
-      // chat mode it must stay hidden so it doesn't steal the panel's height.
-      if (recallDevMode) recallTerminalContainer.classList.remove('hidden');
+      if (recallDevMode) {
+        recallChatPanel.style.display = 'none';
+        recallTerminalContainer.classList.remove('hidden');
+        initRecallTerminal();
+        await registerPtyListeners();
+      } else await applyAssistantExperience();
       recallEndBtn.classList.add('active');
     });
 
@@ -18969,7 +19015,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function resetRecallEndButton() {
       if (recallEndArmTimer) clearTimeout(recallEndArmTimer);
       recallEndArmTimer = null;
-      recallEndBtn.textContent = 'End Session';
+      recallEndBtn.textContent = 'End session';
       recallEndBtn.style.minWidth = '';
     }
 
@@ -19006,24 +19052,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       await openRecall('assistant');
     });
 
-    // Quick note inside recall panel
-    async function saveRecallNote() {
-      const text = recallNoteInput.value.trim();
-      if (!text) return;
-      try {
-        await invoke('cmd_add_note', { text });
-        recallNoteInput.value = '';
-      } catch (e) {
-        console.error('Recall note:', e);
-        showNoteFailure(e);
-      }
-    }
-
-    document.getElementById('btn-recall-note-save').addEventListener('click', saveRecallNote);
-    recallNoteInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); saveRecallNote(); }
-    });
-
     // ── Discuss with Agent (from meeting detail) ──
     document.getElementById('btn-discuss-ai').addEventListener('click', async () => {
       if (!currentMeetingPath) return;
@@ -19041,8 +19069,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     // context gate still holds: Minutes reads the meeting only on submit.
     async function discussMeetingWithAgent(path, title) {
       const name = title || 'Meeting';
-      await openRecall('meeting', path);
-      setRecallPhase('debrief', name);
+      await openRecall('meeting', path, name);
       if (!recallDevMode || !recallTerminal || !recallPtyAlive) return;
       recallTerminal.focus();
       // Never type over something the person already started.
@@ -19053,47 +19080,13 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       recallTerminal.paste(`Discuss the meeting in CURRENT_MEETING.md (“${name}”): `);
     }
 
-    // ── Recording-aware phase transitions ──
+    // Preserve the recording control's note reset when a recording starts.
     const originalCheckStatus = checkStatus;
     let prevRecording = false;
-    let prevProcessing = false;
     checkStatus = async function () {
       await originalCheckStatus();
-
-      if (recallExpanded) {
-        if (isRecording && !prevRecording) {
-          setRecallPhase('listening', null);
-          quickNote.classList.remove('active');
-        } else if (!isRecording && prevRecording) {
-          // Stop recording → leave the "Listening" pulse immediately. The agent
-          // can already discuss what was said from the in-memory transcript while
-          // the summary finishes; staying on 'listening' through the entire
-          // processing window misrepresents what's happening.
-          setRecallPhase('debrief', null);
-        } else if (!isRecording && !isProcessing && recallPhase === 'listening') {
-          setRecallPhase('recall', null);
-        }
-      }
-
-      if (!isRecording && prevRecording) {
-        if (!recallExpanded) {
-          autoExpandRecall('debrief', null);
-        }
-      }
-
+      if (recallExpanded && isRecording && !prevRecording) quickNote.classList.remove('active');
       prevRecording = isRecording;
-      prevProcessing = isProcessing;
-    };
-
-    // ── Upcoming meeting auto-expand ──
-    const originalCheckUpcoming = checkUpcoming;
-    checkUpcoming = async function () {
-      await originalCheckUpcoming();
-      const upcomingEl = document.getElementById('upcoming');
-      if (upcomingEl && upcomingEl.classList.contains('active') && !recallExpanded && !isRecording) {
-        const title = document.getElementById('upcoming-title').textContent;
-        autoExpandRecall('prep', title);
-      }
     };
 
     // ══════════════════════════════════════════════════════════════
@@ -19232,17 +19225,17 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     async function persistRecallWorkspaceState(patch = {}) {
       recallWorkspaceState = {
         recallExpanded,
-        recallPhase,
         recallRatio: getStoredRecallRatio(),
         currentMeetingPath: currentMeetingPath || '',
         openArtifactPath: openArtifactPath || '',
         ...(recallWorkspaceState || {}),
         ...patch,
+        recallPhase: 'recall',
       };
       try {
         await invoke('cmd_set_recall_workspace_state', {
           recallExpanded: recallWorkspaceState.recallExpanded,
-          recallPhase: recallWorkspaceState.recallPhase,
+          recallPhase: 'recall',
           recallRatio: recallWorkspaceState.recallRatio,
           currentMeetingPath: recallWorkspaceState.currentMeetingPath,
           openArtifactPath: recallWorkspaceState.openArtifactPath,
@@ -20442,21 +20435,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     // Restore panel state from previous session
     (async () => {
-      // The assistant is optional: when the configured agent CLI
-      // (settings.assistant.agent) is not installed, skip only the auto-open,
-      // so the panel does not pop up and fail to spawn. Gate on the configured
-      // agent, not "any agent": cmd_list_agents also lists shells that exist
-      // on every machine.
-      let assistantAvailable = true;
-      try {
-        const [agents, settings] = await Promise.all([
-          invoke('cmd_list_agents'),
-          invoke('cmd_get_settings'),
-        ]);
-        const configured = settings?.assistant?.agent || 'claude';
-        assistantAvailable = Array.isArray(agents) && agents.some(a => a.name === configured);
-      } catch (_) { /* on any error, assume available and fall through */ }
-
+      // Restore a pane the person left open; readiness can show setup if the
+      // configured assistant is no longer available.
       try {
         recallWorkspaceState = await invoke('cmd_get_recall_workspace_state');
       } catch (e) {
@@ -20464,7 +20444,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         recallWorkspaceState = null;
       }
       if (!recallWorkspaceState) {
-        if (assistantAvailable && localStorage.getItem('minutes.recallExpanded') === 'true') {
+        if (localStorage.getItem('minutes.recallExpanded') === 'true') {
           setTimeout(() => openRecall('assistant'), 500);
         }
         return;
@@ -20478,12 +20458,9 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         }
       }
 
-      if (assistantAvailable && recallWorkspaceState.recallExpanded) {
+      if (recallWorkspaceState.recallExpanded) {
         setTimeout(async () => {
           await openRecall('assistant');
-          if (recallWorkspaceState.recallPhase) {
-            setRecallPhase(recallWorkspaceState.recallPhase, null);
-          }
         }, 500);
       }
 

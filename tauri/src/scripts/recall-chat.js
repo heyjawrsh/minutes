@@ -51,8 +51,10 @@
     }
   }
 
-  /** @param {import('../contracts/recall-controller').RecallChatOptions} options */
-  function create({ messages, input, sendButton, jumpButton, invoke, listen, renderMarkdown, report = console.error }) {
+  /** @param {import('../contracts/recall-controller').RecallChatOptions & {
+   * scope?: () => { meetingPath: string }, welcome?: () => string
+   * }} options */
+  function create({ messages, input, sendButton, jumpButton, invoke, listen, renderMarkdown, report = console.error, scope = () => ({ meetingPath: '' }), welcome = () => 'Ask me about your meetings, including action items, decisions and key moments from the transcripts.' }) {
     let current = null, last = null, streaming = false, resetting = false, frame = null, generation = 0;
     let registration = null;
     const unlisteners = [];
@@ -144,7 +146,7 @@
       if (messages.children.length) return;
       const bubble = document.createElement('div');
       bubble.className = 'chat-bubble chat-bubble-assistant';
-      bubble.textContent = 'Ask me about this meeting, including action items, decisions and key moments from the transcript. I have access to your meeting workspace.';
+      bubble.textContent = welcome();
       messages.appendChild(bubble);
     }
     async function reset() {
@@ -167,6 +169,7 @@
       const text = input.value.trim();
       if (streaming || resetting || !text) return;
       const turnGeneration = generation;
+      const meetingPath = scope()?.meetingPath || '';
       // Registration must finish before sending so a fast local response
       // cannot disappear between invoke and listener setup.
       setStreaming(true);
@@ -181,7 +184,7 @@
       current = last = { bubble, raw: '', partial: false, dirty: false, follow: true, error: '' };
       const turn = current;
       messages.append(user, bubble); scrollBottom(); input.value = '';
-      try { await invoke('cmd_recall_chat_send', { message: text }); }
+      try { await invoke('cmd_recall_chat_send', { message: text, meetingPath }); }
       catch (error) {
         if (turnGeneration !== generation || last !== turn) return;
         const message = error instanceof Error ? error.message : String(error);
