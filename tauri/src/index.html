@@ -3191,33 +3191,45 @@
       z-index: 7;
     }
 
-    /* Leftmost pane (list collapsed): start the header below the window
-       controls row, and move the list's expand rail into that row instead of
-       over the tabs. Same 32px inset the list header reserves on macOS. */
-    body.sidebar-collapsed .meeting-pane .detail-header {
+    /* One home for the list toggle in every state, so collapsing only flips
+       the chevron.
+       macOS: the window-controls row (right of the traffic lights). That row
+       is empty in every layout: with the list open the brand sits below it
+       (.header reserves 32px), and with the list collapsed whichever pane is
+       leftmost starts its header below it too.
+       Elsewhere: the search row's left edge (16px, ~88px down), as before;
+       a leftmost meeting pane insets its header and tabs to clear it. */
+    html[data-platform="macos"] .sidebar-collapse-btn,
+    html[data-platform="macos"] body.sidebar-collapsed .sidebar-collapse-btn,
+    html[data-platform="macos"] body.sidebar-collapsed .sidebar-expand-rail {
+      position: fixed;
+      top: 4px;
+      left: 86px;
+    }
+
+    html[data-platform="macos"] .sidebar-collapse-btn {
+      z-index: 40;
+    }
+
+    html[data-platform="macos"] body.sidebar-collapsed .meeting-pane .detail-header {
       padding-top: 50px;
     }
 
-    body.sidebar-collapsed .meeting-pane .detail-close-x {
+    html[data-platform="macos"] body.sidebar-collapsed .meeting-pane .detail-close-x {
       top: 50px;
     }
 
-    body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail {
-      top: 12px;
+    html[data-platform="macos"] body.sidebar-collapsed:not(:has(#detail-overlay.active)) .recall-panel.expanded .recall-header {
+      margin-top: 32px;
     }
 
-    /* The list's own collapse button stays visible on purpose while collapsed
-       (it sits under the rail at the same spot elsewhere); beside a meeting the
-       rail has moved, so hide the button instead of showing two chevrons. */
-    body.sidebar-collapsed:has(#detail-overlay.active) .app-left .sidebar-collapse-btn {
-      visibility: hidden;
+    html[data-platform="macos"] body.sidebar-collapsed:not(:has(#detail-overlay.active)):not(:has(#recall-panel.expanded)) .md-viewer-header {
+      margin-top: 32px;
     }
 
-    /* In the window-controls row: centred on the traffic lights, one
-       light-gap after the last of them. */
-    html[data-platform="macos"] body.sidebar-collapsed:has(#detail-overlay.active) .sidebar-expand-rail {
-      top: 4px;
-      left: 86px;
+    html:not([data-platform="macos"]) body.sidebar-collapsed .meeting-pane .detail-header,
+    html:not([data-platform="macos"]) body.sidebar-collapsed .meeting-pane .detail-tabs {
+      padding-left: 56px;
     }
 
     .detail-header {
