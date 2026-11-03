@@ -7854,9 +7854,13 @@ pub fn cmd_note_target() -> Option<&'static str> {
 
 /// Start a no-capture sensitive meeting from the desktop app.
 #[tauri::command]
-pub fn cmd_sensitive_start(title: Option<String>) -> Result<serde_json::Value, String> {
+pub fn cmd_sensitive_start(
+    app: tauri::AppHandle,
+    title: Option<String>,
+) -> Result<serde_json::Value, String> {
     let session =
         minutes_core::sensitive::start(title.as_deref()).map_err(|error| error.to_string())?;
+    crate::sync_tray_state(&app);
     Ok(serde_json::json!({
         "id": session.id,
         "title": session.title,
@@ -7872,6 +7876,7 @@ pub fn cmd_sensitive_stop(
 ) -> Result<serde_json::Value, String> {
     let config = Config::load();
     let result = minutes_core::sensitive::stop(None, &config).map_err(|error| error.to_string())?;
+    crate::sync_tray_state(&app);
     let path = result.path.to_string_lossy().to_string();
     if let Err(error) = spawn_terminal(&app, &state.pty_manager, "meeting", Some(&path), None, None)
     {

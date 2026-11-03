@@ -31,7 +31,7 @@ impl ShortcutSlot {
 
     fn label(&self) -> &'static str {
         match self {
-            Self::QuickThought => "Quick Thought",
+            Self::QuickThought => "Memo",
             Self::Dictation => "Dictation",
         }
     }
@@ -794,7 +794,7 @@ fn stop_slot_session(app: &tauri::AppHandle, slot: ShortcutSlot, discard: bool) 
             if let Err(e) = crate::commands::request_stop(&state.recording, &state.stop_flag) {
                 crate::commands::show_user_notification(
                     app,
-                    "Quick Thought",
+                    "Memo",
                     &format!("Could not stop recording: {}", e),
                 );
             }

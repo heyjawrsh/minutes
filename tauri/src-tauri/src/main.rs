@@ -868,6 +868,14 @@ impl TrayActivity {
     }
 }
 
+fn sensitive_menu_label(active: bool) -> &'static str {
+    if active {
+        "Stop Sensitive Meeting"
+    } else {
+        "Sensitive Meeting"
+    }
+}
+
 /// Snapshot of the lifecycle flags used to derive `TrayActivity`. Capturing
 /// once per sync keeps derivation deterministic if a flag flips between
 /// reads, and makes the derivation testable as a pure function.
@@ -978,6 +986,12 @@ fn apply_tray_activity(
                 .reprocess_last_dictation
                 .set_enabled(!activity.is_active())
                 .ok();
+            handles
+                .sensitive
+                .set_text(minutes_core::i18n::tr(sensitive_menu_label(
+                    minutes_core::sensitive::is_active(),
+                )))
+                .ok();
             handles.stop.set_enabled(activity.is_active()).ok();
             handles
                 .stop
@@ -1042,9 +1056,13 @@ pub fn rebuild_localized_shell(app: &tauri::AppHandle) {
 
     if let Some(h) = app.try_state::<TrayMenuHandles>() {
         h.open.set_text(tr("Open Minutes")).ok();
-        h.record.set_text(tr("Start Recording")).ok();
-        h.quick_thought.set_text(tr("Quick Thought")).ok();
-        h.sensitive.set_text(tr("Sensitive Meeting")).ok();
+        h.record.set_text(tr("Record Meeting")).ok();
+        h.quick_thought.set_text(tr("Record Memo")).ok();
+        h.sensitive
+            .set_text(tr(sensitive_menu_label(
+                minutes_core::sensitive::is_active(),
+            )))
+            .ok();
         h.coach
             .set_text(tr(if snapshot.copilot {
                 "Coach ✓"
@@ -1063,7 +1081,7 @@ pub fn rebuild_localized_shell(app: &tauri::AppHandle) {
                 "Mute My Mic (Recording Only)"
             }))
             .ok();
-        h.note.set_text(tr("Add Note...")).ok();
+        h.note.set_text(tr("Add Note…")).ok();
         h.copy_last_dictation
             .set_text(tr("Copy Last Dictation"))
             .ok();
@@ -1073,7 +1091,7 @@ pub fn rebuild_localized_shell(app: &tauri::AppHandle) {
         h.reprocess_last_dictation
             .set_text(tr("Reprocess Last Dictation"))
             .ok();
-        h.assistant.set_text(tr("Recall")).ok();
+        h.assistant.set_text(tr("Assistant")).ok();
         h.list.set_text(tr("Open Meetings Folder")).ok();
         h.paste_summary.set_text(tr("Copy Latest Summary")).ok();
         h.paste_transcript
@@ -1562,7 +1580,7 @@ fn refresh_calendar_items(
         if let Ok(item) = MenuItem::with_id(
             app,
             "calendar-access-warning",
-            "Calendar access limited — reminders off (click to fix)",
+            minutes_core::i18n::tr("Calendar access limited — reminders off (click to fix)"),
             true,
             None::<&str>,
         ) {
@@ -2460,7 +2478,7 @@ fn main() {
             let record_item = MenuItem::with_id(
                 app,
                 "record",
-                tr("Start Recording"),
+                tr("Record Meeting"),
                 !initial_recording,
                 None::<&str>,
             )?;
@@ -2468,7 +2486,7 @@ fn main() {
             let quick_thought_item = MenuItem::with_id(
                 app,
                 "quick-thought",
-                tr("Quick Thought"),
+                tr("Record Memo"),
                 !initial_recording,
                 None::<&str>,
             )?;
@@ -2476,11 +2494,10 @@ fn main() {
             let sensitive_item = MenuItem::with_id(
                 app,
                 "sensitive",
-                tr("Sensitive Meeting"),
+                tr(sensitive_menu_label(minutes_core::sensitive::is_active())),
                 true,
                 None::<&str>,
             )?;
-            let sensitive_item_ref = sensitive_item.clone();
             let stop_item = MenuItem::with_id(
                 app,
                 "stop",
@@ -2489,7 +2506,8 @@ fn main() {
                 None::<&str>,
             )?;
             let stop_item_ref = stop_item.clone();
-            let coach_item = MenuItem::with_id(app, "coach-toggle", "Coach", true, None::<&str>)?;
+            let coach_item =
+                MenuItem::with_id(app, "coach-toggle", tr("Coach"), true, None::<&str>)?;
             #[cfg(feature = "voice-live")]
             let voice_item =
                 MenuItem::with_id(app, "voice-toggle", tr("Voice"), true, None::<&str>)?;
@@ -2511,7 +2529,7 @@ fn main() {
             )?;
             let mic_mute_item_ref = mic_mute_item.clone();
             let sep = MenuItem::with_id(app, "sep1", "──────────", false, None::<&str>)?;
-            let note_item = MenuItem::with_id(app, "note", tr("Add Note..."), true, None::<&str>)?;
+            let note_item = MenuItem::with_id(app, "note", tr("Add Note…"), true, None::<&str>)?;
             let copy_last_dictation_item = MenuItem::with_id(
                 app,
                 "copy-last-dictation",
@@ -2550,7 +2568,7 @@ fn main() {
                 None::<&str>,
             )?;
             let assistant_item =
-                MenuItem::with_id(app, "assistant", tr("Recall"), true, None::<&str>)?;
+                MenuItem::with_id(app, "assistant", tr("Assistant"), true, None::<&str>)?;
             let screen_share_item = MenuItem::with_id(
                 app,
                 "screen-share-toggle",
@@ -2613,7 +2631,6 @@ fn main() {
                     let stop = stop_clone.clone();
                     let rec_item = record_item_ref.clone();
                     let quick_item = quick_thought_item_ref.clone();
-                    let sensitive_item_ref = sensitive_item_ref.clone();
                     let stp_item = stop_item_ref.clone();
                     let screen_share_hidden = screen_share_hidden.clone();
                     let screen_share_item_ref = screen_share_item_ref.clone();
@@ -2648,7 +2665,7 @@ fn main() {
                                 return;
                             }
                             // Transitional text only; see "record" arm for full rationale.
-                            quick_item.set_text("Starting Quick Thought…").ok();
+                            quick_item.set_text(tr("Starting Memo…")).ok();
                             let app_handle = app.clone();
                             let ri = rec_item.clone();
                             let qi = quick_item.clone();
@@ -2666,8 +2683,8 @@ fn main() {
                                     None,
                                     None,
                                 );
-                                ri.set_text("Start Recording").ok();
-                                qi.set_text("Quick Thought").ok();
+                                ri.set_text(tr("Record Meeting")).ok();
+                                qi.set_text(tr("Record Memo")).ok();
                             });
                         }
                         "stop" => {
@@ -2729,8 +2746,8 @@ fn main() {
                             // re-renders the idle label fires when the
                             // active session's RAII guard drops and triggers
                             // `sync_tray_state` (Live/DictationActiveGuard).
-                            rec_item.set_text("Stopping...").ok();
-                            quick_item.set_text("Quick Thought").ok();
+                            rec_item.set_text(tr("Stopping…")).ok();
+                            quick_item.set_text(tr("Record Memo")).ok();
                             stp_item.set_enabled(false).ok();
                             let app_done = app.clone();
                             let ri = rec_item.clone();
@@ -2740,8 +2757,8 @@ fn main() {
                                     if commands::wait_for_recording_shutdown(
                                         std::time::Duration::from_secs(120),
                                     ) {
-                                        ri.set_text("Start Recording").ok();
-                                        qi.set_text("Quick Thought").ok();
+                                        ri.set_text(tr("Record Meeting")).ok();
+                                        qi.set_text(tr("Record Memo")).ok();
                                         sync_tray_state(&app_done);
                                     }
                                 } else {
@@ -2756,8 +2773,8 @@ fn main() {
                                     // flag and re-enable Stop — codex attack
                                     // #1 generalized to all flag-based stop
                                     // paths).
-                                    ri.set_text("Start Recording").ok();
-                                    qi.set_text("Quick Thought").ok();
+                                    ri.set_text(tr("Record Meeting")).ok();
+                                    qi.set_text(tr("Record Memo")).ok();
                                 }
                             });
                         }
@@ -2797,7 +2814,7 @@ fn main() {
                             } else {
                                 "Mute My Mic (Recording Only)"
                             };
-                            mic_mute_item_ref.set_text(label).ok();
+                            mic_mute_item_ref.set_text(tr(label)).ok();
                         }
                         "sensitive" => {
                             if minutes_core::sensitive::is_active() {
@@ -2805,7 +2822,6 @@ fn main() {
                                 let state = app.state::<commands::AppState>();
                                 match commands::cmd_sensitive_stop(app_handle, state) {
                                     Ok(result) => {
-                                        sensitive_item_ref.set_text("Sensitive Meeting").ok();
                                         commands::show_user_notification(
                                             app,
                                             "Sensitive meeting saved",
@@ -2822,9 +2838,8 @@ fn main() {
                                     ),
                                 }
                             } else {
-                                match commands::cmd_sensitive_start(None) {
+                                match commands::cmd_sensitive_start(app.clone(), None) {
                                     Ok(result) => {
-                                        sensitive_item_ref.set_text("Stop Sensitive Meeting").ok();
                                         commands::show_user_notification(
                                             app,
                                             "Sensitive meeting started",
@@ -4262,6 +4277,12 @@ mod tray_activity_tests {
         assert!(TrayActivity::Dictation.is_active());
         assert!(TrayActivity::Copilot.is_active());
         assert!(!TrayActivity::Copilot.blocks_capture_controls());
+    }
+
+    #[test]
+    fn sensitive_menu_label_matches_active_state() {
+        assert_eq!(super::sensitive_menu_label(false), "Sensitive Meeting");
+        assert_eq!(super::sensitive_menu_label(true), "Stop Sensitive Meeting");
     }
 
     #[test]

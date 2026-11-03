@@ -499,7 +499,7 @@ fn dispatch_action(
             Ok(ActionResponse::LiveLines { lines })
         }
         ActionId::StartSensitiveMeeting => {
-            cmd_sensitive_start(None)?;
+            cmd_sensitive_start(app, None)?;
             Ok(ActionResponse::Ok)
         }
         ActionId::StopSensitiveMeeting => {

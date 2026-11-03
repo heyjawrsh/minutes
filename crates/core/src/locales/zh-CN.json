@@ -55,5 +55,20 @@
   "Today": "今天",
   "Tomorrow": "明天",
   "Starts in {}": "{}后开始",
-  "Starting now": "即将开始"
+  "Starting now": "即将开始",
+  "Record Meeting": "录制会议",
+  "Record Memo": "录制备忘录",
+  "Assistant": "助手",
+  "Memo": "备忘录",
+  "Starting Memo…": "正在开始录制备忘录…",
+  "Stopping…": "正在停止…",
+  "Stop Sensitive Meeting": "结束敏感会议",
+  "Coach": "Coach",
+  "Coach ✓": "Coach ✓",
+  "Stop Coach": "停止 Coach",
+  "Copy Last Dictation": "复制上次听写",
+  "Paste Last Dictation": "粘贴上次听写",
+  "Reprocess Last Dictation": "重新处理上次听写",
+  "Minutes — Coach Listening...": "Minutes — Coach 正在聆听…",
+  "Calendar access limited — reminders off (click to fix)": "日历访问受限 — 提醒已关闭（点击修复）"
 }

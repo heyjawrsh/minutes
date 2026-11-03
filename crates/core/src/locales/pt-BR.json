@@ -55,5 +55,20 @@
   "Today": "Hoje",
   "Tomorrow": "Amanhã",
   "Starts in {}": "Começa em {}",
-  "Starting now": "Começando agora"
+  "Starting now": "Começando agora",
+  "Record Meeting": "Gravar reunião",
+  "Record Memo": "Gravar memo de voz",
+  "Assistant": "Assistente",
+  "Memo": "Memo de voz",
+  "Starting Memo…": "Iniciando memo de voz…",
+  "Stopping…": "Parando…",
+  "Stop Sensitive Meeting": "Encerrar reunião sigilosa",
+  "Coach": "Coach",
+  "Coach ✓": "Coach ✓",
+  "Stop Coach": "Parar Coach",
+  "Copy Last Dictation": "Copiar último ditado",
+  "Paste Last Dictation": "Colar último ditado",
+  "Reprocess Last Dictation": "Reprocessar último ditado",
+  "Minutes — Coach Listening...": "Minutes — Coach ouvindo...",
+  "Calendar access limited — reminders off (click to fix)": "Acesso ao calendário limitado — lembretes desativados (clique para corrigir)"
 }
