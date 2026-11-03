@@ -240,6 +240,7 @@
       background: transparent;
       color: var(--text);
       height: 100vh;
+      padding-top: 36px;
       display: flex;
       flex-direction: row;
       overflow: hidden;
@@ -258,6 +259,53 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-repeat: repeat;
       background-size: 256px;
+    }
+
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 36px;
+      z-index: 50;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      padding: 0 12px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      -webkit-app-region: drag;
+    }
+
+    html[data-platform="macos"] .top-bar {
+      padding-left: 86px;
+    }
+
+    .top-bar button,
+    .top-bar .status-pill {
+      -webkit-app-region: no-drag;
+    }
+
+    .top-bar-start,
+    .top-bar-end {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .top-bar-center {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+    }
+
+    .top-bar .brand-mark {
+      width: 1.375rem;
+      height: 1.375rem;
     }
 
     /* ── Split layout ── */
@@ -315,7 +363,7 @@
       font-size: var(--text-xs);
       line-height: 1;
       cursor: pointer;
-      display: inline-flex;
+      display: none;
       transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
     }
 
@@ -351,7 +399,7 @@
        underneath, so the terminal is not re-fitted to a sliver. */
     body.doc-overlay .md-viewer.active {
       position: absolute;
-      top: 0;
+      top: 36px;
       right: 0;
       bottom: 0;
       width: min(100%, 560px);
@@ -1169,10 +1217,6 @@
       margin-top: 32px;
     }
 
-    html[data-platform="macos"] .recall-header {
-      margin-top: 1em;
-    }
-
     .brand {
       display: flex;
       align-items: center;
@@ -1259,7 +1303,7 @@
       cursor: pointer;
     }
 
-    .header .btn-icon {
+    .top-bar .btn-icon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1359,11 +1403,11 @@
       color: var(--accent);
     }
 
-    html[data-platform="macos"] .header .status-pill.recording,
-    html[data-platform="macos"] .header .status-pill.starting,
-    html[data-platform="macos"] .header .status-pill.processing,
-    html[data-platform="macos"] .header .status-pill.live,
-    html[data-platform="macos"] .header .status-pill.sensitive {
+    html[data-platform="macos"] .top-bar .status-pill.recording,
+    html[data-platform="macos"] .top-bar .status-pill.starting,
+    html[data-platform="macos"] .top-bar .status-pill.processing,
+    html[data-platform="macos"] .top-bar .status-pill.live,
+    html[data-platform="macos"] .top-bar .status-pill.sensitive {
       font-size: 0;
       padding: 0;
       width: 8px;
@@ -1833,7 +1877,7 @@
       color: var(--text);
     }
 
-    html[data-platform="macos"] .header .status-pill.recording {
+    html[data-platform="macos"] .top-bar .status-pill.recording {
       background: var(--capture);
     }
 
@@ -1984,7 +2028,7 @@
       transform: rotate(180deg);
     }
 
-    body.sidebar-collapsed .sidebar-collapse-btn {
+    body.sidebar-collapsed .sidebar-collapse-btn:not(.top-bar *) {
       position: fixed;
       /* Match the button's expanded in-flow spot (search-wrap has 16px left
          padding; the row sits ~88px down) so collapsing/expanding only rotates
@@ -2039,7 +2083,7 @@
       content: "⌕";
       position: absolute;
       left: 28px;
-      top: 53px;
+      top: 17px;
       font-size: var(--text-base);
       color: var(--text-secondary);
       pointer-events: none;
@@ -3265,47 +3309,6 @@
 
     .meeting-pane .detail-close-x {
       z-index: 7;
-    }
-
-    /* One home for the list toggle in every state, so collapsing only flips
-       the chevron.
-       macOS: the window-controls row (right of the traffic lights). That row
-       is empty in every layout: with the list open the brand sits below it
-       (.header reserves 32px), and with the list collapsed whichever pane is
-       leftmost starts its header below it too.
-       Elsewhere: the search row's left edge (16px, ~88px down), as before;
-       a leftmost meeting pane insets its header and tabs to clear it. */
-    html[data-platform="macos"] .sidebar-collapse-btn,
-    html[data-platform="macos"] body.sidebar-collapsed .sidebar-collapse-btn,
-    html[data-platform="macos"] body.sidebar-collapsed .sidebar-expand-rail {
-      position: fixed;
-      top: 4px;
-      left: 86px;
-    }
-
-    html[data-platform="macos"] .sidebar-collapse-btn {
-      z-index: 40;
-    }
-
-    html[data-platform="macos"] body.sidebar-collapsed .meeting-pane .detail-header {
-      padding-top: 50px;
-    }
-
-    html[data-platform="macos"] body.sidebar-collapsed .meeting-pane .detail-close-x {
-      top: 50px;
-    }
-
-    html[data-platform="macos"] body.sidebar-collapsed:not(:has(#detail-overlay.active)) .recall-panel.expanded .recall-header {
-      margin-top: 32px;
-    }
-
-    html[data-platform="macos"] body.sidebar-collapsed:not(:has(#detail-overlay.active)):not(:has(#recall-panel.expanded)) .md-viewer-header {
-      margin-top: 32px;
-    }
-
-    html:not([data-platform="macos"]) body.sidebar-collapsed .meeting-pane .detail-header,
-    html:not([data-platform="macos"]) body.sidebar-collapsed .meeting-pane .detail-tabs {
-      padding-left: 56px;
     }
 
     .detail-header {
@@ -6424,27 +6427,26 @@
 </head>
 
 <body>
-  <div class="app-left">
-    <!-- Header -->
-    <div class="window-drag-strip" data-tauri-drag-region aria-hidden="true"></div>
-    <div class="header" data-tauri-drag-region>
-      <div class="brand" data-tauri-drag-region>
-        <span class="brand-mark" role="img" aria-label="Minutes" data-tauri-drag-region>
+  <header class="top-bar" id="top-bar" data-tauri-drag-region>
+    <div class="top-bar-start" data-tauri-drag-region>
+      <button class="sidebar-collapse-btn" id="btn-sidebar-collapse" type="button" aria-label="Collapse list pane" title="Collapse list pane">‹</button>
+      <span class="brand-mark" role="img" aria-label="Minutes" data-tauri-drag-region>
           <img class="brand-mark-light" src="assets/app-mark-light.png" alt="" aria-hidden="true" data-tauri-drag-region>
           <img class="brand-mark-dark" src="assets/app-icon.png" alt="" aria-hidden="true" data-tauri-drag-region>
         </span>
-        <div class="brand-copy" data-tauri-drag-region>
-          <div class="brand-sub" data-tauri-drag-region>Conversation memory for humans and agents</div>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="header-chip" id="btn-dictation" type="button">Dictation</button>
-        <button class="btn btn-icon" id="btn-settings">⚙</button>
-        <button class="header-chip activity active" id="btn-activity" type="button" aria-haspopup="dialog" aria-controls="activity-overlay">Activity <span class="activity-badge" id="activity-badge" hidden></span></button>
-        <span class="status-pill" id="status-pill">idle</span>
-      </div>
     </div>
-
+    <div class="top-bar-center" data-tauri-drag-region>
+      <span class="status-pill" id="status-pill">idle</span>
+    </div>
+    <div class="top-bar-end">
+      <button class="header-chip" id="btn-dictation" type="button">Dictation</button>
+      <button class="header-chip activity active" id="btn-activity" type="button" aria-haspopup="dialog" aria-controls="activity-overlay">Activity <span class="activity-badge" id="activity-badge" hidden></span></button>
+      <button class="list-toggle-btn recall-toggle-btn" id="btn-assistant" type="button" aria-expanded="false" title="Open Assistant">Assistant <span class="recall-nudge"
+            id="recall-nudge" aria-label="Assistant has new content"></span></button>
+      <button class="btn btn-icon" id="btn-settings">⚙</button>
+    </div>
+  </header>
+  <div class="app-left">
     <!-- Recording bar (hidden when not recording) -->
     <div class="recording-bar" id="recording-bar">
       <div class="top-row">
@@ -6531,16 +6533,6 @@
 
     <!-- Search -->
     <div class="search-wrap search-icon">
-      <div class="list-header-actions">
-        <div class="list-header-group">
-          <button class="sidebar-collapse-btn" id="btn-sidebar-collapse" type="button" aria-label="Collapse list pane" title="Collapse list pane">‹</button>
-        </div>
-        <!-- Recall opens a panel; it is navigation, not capture, so it lives
-             with the other pane controls rather than beside Start Recording.
-             Same id and nudge element: every existing handler keeps working. -->
-        <button class="list-toggle-btn recall-toggle-btn" id="btn-assistant" type="button" aria-expanded="false" title="Open Assistant">Assistant <span class="recall-nudge"
-            id="recall-nudge" aria-label="Assistant has new content"></span></button>
-      </div>
       <input class="search-box" type="text" placeholder="Search meetings…" id="search-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
       <div class="search-error" id="search-error" hidden></div>
       <div class="list-scope" id="list-scope" role="radiogroup" aria-label="Show">
