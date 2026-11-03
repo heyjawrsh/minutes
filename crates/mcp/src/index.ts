@@ -8728,7 +8728,7 @@ forEachServer((target) => {
 if (COPILOT_SUPPORTED) {
   registerTool(
     "start_copilot",
-    "Start the independent Minutes real-time copilot for a goal. This launches `minutes copilot start`; MCP does not run model inference, own capture, or need to stay connected for the engine to produce nudges. The stdout surface is recommended for complete structured nudge observation.",
+    "Start Minutes Coach (the independent real-time coaching engine) for a goal. This launches `minutes copilot start`; MCP does not run model inference, own capture, or need to stay connected for the engine to produce nudges. The stdout surface is recommended for complete structured nudge observation.",
     {
       goal: z
         .string()
@@ -8742,7 +8742,7 @@ if (COPILOT_SUPPORTED) {
         .default("stdout")
         .describe("CLI presentation surface. Use stdout for complete structured nudge reads; tui is compact text."),
     },
-    { title: "Start Copilot", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    { title: "Start Coach", readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async ({ goal, surface }) => {
       if (!(await isCliAvailable())) {
         return { content: [{ type: "text" as const, text: CLI_INSTALL_MSG }] };
@@ -8850,9 +8850,9 @@ if (COPILOT_SUPPORTED) {
 
   registerTool(
     "stop_copilot",
-    "Request that the active Minutes copilot stop. This invokes `minutes copilot stop` and never stops recording or live transcription. Calling it while no copilot is active returns a calm not-active status.",
+    "Request that the active Minutes Coach stop. This invokes `minutes copilot stop` and never stops recording or live transcription. Calling it while Coach is not active returns a calm not-active status.",
     {},
-    { title: "Stop Copilot", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Stop Coach", readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async () => {
       if (!(await isCliAvailable())) {
         return { content: [{ type: "text" as const, text: CLI_INSTALL_MSG }] };
@@ -8899,9 +8899,9 @@ if (COPILOT_SUPPORTED) {
 
   registerTool(
     "copilot_status",
-    "Read the current operational copilot state from the strict `minutes copilot status --json` contract. This is observation only and returns a clear Off/not-active payload when no engine is running.",
+    "Read the current operational Coach state from the strict `minutes copilot status --json` contract. This is observation only and returns a clear Off/not-active payload when no engine is running.",
     {},
-    { title: "Copilot Status", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Coach Status", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async () => {
       const snapshot = await getLiveCopilotSnapshot();
       if (!snapshot.available) {
@@ -8928,7 +8928,7 @@ if (COPILOT_SUPPORTED) {
 
   registerTool(
     "read_copilot_nudges",
-    "Read nudges observed from the active real CLI copilot stream. Use cursor (or a numeric since value) for lossless delta reads; since also accepts durations such as '5m'/'30s' and ISO timestamps. MCP never generates nudges itself.",
+    "Read nudges observed from the active Coach stream. Use cursor (or a numeric since value) for lossless delta reads; since also accepts durations such as '5m'/'30s' and ISO timestamps. MCP never generates nudges itself.",
     {
       cursor: z
         .number()
@@ -8952,7 +8952,7 @@ if (COPILOT_SUPPORTED) {
         .default(COPILOT_READ_DEFAULT_LIMIT)
         .describe("Maximum nudges to return (1-200)."),
     },
-    { title: "Read Copilot Nudges", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    { title: "Read Coach Nudges", readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async ({ cursor, since, limit }) => {
       const status = await readCopilotStatusFromCli();
       if (!status.active) {
@@ -9033,7 +9033,7 @@ async function existingCaptureAttachmentMessage(kind: string): Promise<string> {
 
 registerTool(
   "start_live_transcript",
-  "Start real-time transcription. If a recording is already running, it already includes a live transcript — use read_live_transcript to read it. Runs until stop is called.",
+  "Start real-time transcription. If a recording is already running, it already includes a live transcript — use read_live_transcript to read it. Runs until stop_recording is called.",
   {
     language: z.string().optional().describe("Transcription language code (e.g. 'en', 'ur', 'es', 'zh'). Overrides config.toml setting."),
   },
@@ -9094,7 +9094,7 @@ registerTool(
       const verifyStatus = parseJsonOutput(verifyOut);
       if (verifyStatus?.active) {
         return {
-          content: [{ type: "text" as const, text: "Live transcript started. Use read_live_transcript to read the transcript. Use minutes stop to end the session." }],
+          content: [{ type: "text" as const, text: "Live transcript started. Use read_live_transcript to read the transcript. Use stop_recording to end the session." }],
         };
       }
     } catch { /* fall through to error */ }
