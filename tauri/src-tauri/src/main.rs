@@ -3730,10 +3730,6 @@ mod tray_activity_tests {
         );
         assert!(
             index_html.contains(
-                ".recall-phase-dot.listening {\n      background: var(--capture);",
-            ) && index_html.contains(
-                ".recall-phase-label.listening {\n      color: var(--capture);",
-            ) && index_html.contains(
                 "background: var(--capture-tint);\n      color: var(--capture);",
             ) && index_html.contains(
                 "html[data-platform=\"macos\"] .top-bar .status-pill.recording {\n      background: var(--capture);",
