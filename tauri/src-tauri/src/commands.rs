@@ -10820,7 +10820,7 @@ pub fn spawn_terminal(
         app.emit_to(
             "main",
             "recall:expand",
-            serde_json::json!({ "title": title, "mode": mode }),
+            serde_json::json!({ "title": title, "mode": mode, "path": meeting_path }),
         )
         .ok();
     }
