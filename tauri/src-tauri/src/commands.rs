@@ -15182,13 +15182,15 @@ mod tests {
     }
 
     #[test]
-    fn recall_prep_phase_opens_the_supported_assistant_conversation_mode() {
+    fn recall_opens_only_on_request_and_offers_prep_and_debrief_as_prompts() {
         let html = include_str!("../../src/index.html");
-        assert!(html.contains(
-            "const conversationMode = mode === 'prep' || mode === 'debrief' ? 'assistant' : mode;"
-        ));
-        assert!(html.contains("openRecall(conversationMode);"));
-        assert!(html.contains("if (mode === 'prep') setRecallPhase('prep', context);"));
+        // Prep and Debrief are suggested prompts in the Assistant pane, not
+        // phases that open the pane on their own.
+        assert!(!html.contains("function autoExpandRecall("));
+        assert!(!html.contains("setRecallPhase("));
+        assert!(html.contains("openRecall('assistant')"));
+        assert!(html.contains("Debrief"));
+        assert!(html.contains("Prep the next meeting"));
     }
 
     #[test]
