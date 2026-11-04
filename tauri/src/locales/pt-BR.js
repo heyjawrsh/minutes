@@ -12,6 +12,9 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['pt-BR'] = {
   strings: {
+    "Next steps": "Próximos passos",
+    "Summary": "Resumo",
+    "Notes": "Notas",
     "About:": "Sobre:",
     "is open.": "está aberta.",
     "Prep for": "Preparar para",

@@ -8988,6 +8988,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
         const title = document.createElement('div');
         title.className = 'processing-job-title';
+        i18nSkipUserText(title, job.title);
         title.textContent = job.title || processingTitleFallback(job);
 
         const state = document.createElement('div');
@@ -9089,6 +9090,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
           const title = document.createElement('div');
           title.className = 'recovery-item-title';
+          i18nSkipUserText(title, job.title);
           title.textContent = job.title || processingTitleFallback(job);
 
           const kind = document.createElement('div');
@@ -11745,6 +11747,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       resetResummarizeButton();
       clearDetailFeedback();
       detailOverlay.dataset.view = 'weekly';
+      i18nSkipUserText(detailTitle, false);
       detailTitle.textContent = 'This week';
       detailTitle.title = 'This week';
       const meta = document.createElement('span');
@@ -12009,11 +12012,17 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       selectDetailTab(detailActiveTab);
     }
 
+    function i18nSkipUserText(element, isUser) {
+      element.toggleAttribute('data-i18n-skip', !!isUser);
+      return element;
+    }
+
     function renderDetailSections(detail) {
       delete detailOverlay.dataset.view;
       weeklyRow.removeAttribute('aria-current');
       currentMeetingDetail = detail;
       const detailTitleText = detail.title || 'Untitled';
+      i18nSkipUserText(detailTitle, detail.title);
       detailTitle.textContent = detailTitleText;
       // .detail-title is `white-space: nowrap; text-overflow: ellipsis`, so a
       // long title is only ever readable in full on hover. The native tooltip
@@ -12027,17 +12036,18 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       currentMeetingPath = detail.path;
 
       const chips = [
-        formatDetailDate(detail.date),
-        detail.duration,
-        detail.content_type,
-        detail.status && detail.status !== 'complete' ? detail.status : null,
-        detail.calendar_event || null,
-        detail.attendees && detail.attendees.length ? `${detail.attendees.length} attendee${detail.attendees.length === 1 ? '' : 's'}` : null
-      ].filter(Boolean);
+        [formatDetailDate(detail.date)],
+        [detail.duration],
+        [detail.content_type],
+        [detail.status && detail.status !== 'complete' ? detail.status : null],
+        [detail.calendar_event || null, true],
+        [detail.attendees && detail.attendees.length ? `${detail.attendees.length} attendee${detail.attendees.length === 1 ? '' : 's'}` : null]
+      ].filter(([text]) => text);
 
-      for (const chipText of chips) {
+      for (const [chipText, isUser] of chips) {
         const chip = document.createElement('span');
         chip.className = 'detail-meta-chip';
+        i18nSkipUserText(chip, !!isUser);
         chip.textContent = chipText;
         detailMeta.appendChild(chip);
       }
@@ -12060,6 +12070,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           const topic = dec.topic ? `[${dec.topic}] ` : '';
           const textSpan = document.createElement('span');
           textSpan.className = 'detail-action-text';
+          i18nSkipUserText(textSpan, true);
           setHighlightedText(textSpan, `${topic}${dec.text}`, activeSearchQuery);
           row.appendChild(textSpan);
           decList.appendChild(row);
@@ -12107,6 +12118,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           });
           const textSpan = document.createElement('span');
           textSpan.className = 'detail-action-text';
+          i18nSkipUserText(textSpan, true);
           setHighlightedText(textSpan, `${item.assignee}: ${item.task}${due}`, activeSearchQuery);
           if (isDone) textSpan.style.textDecoration = 'line-through';
           row.appendChild(checkSpan);
@@ -12128,6 +12140,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
         const body = document.createElement('div');
         body.className = 'detail-context-body';
+        i18nSkipUserText(body, true);
         setHighlightedText(body, detail.context, activeSearchQuery);
 
         contextCard.appendChild(label);
@@ -12152,11 +12165,13 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
           const labelSpan = document.createElement('span');
           labelSpan.className = 'speaker-label';
+          i18nSkipUserText(labelSpan, true);
           labelSpan.textContent = attr.speaker_label;
           row.appendChild(labelSpan);
 
           const nameSpan = document.createElement('span');
           nameSpan.className = 'speaker-name';
+          i18nSkipUserText(nameSpan, true);
           nameSpan.textContent = attr.name;
           row.appendChild(nameSpan);
 
@@ -12255,6 +12270,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         for (const person of detail.related_people) {
           const btn = document.createElement('button');
           btn.className = 'detail-chip-btn';
+          i18nSkipUserText(btn, true);
           btn.textContent = person;
           btn.addEventListener('click', () => searchFromDetail(person));
           peopleRow.appendChild(btn);
@@ -12276,6 +12292,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         for (const topic of detail.related_topics) {
           const btn = document.createElement('button');
           btn.className = 'detail-chip-btn';
+          i18nSkipUserText(btn, true);
           btn.textContent = topic;
           btn.addEventListener('click', () => searchFromDetail(topic));
           topicsRow.appendChild(btn);
@@ -12299,6 +12316,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           row.className = 'detail-action-item';
           const textSpan = document.createElement('span');
           textSpan.className = 'detail-action-text';
+          i18nSkipUserText(textSpan, true);
           const owner = item.who ? `${item.who}: ` : '';
           const due = item.by_date ? ` · ${item.by_date}` : '';
           setHighlightedText(textSpan, `${owner}${item.what}${due}`, activeSearchQuery);
@@ -12331,6 +12349,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           row.className = 'detail-action-item';
           const textSpan = document.createElement('span');
           textSpan.className = 'detail-action-text';
+          i18nSkipUserText(textSpan, true);
           setHighlightedText(textSpan, `${meeting.title} · ${formatDetailDate(meeting.date)}`, activeSearchQuery);
           row.appendChild(textSpan);
 
@@ -12361,6 +12380,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           row.className = 'detail-action-item';
           const textSpan = document.createElement('span');
           textSpan.className = 'detail-action-text';
+          i18nSkipUserText(textSpan, true);
           const review = artifact.review_available ? ' · ready to review' : '';
           setHighlightedText(textSpan, `${artifact.filename} · ${artifact.kind}${review}`, activeSearchQuery);
           row.appendChild(textSpan);
@@ -12472,6 +12492,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
           const body = document.createElement('div');
           body.className = 'detail-section-body';
+          i18nSkipUserText(body, section.content);
           if (/^transcript$/i.test(section.heading || '') || !section.content) {
             setHighlightedText(body, section.content || 'No content', activeSearchQuery);
           } else {
@@ -12637,6 +12658,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
         const title = document.createElement('div');
         title.className = 'document-title';
+        i18nSkipUserText(title, doc.filename);
         title.textContent = doc.filename || 'Untitled';
 
         const meta = document.createElement('div');
@@ -12930,6 +12952,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
       const title = document.createElement('div');
       title.className = 'meeting-title';
+      i18nSkipUserText(title, m.title);
       setHighlightedText(title, m.title || 'Untitled', activeSearchQuery);
 
       const meta = document.createElement('div');
@@ -12943,6 +12966,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (activeSearchQuery && m.snippet) {
         const snippet = document.createElement('div');
         snippet.className = 'meeting-snippet';
+        i18nSkipUserText(snippet, true);
         setHighlightedText(snippet, m.snippet, activeSearchQuery);
         info.appendChild(snippet);
       }
@@ -13924,7 +13948,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         if (events.length > 0) {
           const next = events[0];
           document.getElementById('btn-dismiss-upcoming').onclick = () => dismissUpcoming(next);
-          document.getElementById('upcoming-title').textContent = next.title;
+          i18nSkipUserText(document.getElementById('upcoming-title'), next.title).textContent = next.title;
           const mins = next.minutes_until;
           document.getElementById('upcoming-time').textContent =
             mins <= 0 ? 'Starting now' :
@@ -14640,7 +14664,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         return `
           <div class="dictation-recent-item" data-dictation-id="${escapeHtml(record.id)}">
             <div>
-              <div class="dictation-recent-text" title="${text}">${text}</div>
+              <div class="dictation-recent-text"${(record.cleanedText || record.rawText || '').trim() ? ' data-i18n-skip' : ''} title="${text}">${text}</div>
               <div class="dictation-recent-meta">${meta}</div>
             </div>
             <div class="dictation-recent-actions">
@@ -16441,7 +16465,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function openAssistantMeeting() {
       if (!detailOverlay.classList.contains('active') || !currentMeetingPath) return null;
-      return { path: currentMeetingPath, title: currentMeetingDetail?.title || detailTitle.textContent || 'Meeting' };
+      return { path: currentMeetingPath, title: currentMeetingDetail?.title || detailTitle.textContent || 'Meeting', titleIsUser: !!currentMeetingDetail?.title };
     }
 
     function updateAssistantScopeOffer() {
@@ -16449,7 +16473,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       assistantScopeOffer.hidden = !meeting || meeting.path === assistantScope?.path
         || meeting.path === assistantOfferDismissedPath;
       assistantScopeOffer.querySelector('span').replaceChildren(...(meeting
-        ? [el('span', { text: meeting.title, attrs: { 'data-i18n-skip': '' } }), ' is open.'] : []));
+        ? [i18nSkipUserText(el('span', { text: meeting.title }), meeting.titleIsUser), ' is open.'] : []));
       assistantScopeOffer.querySelector('span').title = meeting?.title || '';
     }
 
@@ -16488,7 +16512,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function renderAssistantScope() {
       document.getElementById('assistant-scope-label').replaceChildren(...(assistantScope
-        ? ['About: ', el('span', { text: assistantScope.title, attrs: { 'data-i18n-skip': '' } })] : ['All meetings']));
+        ? ['About: ', i18nSkipUserText(el('span', { text: assistantScope.title }), assistantScope.titleIsUser)] : ['All meetings']));
       assistantScopeChip.title = assistantScope ? assistantScope.title : 'All meetings';
       recallChatInput.placeholder = assistantScope ? 'Ask about this meeting…' : 'Ask about your meetings…';
       renderAssistantPrompts();
@@ -16497,7 +16521,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     async function setAssistantScope(meeting) {
       if ((assistantScope?.path || '') === (meeting?.path || '') && Boolean(assistantScope) === Boolean(meeting)) return;
-      assistantScope = meeting ? { path: meeting.path, title: meeting.title || 'Meeting' } : null;
+      assistantScope = meeting ? { path: meeting.path, title: meeting.title || 'Meeting', titleIsUser: meeting.titleIsUser ?? !!meeting.title } : null;
       pendingRecallTerminalMeetingPath = assistantScope?.path || null;
       recallTerminalContextPending = true;
       renderAssistantScope();
@@ -16522,6 +16546,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         button.setAttribute('role', 'menuitemradio');
         button.setAttribute('aria-checked', String(Boolean(meeting) === Boolean(assistantScope)
           && (meeting?.path || '') === (assistantScope?.path || '')));
+        i18nSkipUserText(button, meeting?.title && (meeting.titleIsUser ?? true));
         button.textContent = meeting?.title || 'All meetings';
         button.addEventListener('click', () => {
           assistantOfferDismissedPath = openAssistantMeeting()?.path || null;
@@ -17496,6 +17521,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     async function openRecall(mode, meetingPath, meetingTitle) {
       if (mode === 'meeting' && meetingPath) {
         await setAssistantScope({ path: meetingPath,
+          titleIsUser: !!(meetingTitle || (currentMeetingPath === meetingPath ? currentMeetingDetail?.title : null)),
           title: meetingTitle || (currentMeetingPath === meetingPath ? currentMeetingDetail?.title : null) || 'Meeting' });
       } else if (!assistantHasAsked) {
         await setAssistantScope(openAssistantMeeting());
@@ -18962,7 +18988,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (mode === 'meeting' && path) {
         // The backend opened the session on this meeting (e.g. a sensitive
         // meeting's debrief), so the pane is about it too.
-        await setAssistantScope({ path, title: context || 'Meeting' });
+        await setAssistantScope({ path, title: context || 'Meeting', titleIsUser: !!context });
       }
       assistantSetupActive = false;
       assistantSetup.hidden = true;
@@ -19176,6 +19202,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
         const title = document.createElement('div');
         title.className = 'md-viewer-history-title';
+        i18nSkipUserText(title, item.filename || item.path);
         title.textContent = item.filename || item.path;
 
         const meta = document.createElement('div');

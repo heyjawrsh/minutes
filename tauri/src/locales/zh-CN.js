@@ -12,6 +12,9 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['zh-CN'] = {
   strings: {
+    "Next steps": "后续步骤",
+    "Summary": "摘要",
+    "Notes": "笔记",
     "About:": "关于：",
     "is open.": "已打开。",
     "Prep for": "准备",

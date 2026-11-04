@@ -70,6 +70,7 @@
     }
     function render(turn) {
       if (!turn?.dirty || !turn.bubble.isConnected) return;
+      turn.bubble.toggleAttribute('data-i18n-skip', !!turn.raw);
       renderMarkdown(turn.bubble, turn.raw);
       turn.dirty = false;
       if (turn.error) appendNotice(turn);
@@ -83,10 +84,10 @@
     }
     function appendNotice(turn) {
       if (turn.bubble.querySelector('.chat-incomplete-notice')) return;
-      if (!turn.raw) { turn.bubble.textContent = turn.error; return; }
+      if (!turn.raw) { turn.bubble.removeAttribute('data-i18n-skip'); turn.bubble.textContent = turn.error; return; }
       const notice = document.createElement('div');
       notice.className = 'chat-incomplete-notice';
-      notice.textContent = turn.error;
+      notice.textContent = window.MinutesI18n && window.MinutesI18n.t ? window.MinutesI18n.t(turn.error) : turn.error;
       turn.bubble.appendChild(notice);
     }
     function showError(error) {
@@ -177,8 +178,10 @@
       catch (error) { setStreaming(false); report('Recall listener setup failed:', error); return; }
       if (turnGeneration !== generation) return;
       const user = document.createElement('div');
+      user.setAttribute('data-i18n-skip', '');
       user.className = 'chat-bubble chat-bubble-user'; user.textContent = text;
       const bubble = document.createElement('div');
+      bubble.setAttribute('data-i18n-skip', '');
       bubble.className = 'chat-bubble chat-bubble-assistant streaming';
       bubble.dataset.status = 'thinking';
       current = last = { bubble, raw: '', partial: false, dirty: false, follow: true, error: '' };
