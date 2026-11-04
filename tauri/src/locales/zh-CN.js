@@ -12,6 +12,9 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['zh-CN'] = {
   strings: {
+    "About:": "关于：",
+    "is open.": "已打开。",
+    "Prep for": "准备",
     // ── IA overhaul ────────────────────────────────────────────────
     "AFTER A RECORDING": "录音结束后",
     "ASSISTANT": "助手",
@@ -70,7 +73,7 @@ window.__MINUTES_I18N['zh-CN'] = {
     "Only what Minutes can verify right now. Optional items are marked.": "仅显示 Minutes 当前能够验证的内容。可选项已标明。",
     "Open action items": "待办行动项",
     "Open draft file": "打开草稿文件",
-    "Open in Terminal": "在 Terminal 中打开",
+    "Open in Terminal": "在终端中打开",
     "Open question": "待解问题",
     "Overview": "概览",
     "Prep the next meeting": "准备下一场会议",
@@ -633,22 +636,19 @@ window.__MINUTES_I18N['zh-CN'] = {
   },
   patterns: [
     // ── IA overhaul ────────────────────────────────────────────────
-    { re: "^About: (.+)$", to: "关于：$1" },
-    { re: "^(.+) is open\\.$", to: "已打开“$1”。" },
-    { re: "^Prep for (.+)$", to: "准备“$1”" },
     { re: "^Prep me for “(.+)”: what happened last time, open items, and what to raise\\.$", to: "帮我准备“$1”：上次讨论了什么，还有哪些待办事项，以及这次该提出什么。" },
     { re: "^Ask me about “(.+)”, including decisions, action items and key moments from this meeting\\.$", to: "可以问我有关“$1”的问题，包括这场会议的决策、行动项和关键时刻。" },
     { re: "^Could not load this week: (.+)$", to: "无法加载本周内容：$1" },
     { re: "^Could not open that meeting: (.+)$", to: "无法打开那场会议：$1" },
-    { re: "^Terminal could not start: (.+)$", to: "Terminal 无法启动：$1" },
-    { re: "^Due (.+)$", to: "截止日期：$1" },
+    { re: "^Terminal could not start: (.+)$", to: "终端无法启动：$1" },
+    { re: "^Due (?=[^\\d]*\\d)(.{1,16})$", to: "截止日期：$1" },
     { re: "^(\\d+) result$", to: "$1 条结果" },
     { re: "^(\\d+) results$", to: "$1 条结果" },
     { re: "^(\\d+) more notice in Activity$", to: "“活动”中还有 $1 条通知" },
     { re: "^(\\d+) more notices in Activity$", to: "“活动”中还有 $1 条通知" },
     { re: "^(.+) isn't installed\\. Install it, or choose another assistant in Settings\\.$", to: "尚未安装 $1。请安装，或在设置中选择其他助手。" },
-    { re: "^Private Chat isn't available for (.+)\\. You can use it in Terminal\\. Minutes reads a meeting only when you send a question\\.$", to: "$1 不支持私密聊天。你可以在 Terminal 中使用。Minutes 仅在你发送问题时读取会议内容。" },
-    { re: "^You'll sign in to (.+) in Terminal first\\.$", to: "你需要先在 Terminal 中登录 $1。" },
+    { re: "^Private Chat isn't available for (.+)\\. You can use it in Terminal\\. Minutes reads a meeting only when you send a question\\.$", to: "$1 不支持私密聊天。你可以在终端中使用。Minutes 仅在你发送问题时读取会议内容。" },
+    { re: "^You'll sign in to (.+) in Terminal first\\.$", to: "你需要先在终端中登录 $1。" },
     { re: "^whisper model at (.+?) looks truncated: file is ([\\d.]+) MB but the (.+?) model should be at least ([\\d.]+) MB\\. A previous download was probably interrupted\\. Fix: rm \"(.+?)\" && minutes setup --model (.+?)$", to: "whisper 模型 $1 看起来已截断：文件为 $2 MB，但 $3 模型应至少为 $4 MB。之前的下载可能中断了。修复：删除 \"$5\" 并运行 minutes setup --model $6" },
     { re: "^(\\d+) utterances$", to: "$1 条语音" },
     { re: "^(\\d+) utterance$", to: "$1 条语音" },

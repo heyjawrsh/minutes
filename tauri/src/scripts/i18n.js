@@ -85,10 +85,8 @@
   // ── Skip logic ───────────────────────────────────────────────────────────
   function isSkipped(el) {
     if (SKIP_TAGS[el.tagName]) return true;
-    if (el.hasAttribute('data-i18n-skip')) return true;
     // xterm.js renders the embedded terminal — never touch its content.
-    if (el.classList && el.classList.contains('xterm')) return true;
-    return false;
+    return !!el.closest('[data-i18n-skip], .xterm');
   }
 
   // Collapse internal whitespace runs so multi-line HTML text (indented source)
@@ -120,7 +118,7 @@
 
   function translateTextNode(node) {
     var parent = node.parentNode;
-    if (!parent || parent.nodeType !== 1 || SKIP_TAGS[parent.tagName]) return;
+    if (!parent || parent.nodeType !== 1 || isSkipped(parent)) return;
     var raw = node.nodeValue;
     if (!raw || !raw.trim()) return;
 
@@ -151,6 +149,7 @@
   }
 
   function translateAttrs(el) {
+    if (isSkipped(el)) return;
     for (var i = 0; i < ATTRS.length; i++) {
       var attr = ATTRS[i];
       if (!el.hasAttribute(attr)) continue;

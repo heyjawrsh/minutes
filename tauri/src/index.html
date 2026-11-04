@@ -16448,7 +16448,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       const meeting = openAssistantMeeting();
       assistantScopeOffer.hidden = !meeting || meeting.path === assistantScope?.path
         || meeting.path === assistantOfferDismissedPath;
-      assistantScopeOffer.querySelector('span').textContent = meeting ? `${meeting.title} is open.` : '';
+      assistantScopeOffer.querySelector('span').replaceChildren(...(meeting
+        ? [el('span', { text: meeting.title, attrs: { 'data-i18n-skip': '' } }), ' is open.'] : []));
       assistantScopeOffer.querySelector('span').title = meeting?.title || '';
     }
 
@@ -16459,16 +16460,17 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         ['Prep the next meeting', 'Help me prep the next meeting in this series: open items to follow up on and a short agenda.'],
       ] : [
         ...(assistantUpcomingMeeting && !isUpcomingDismissed(assistantUpcomingMeeting) ? [[
-          `Prep for ${assistantUpcomingMeeting.title}`,
+          ['Prep for ', el('span', { text: assistantUpcomingMeeting.title, attrs: { 'data-i18n-skip': '' } })],
           `Prep me for “${assistantUpcomingMeeting.title}”: what happened last time, open items, and what to raise.`,
+          assistantUpcomingMeeting.title,
         ]] : []),
         ['This week', 'What happened in my meetings this week? Decisions, open items, and anything overdue.'],
         ['Open action items', 'List my open action items across meetings, with owners and dates.'],
       ];
-      document.getElementById('assistant-prompts').replaceChildren(...prompts.map(([label, question]) => {
+      document.getElementById('assistant-prompts').replaceChildren(...prompts.map(([label, question, title]) => {
         const button = document.createElement('button');
-        button.textContent = label;
-        button.title = label;
+        button.replaceChildren(...(Array.isArray(label) ? label : [label]));
+        button.title = title ?? label;
         button.addEventListener('click', () => {
           if (assistantSetupActive) return;
           const asked = window.MinutesI18n?.t ? window.MinutesI18n.t(question) : question;
@@ -16485,9 +16487,9 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     function renderAssistantScope() {
-      const label = assistantScope ? `About: ${assistantScope.title}` : 'All meetings';
-      document.getElementById('assistant-scope-label').textContent = label;
-      assistantScopeChip.title = label;
+      document.getElementById('assistant-scope-label').replaceChildren(...(assistantScope
+        ? ['About: ', el('span', { text: assistantScope.title, attrs: { 'data-i18n-skip': '' } })] : ['All meetings']));
+      assistantScopeChip.title = assistantScope ? assistantScope.title : 'All meetings';
       recallChatInput.placeholder = assistantScope ? 'Ask about this meeting…' : 'Ask about your meetings…';
       renderAssistantPrompts();
       updateAssistantScopeOffer();

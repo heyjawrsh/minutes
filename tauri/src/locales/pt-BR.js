@@ -12,6 +12,9 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['pt-BR'] = {
   strings: {
+    "About:": "Sobre:",
+    "is open.": "está aberta.",
+    "Prep for": "Preparar para",
     // ── IA overhaul ────────────────────────────────────────────────
     "AFTER A RECORDING": "APÓS UMA GRAVAÇÃO",
     "ASSISTANT": "ASSISTENTE",
@@ -1183,15 +1186,12 @@ window.__MINUTES_I18N['pt-BR'] = {
   },
   patterns: [
     // ── IA overhaul ────────────────────────────────────────────────
-    { re: "^About: (.+)$", to: "Sobre: $1" },
-    { re: "^(.+) is open\\.$", to: "“$1” está aberta." },
-    { re: "^Prep for (.+)$", to: "Preparar para $1" },
     { re: "^Prep me for “(.+)”: what happened last time, open items, and what to raise\\.$", to: "Me ajude a preparar para “$1”: o que aconteceu da última vez, pendências e o que abordar." },
     { re: "^Ask me about “(.+)”, including decisions, action items and key moments from this meeting\\.$", to: "Pergunte sobre “$1”, incluindo decisões, itens de ação e momentos importantes desta reunião." },
     { re: "^Could not load this week: (.+)$", to: "Não foi possível carregar esta semana: $1" },
     { re: "^Could not open that meeting: (.+)$", to: "Não foi possível abrir essa reunião: $1" },
     { re: "^Terminal could not start: (.+)$", to: "Não foi possível iniciar o Terminal: $1" },
-    { re: "^Due (.+)$", to: "Prazo: $1" },
+    { re: "^Due (?=[^\\d]*\\d)(.{1,16})$", to: "Prazo: $1" },
     { re: "^(\\d+) result$", to: "$1 resultado" },
     { re: "^(\\d+) results$", to: "$1 resultados" },
     { re: "^(\\d+) more notice in Activity$", to: "Mais $1 aviso em Atividade" },
