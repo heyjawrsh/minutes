@@ -6430,6 +6430,37 @@
     .top-bar .btn { padding: 3px 6px; font-size: var(--text-xs); }
     .top-bar .recording-bar,
     .top-bar .live-bar { min-width: 0; -webkit-app-region: no-drag; }
+
+    /* Top bar: one control size */
+    .top-bar :is(.btn, .sidebar-collapse-btn, .list-toggle-btn, .header-chip) {
+      box-sizing: border-box;
+      height: 28px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      font-family: var(--font-sans);
+      font-size: var(--text-xs);
+      line-height: 1;
+      white-space: nowrap;
+      border-radius: var(--radius);
+    }
+
+    .top-bar .btn:not([hidden]),
+    .top-bar .sidebar-collapse-btn:not([hidden]),
+    .top-bar .list-toggle-btn:not([aria-expanded="true"]):not([hidden]),
+    .top-bar .header-chip.active:not([hidden]) {
+      display: inline-flex;
+    }
+
+    .top-bar #btn-sidebar-collapse,
+    .top-bar #btn-settings {
+      width: 28px;
+      padding: 0;
+    }
+
+    .top-bar #btn-record { border-radius: var(--radius) 0 0 var(--radius); }
+    .top-bar #btn-record-menu { border-radius: 0 var(--radius) var(--radius) 0; }
+
     .recording-indicator { min-width: 0; }
     .recording-dot, .live-dot,
     .recording-time, .live-time { flex: none; }
