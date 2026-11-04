@@ -4347,7 +4347,9 @@
     /* ── Activity drawer ── */
     .banner-more {
       display: block;
-      margin: -4px 16px 8px auto;
+      margin: 6px 16px 2px;
+      padding: 0;
+      text-align: left;
       background: transparent;
       border: none;
       color: var(--text-secondary);
@@ -20858,8 +20860,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         for (const banner of queued) notices.append(banner.el);
         noticesSection.hidden = queued.length === 0;
         if (top && queued.length) {
-          more.textContent = `+${queued.length} more`;
-          more.setAttribute('aria-label', `${queued.length} more ${queued.length === 1 ? 'notice' : 'notices'} in Activity`);
+          more.textContent = `${queued.length} more ${queued.length === 1 ? 'notice' : 'notices'} in Activity`;
           top.el.after(more);
           more.hidden = false;
         } else {
