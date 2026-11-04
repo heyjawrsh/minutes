@@ -257,6 +257,11 @@ window.__MINUTES_I18N['zh-CN'] = {
     "Transcribing meeting": "正在转写会议",
 
     // ── Artifact templates ──────────────────────────────────────────
+    "Debrief memo": "复盘备忘录",
+    "Decision memo": "决策备忘录",
+    "Follow-up email": "跟进邮件",
+    "Meeting brief": "会议简报",
+    "Edited": "编辑于",
     "Debrief Memo": "复盘备忘录",
     "Decision Memo": "决策备忘录",
     "Follow-up Email": "跟进邮件",

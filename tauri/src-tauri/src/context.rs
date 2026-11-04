@@ -386,7 +386,10 @@ pub fn generate_meeting_context(meeting_path: &Path, config: &Config) -> Result<
         "- All meetings are at `{}` if you need to cross-reference\n",
         config.output_dir.display()
     ));
-    md.push_str("- You can create files in this directory to save artifacts\n");
+    md.push_str(&format!(
+        "- Save drafts about this meeting in `artifacts/`. Start with YAML frontmatter containing a `title:` line and `source_meeting: \"{}\"` so they appear in the meeting's Drafts tab.\n",
+        meeting_path.display()
+    ));
 
     Ok(md)
 }

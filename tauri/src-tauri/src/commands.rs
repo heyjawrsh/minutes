@@ -1596,7 +1596,16 @@ struct RelatedContextView {
     related_topics: Vec<String>,
     related_meetings: Vec<MeetingReferenceView>,
     related_commitments: Vec<RelatedCommitmentView>,
-    adjacent_artifacts: Vec<RecentArtifactView>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct MeetingDraftView {
+    pub path: String,
+    pub title: String,
+    pub template_kind: Option<String>,
+    pub kind: String,
+    pub editable: bool,
+    pub modified_at: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -1616,7 +1625,7 @@ pub struct MeetingDetail {
     pub related_topics: Vec<String>,
     pub related_meetings: Vec<MeetingReferenceView>,
     pub related_commitments: Vec<RelatedCommitmentView>,
-    pub adjacent_artifacts: Vec<RecentArtifactView>,
+    pub drafts: Vec<MeetingDraftView>,
     pub sections: Vec<MeetingSection>,
     pub speaker_map: Vec<SpeakerAttributionView>,
     /// Capture policy from frontmatter ("none" for sensitive no-capture
@@ -2143,6 +2152,133 @@ fn is_plain_file_entry(path: &Path) -> bool {
     file_type.is_file() && !file_type.is_symlink()
 }
 
+pub(crate) fn meeting_drafts_in(
+    config: &Config,
+    workspace: &Path,
+    meeting_path: &Path,
+) -> Vec<MeetingDraftView> {
+    use std::io::Read;
+
+    let Ok(meeting_path) = std::fs::canonicalize(meeting_path) else {
+        return Vec::new();
+    };
+    let mut drafts = Vec::new();
+    for directory in [workspace.to_path_buf(), workspace.join("artifacts")] {
+        let Ok(entries) = std::fs::read_dir(directory) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if !is_plain_file_entry(&path) || is_assistant_instruction_file(&path) {
+                continue;
+            }
+            let filename = filename_for_path(&path);
+            if filename.eq_ignore_ascii_case("CURRENT_MEETING.md")
+                || filename.eq_ignore_ascii_case("CURRENT_ARTIFACT.md")
+            {
+                continue;
+            }
+            let extension = path
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map(str::to_ascii_lowercase);
+            if !matches!(extension.as_deref(), Some("md" | "markdown" | "txt")) {
+                continue;
+            }
+            let Ok(canonical) = validate_text_file_path(&path) else {
+                continue;
+            };
+            let Ok(file) = std::fs::File::open(&canonical) else {
+                continue;
+            };
+            let Ok(modified) = file.metadata().and_then(|metadata| metadata.modified()) else {
+                continue;
+            };
+            let mut bytes = Vec::new();
+            if file.take(16 * 1024).read_to_end(&mut bytes).is_err() {
+                continue;
+            }
+            // Templates can have unquoted colons in titles, so parse only
+            // the linking fields instead of requiring valid YAML.
+            let content = String::from_utf8_lossy(&bytes);
+            let mut lines = content.lines();
+            if lines.next() != Some("---") {
+                continue;
+            }
+            let mut title = None;
+            let mut template_kind = None;
+            let mut source_meeting = None;
+            let mut closed = false;
+            for line in lines {
+                if line == "---" {
+                    closed = true;
+                    break;
+                }
+                let Some((key, value)) = line.split_once(':') else {
+                    continue;
+                };
+                let value = value.trim();
+                let value = value
+                    .strip_prefix('"')
+                    .and_then(|value| value.strip_suffix('"'))
+                    .or_else(|| {
+                        value
+                            .strip_prefix('\'')
+                            .and_then(|value| value.strip_suffix('\''))
+                    })
+                    .unwrap_or(value);
+                match key.trim() {
+                    "title" => title = Some(value.to_string()),
+                    "artifact_type" => template_kind = Some(value.to_string()),
+                    "source_meeting" => source_meeting = Some(value.to_string()),
+                    _ => {}
+                }
+            }
+            if !closed {
+                continue;
+            }
+            let Some(source_meeting) = source_meeting else {
+                continue;
+            };
+            let source_path = if let Some(relative) = source_meeting.strip_prefix("~/") {
+                dirs::home_dir().map(|home| home.join(relative))
+            } else {
+                let source = PathBuf::from(source_meeting);
+                source.is_absolute().then_some(source)
+            };
+            if source_path
+                .and_then(|source| std::fs::canonicalize(source).ok())
+                .as_ref()
+                != Some(&meeting_path)
+            {
+                continue;
+            }
+            let title = title.unwrap_or_else(|| {
+                canonical
+                    .file_stem()
+                    .and_then(|stem| stem.to_str())
+                    .unwrap_or("Document")
+                    .to_string()
+            });
+            drafts.push((
+                modified,
+                MeetingDraftView {
+                    path: canonical.display().to_string(),
+                    title,
+                    template_kind,
+                    kind: text_file_kind(&canonical).unwrap_or("text").to_string(),
+                    editable: is_editable_text_file_path(&canonical, config),
+                    modified_at: chrono::DateTime::<chrono::Local>::from(modified).to_rfc3339(),
+                },
+            ));
+        }
+    }
+    drafts
+        .sort_by(|(a_time, a), (b_time, b)| b_time.cmp(a_time).then_with(|| a.title.cmp(&b.title)));
+    drafts.truncate(50);
+    drafts.into_iter().map(|(_, draft)| draft).collect()
+}
+
 fn append_assistant_documents(
     documents: &mut Vec<DocumentView>,
     seen: &mut std::collections::HashSet<PathBuf>,
@@ -2595,7 +2731,6 @@ fn build_related_context(
         related_topics,
         related_meetings,
         related_commitments,
-        adjacent_artifacts: recent_artifact_views(config, 4, Some(current_path)),
     }
 }
 
@@ -10106,7 +10241,6 @@ fn meeting_detail(path: String, include_related: bool) -> Result<MeetingDetail, 
             related_topics: related_topics_from(&frontmatter),
             related_meetings: Vec::new(),
             related_commitments: Vec::new(),
-            adjacent_artifacts: Vec::new(),
         }
     };
 
@@ -10134,12 +10268,12 @@ fn meeting_detail(path: String, include_related: bool) -> Result<MeetingDetail, 
         related_topics: related.related_topics,
         related_meetings: related.related_meetings,
         related_commitments: related.related_commitments,
-        // Adjacent prep/brief artifacts are navigation noise on a no-capture
-        // sensitive meeting; the card is about its own markers and debrief.
-        adjacent_artifacts: if capture_is_none {
+        // A no-capture sensitive meeting shows no drafts; its card is about
+        // its own markers and debrief.
+        drafts: if capture_is_none {
             Vec::new()
         } else {
-            related.adjacent_artifacts
+            meeting_drafts_in(&config, &crate::context::workspace_dir(), &meeting_path)
         },
         sections: parse_sections(body),
         speaker_map,
@@ -20475,6 +20609,184 @@ decisions:
         assert_eq!(text_file_kind(Path::new("/tmp/test.json")), Some("json"));
         assert_eq!(text_file_kind(Path::new("/tmp/test.md")), Some("markdown"));
         assert_eq!(text_file_kind(Path::new("/tmp/test.txt")), Some("text"));
+    }
+
+    #[test]
+    fn meeting_drafts_link_frontmatter_and_preserve_colon_titles() {
+        let _guard = test_guard();
+        let home = dirs::home_dir().expect("home dir");
+        let temp = tempfile::Builder::new()
+            .prefix("minutes-drafts-test-")
+            .tempdir_in(&home)
+            .unwrap();
+        let workspace = temp.path().join("assistant");
+        let artifacts = workspace.join("artifacts");
+        std::fs::create_dir_all(&artifacts).unwrap();
+        let meeting = temp.path().join("meeting.md");
+        std::fs::write(&meeting, "# Meeting").unwrap();
+        let template = artifacts.join("follow-up.md");
+        std::fs::write(
+            &template,
+            format!(
+                "---\ntitle: Follow-up Email - Pricing: annual billing\nartifact_type: follow-up-email\nsource_meeting: {}\n---\nDraft",
+                meeting.display()
+            ),
+        )
+        .unwrap();
+        let note = workspace.join("assistant-note.markdown");
+        let source = {
+            #[cfg(unix)]
+            {
+                let alias = temp.path().join("alias");
+                std::os::unix::fs::symlink(temp.path(), &alias).unwrap();
+                alias.join("meeting.md")
+            }
+            #[cfg(not(unix))]
+            {
+                meeting.clone()
+            }
+        };
+        std::fs::write(
+            &note,
+            format!("---\nsource_meeting: \"{}\"\n---\nNote", source.display()),
+        )
+        .unwrap();
+        let recap = artifacts.join("recap.txt");
+        std::fs::write(
+            &recap,
+            format!(
+                "---\ntitle: 'Riley recap'\nsource_meeting: '~/{}'\n---\nRecap",
+                meeting.strip_prefix(&home).unwrap().display()
+            ),
+        )
+        .unwrap();
+        for (index, path) in [&template, &recap, &note].iter().enumerate() {
+            std::fs::File::open(path)
+                .unwrap()
+                .set_modified(SystemTime::UNIX_EPOCH + Duration::from_secs(100 + index as u64))
+                .unwrap();
+        }
+        let config = Config {
+            output_dir: temp.path().to_path_buf(),
+            ..Config::default()
+        };
+        let drafts = meeting_drafts_in(&config, &workspace, &meeting);
+        assert_eq!(
+            drafts
+                .iter()
+                .map(|draft| draft.title.as_str())
+                .collect::<Vec<_>>(),
+            [
+                "assistant-note",
+                "Riley recap",
+                "Follow-up Email - Pricing: annual billing"
+            ]
+        );
+        assert_eq!(
+            drafts[0].path,
+            std::fs::canonicalize(note).unwrap().display().to_string()
+        );
+        assert_eq!(drafts[0].template_kind, None);
+        assert_eq!(drafts[1].kind, "text");
+        assert_eq!(drafts[2].template_kind.as_deref(), Some("follow-up-email"));
+        assert_eq!(drafts[2].kind, "markdown");
+        assert!(drafts.iter().all(|draft| draft.editable));
+        for draft in &drafts {
+            chrono::DateTime::parse_from_rfc3339(&draft.modified_at).unwrap();
+        }
+        let json = serde_json::to_value(&drafts[2]).unwrap();
+        assert_eq!(json.as_object().unwrap().len(), 6);
+        assert_eq!(json["template_kind"], "follow-up-email");
+        assert!(json["modified_at"].is_string());
+    }
+
+    #[test]
+    fn meeting_drafts_skip_unlinked_instructions_nested_and_symlink_files() {
+        let _guard = test_guard();
+        let temp = tempfile::Builder::new()
+            .prefix("minutes-drafts-test-")
+            .tempdir_in(dirs::home_dir().expect("home dir"))
+            .unwrap();
+        let workspace = temp.path().join("assistant");
+        std::fs::create_dir_all(workspace.join("artifacts/nested")).unwrap();
+        let meeting = temp.path().join("meeting.md");
+        let other = temp.path().join("other.md");
+        std::fs::write(&meeting, "Meeting").unwrap();
+        std::fs::write(&other, "Other").unwrap();
+        let linked = format!("---\nsource_meeting: {}\n---\nDraft", meeting.display());
+        for name in [
+            "cLaUdE.md",
+            "agents.MD",
+            "memory.md",
+            "current_meeting.md",
+            "CURRENT_ARTIFACT.md",
+            "draft.json",
+            "artifacts/nested/draft.md",
+        ] {
+            std::fs::write(workspace.join(name), &linked).unwrap();
+        }
+        for (name, content) in [
+            (
+                "body.md",
+                format!("# Note\nsource_meeting: {}", meeting.display()),
+            ),
+            (
+                "after-frontmatter.md",
+                format!(
+                    "---\ntitle: Note\n---\nsource_meeting: {}",
+                    meeting.display()
+                ),
+            ),
+            (
+                "unclosed.md",
+                format!("---\nsource_meeting: {}\n", meeting.display()),
+            ),
+            (
+                "relative.md",
+                "---\nsource_meeting: ../meeting.md\n---\n".into(),
+            ),
+            ("empty.md", "---\nsource_meeting: ''\n---\n".into()),
+            (
+                "other.md",
+                format!("---\nsource_meeting: {}\n---\n", other.display()),
+            ),
+            (
+                "beyond-limit.md",
+                format!(
+                    "---\n{}\nsource_meeting: {}\n---\n",
+                    "x".repeat(16 * 1024),
+                    meeting.display()
+                ),
+            ),
+        ] {
+            std::fs::write(workspace.join(name), content).unwrap();
+        }
+        #[cfg(unix)]
+        {
+            let outside = temp.path().join("linked.md");
+            std::fs::write(&outside, &linked).unwrap();
+            std::os::unix::fs::symlink(&outside, workspace.join("symlink.md")).unwrap();
+            std::os::unix::fs::symlink(&outside, workspace.join("artifacts/symlink.md")).unwrap();
+        }
+        let config = Config::default();
+        assert!(meeting_drafts_in(&config, &workspace, &meeting).is_empty());
+        let missing = temp.path().join("missing");
+        assert!(meeting_drafts_in(&config, &missing, &meeting).is_empty());
+        assert!(!missing.exists());
+
+        // Identical mtimes use title order, with only the first 50 returned.
+        for index in (0..52).rev() {
+            let path = workspace.join(format!("draft-{index:02}.md"));
+            std::fs::write(&path, &linked).unwrap();
+            std::fs::File::open(path)
+                .unwrap()
+                .set_modified(SystemTime::UNIX_EPOCH)
+                .unwrap();
+        }
+        let drafts = meeting_drafts_in(&config, &workspace, &meeting);
+        assert_eq!(drafts.len(), 50);
+        assert_eq!(drafts.first().unwrap().title, "draft-00");
+        assert_eq!(drafts.last().unwrap().title, "draft-49");
     }
 
     #[test]

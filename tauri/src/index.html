@@ -3736,6 +3736,25 @@
       min-width: 0;
     }
 
+    .meeting-draft-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      line-height: 1.45;
+    }
+
+    .meeting-draft-copy {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .meeting-draft-row > button { flex-shrink: 0; }
+    .meeting-draft-title { font-size: var(--text-sm); color: var(--text); }
+    .meeting-draft-meta { font-size: var(--text-xs); color: var(--text-secondary); }
+    .meeting-draft-new { margin-top: 8px; }
+
     .detail-speakers {
       margin-top: 16px;
       padding: 12px 14px;
@@ -7049,25 +7068,25 @@
 
   <div class="artifact-template-overlay" id="artifact-template-overlay">
     <div class="artifact-template-card" role="dialog" aria-modal="true" aria-labelledby="artifact-template-title">
-      <div class="artifact-template-title" id="artifact-template-title">Create Draft</div>
+      <div class="artifact-template-title" id="artifact-template-title">New draft</div>
       <div class="artifact-template-sub">Choose a draft based on this meeting. Read it, edit any paragraph, or refine it with the Assistant.</div>
       <div class="artifact-template-list">
         <button class="artifact-template-option" data-artifact-kind="debrief-memo">
-          <span class="artifact-template-option-title">Debrief Memo</span>
+          <span class="artifact-template-option-title">Debrief memo</span>
           <span class="artifact-template-option-body">A clean internal memo with summary, decisions, action items, open
             questions, and the next move.</span>
         </button>
         <button class="artifact-template-option" data-artifact-kind="follow-up-email">
-          <span class="artifact-template-option-title">Follow-up Email</span>
+          <span class="artifact-template-option-title">Follow-up email</span>
           <span class="artifact-template-option-body">A follow-up with key points, decisions, next steps, and open questions. Review it before sending.</span>
         </button>
         <button class="artifact-template-option" data-artifact-kind="meeting-brief">
-          <span class="artifact-template-option-title">Meeting Brief</span>
+          <span class="artifact-template-option-title">Meeting brief</span>
           <span class="artifact-template-option-body">A prep doc for the next conversation, with context, prior
             decisions, open questions, and a suggested agenda.</span>
         </button>
         <button class="artifact-template-option" data-artifact-kind="decision-memo">
-          <span class="artifact-template-option-title">Decision Memo</span>
+          <span class="artifact-template-option-title">Decision memo</span>
           <span class="artifact-template-option-body">A crisp memo that locks in one decision, why it was made, the
             implications, and the actions that follow.</span>
         </button>
@@ -12244,7 +12263,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         return panel;
       });
       detailScroll.replaceChildren(...panels);
-      const draftCount = currentMeetingDetail?.adjacent_artifacts?.length || 0;
+      const draftCount = currentMeetingDetail?.drafts?.length || 0;
       document.getElementById('detail-drafts-count').textContent = draftCount ? String(draftCount) : '';
       if (currentMeetingPath !== detailTabsPath) {
         detailActiveTab = 'overview';
@@ -12609,37 +12628,61 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         detailScroll.appendChild(meetingsCard);
       }
 
-      if (detail.adjacent_artifacts && detail.adjacent_artifacts.length > 0) {
+      if (detail.drafts && detail.drafts.length > 0) {
         const artifactsCard = document.createElement('div');
         artifactsCard.className = 'detail-context';
-        const artifactsLabel = document.createElement('div');
-        artifactsLabel.className = 'detail-context-label';
-        artifactsLabel.textContent = 'Drafts';
         const artifactsList = document.createElement('div');
         artifactsList.className = 'detail-action-list';
-        for (const artifact of detail.adjacent_artifacts) {
+        const templateLabels = new Map([
+          ['debrief-memo', 'Debrief memo'],
+          ['follow-up-email', 'Follow-up email'],
+          ['meeting-brief', 'Meeting brief'],
+          ['decision-memo', 'Decision memo'],
+        ]);
+        const now = new Date();
+        const locale = uiDateLocale();
+        for (const draft of detail.drafts) {
           const row = document.createElement('div');
-          row.className = 'detail-action-item';
-          const textSpan = document.createElement('span');
-          textSpan.className = 'detail-action-text';
-          i18nSkipUserText(textSpan, true);
-          const review = artifact.review_available ? ' · ready to review' : '';
-          setHighlightedText(textSpan, `${artifact.filename} · ${artifact.kind}${review}`, activeSearchQuery);
-          row.appendChild(textSpan);
+          row.className = 'meeting-draft-row';
+          const copy = document.createElement('div');
+          copy.className = 'meeting-draft-copy';
+          const label = templateLabels.get(draft.template_kind);
+          const generatedTitle = label && (!draft.title || draft.title.toLowerCase().startsWith(`${label.toLowerCase()} - `));
+          const titleEl = document.createElement('div');
+          titleEl.className = 'meeting-draft-title';
+          i18nSkipUserText(titleEl, !generatedTitle);
+          titleEl.textContent = generatedTitle ? label : draft.title;
+          const meta = document.createElement('div');
+          meta.className = 'meeting-draft-meta';
+          if (label && titleEl.textContent !== label) meta.append(label, ' · ');
+          const when = document.createElement('span');
+          i18nSkipUserText(when, true);
+          const edited = new Date(draft.modified_at);
+          if (!Number.isNaN(edited.getTime())) {
+            when.textContent = edited.toDateString() === now.toDateString()
+              ? edited.toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
+              : edited.toLocaleDateString(locale, {
+                month: 'short', day: 'numeric',
+                ...(edited.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}),
+              });
+          }
+          meta.append('Edited', ' ', when);
+          copy.append(titleEl, meta);
+          row.appendChild(copy);
 
           const openBtn = document.createElement('button');
           openBtn.className = 'btn btn-secondary btn-sm';
           openBtn.textContent = 'Open';
           openBtn.addEventListener('click', async () => {
             try {
-              const access = await invoke('cmd_get_text_file_access', { path: artifact.path });
-              const content = await invoke('cmd_read_text_file', { path: artifact.path });
-              await showMdViewer(artifact.path, artifact.filename, content, {
+              const access = await invoke('cmd_get_text_file_access', { path: draft.path });
+              const content = await invoke('cmd_read_text_file', { path: draft.path });
+              await showMdViewer(draft.path, draft.title, content, {
                 editable: !!access.editable,
-                kind: access.kind || artifact.kind || 'text',
+                kind: access.kind || draft.kind || 'text',
               });
             } catch (e) {
-              console.error('Open adjacent artifact:', e);
+              console.error('Open meeting draft:', e);
               showActionToast(`Could not open that draft: ${e?.message || e}`, { tone: 'error' });
             }
           });
@@ -12647,8 +12690,12 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
           artifactsList.appendChild(row);
         }
-        artifactsCard.appendChild(artifactsLabel);
         artifactsCard.appendChild(artifactsList);
+        const newDraftBtn = document.createElement('button');
+        newDraftBtn.className = 'btn btn-secondary btn-sm meeting-draft-new';
+        newDraftBtn.textContent = 'New draft';
+        newDraftBtn.addEventListener('click', () => document.getElementById('btn-create-artifact').click());
+        artifactsCard.appendChild(newDraftBtn);
         artifactsCard.dataset.detailSection = 'drafts';
         detailScroll.appendChild(artifactsCard);
       }
@@ -13420,7 +13467,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       searchInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    const RELATED_DETAIL_FIELDS = ['related_meetings', 'related_commitments', 'adjacent_artifacts'];
+    const RELATED_DETAIL_FIELDS = ['related_meetings', 'related_commitments'];
 
     function renderDetailKeepingScroll(detail) {
       const scrollTop = detailScroll.scrollTop;

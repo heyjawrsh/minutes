@@ -262,6 +262,11 @@ window.__MINUTES_I18N['pt-BR'] = {
     "Transcribing meeting": "Transcrevendo reunião",
 
     // ── Artifact templates ──────────────────────────────────────────
+    "Debrief memo": "Memorando de debriefing",
+    "Decision memo": "Memorando de decisão",
+    "Follow-up email": "E-mail de follow-up",
+    "Meeting brief": "Briefing da reunião",
+    "Edited": "Editado",
     "Debrief Memo": "Memorando de debriefing",
     "Decision Memo": "Memorando de decisão",
     "Follow-up Email": "E-mail de follow-up",
