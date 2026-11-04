@@ -16471,11 +16471,12 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         button.title = label;
         button.addEventListener('click', () => {
           if (assistantSetupActive) return;
+          const asked = window.MinutesI18n?.t ? window.MinutesI18n.t(question) : question;
           if (recallDevMode) {
             recallTerminal?.focus();
-            recallTerminal?.paste(question);
+            recallTerminal?.paste(asked);
           } else if (!recallChatInput.disabled) {
-            recallChatInput.value = question;
+            recallChatInput.value = asked;
             void recallChatController.send();
           }
         });
@@ -16739,9 +16740,15 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       setRecallProviderNotice('');
       if (assistantSetupActive) {
         const name = readiness?.assistantName || 'Your assistant';
-        document.getElementById('assistant-setup-message').textContent = readiness?.terminalAvailable
-          ? `Private Chat isn't available for ${name}. You can use it in Terminal. Minutes reads a meeting only when you send a question.${readiness.terminalAuthenticated === false ? ` You'll sign in to ${name} in Terminal first.` : ''}`
-          : `${name} isn't installed. Install it, or choose another assistant in Settings.`;
+        const setupMessage = document.getElementById('assistant-setup-message');
+        setupMessage.replaceChildren(readiness?.terminalAvailable
+          ? `Private Chat isn't available for ${name}. You can use it in Terminal. Minutes reads a meeting only when you send a question.`
+          : `${name} isn't installed. Install it, or choose another assistant in Settings.`);
+        if (readiness?.terminalAvailable && readiness.terminalAuthenticated === false) {
+          const signInMessage = document.createElement('span');
+          signInMessage.textContent = `You'll sign in to ${name} in Terminal first.`;
+          setupMessage.append(' ', signInMessage);
+        }
         document.getElementById('btn-assistant-open-terminal').hidden = !readiness?.terminalAvailable;
       }
       if (recallDevMode) {
