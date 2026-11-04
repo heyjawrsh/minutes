@@ -105,6 +105,7 @@ test('completed meetings lead with decisions and next steps without losing speak
     detailOverlay: new Element('div'), weeklyRow: { removeAttribute() {} }, arrangeDetailTabs: () => {}, markOpenMeetingRow: () => {}, syncNarrowLayout: () => {},
     activeSearchQuery: '',
     formatDetailDate: date => date,
+    i18nSkipUserText: (element) => element,
     setHighlightedText: (element, text) => { element.textContent = text; },
     renderMarkdownToElement: (element, text) => { element.textContent = text; },
     highlightTextNodes: () => {},

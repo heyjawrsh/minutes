@@ -12,6 +12,13 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['zh-CN'] = {
   strings: {
+    "Today": "今天",
+    "Yesterday": "昨天",
+    "meeting": "会议",
+    "memo": "备忘录",
+    "dictation": "听写",
+    "note": "笔记",
+    "Preparing transcript…": "正在准备转写…",
     "Next steps": "后续步骤",
     "Summary": "摘要",
     "Notes": "笔记",
@@ -638,6 +645,12 @@ window.__MINUTES_I18N['zh-CN'] = {
     "Yoruba": "约鲁巴语"
   },
   patterns: [
+    { re: "^(1) item$", to: "$1 项" },
+    { re: "^(\\d[\\d.,\\s]*) items$", to: "$1 项" },
+    { re: "^(1) meeting$", to: "$1 场会议" },
+    { re: "^(\\d[\\d.,\\s]*) meetings$", to: "$1 场会议" },
+    { re: "^(1) memo$", to: "$1 条备忘录" },
+    { re: "^(\\d[\\d.,\\s]*) memos$", to: "$1 条备忘录" },
     // ── IA overhaul ────────────────────────────────────────────────
     { re: "^Prep me for “(.+)”: what happened last time, open items, and what to raise\\.$", to: "帮我准备“$1”：上次讨论了什么，还有哪些待办事项，以及这次该提出什么。" },
     { re: "^Ask me about “(.+)”, including decisions, action items and key moments from this meeting\\.$", to: "可以问我有关“$1”的问题，包括这场会议的决策、行动项和关键时刻。" },

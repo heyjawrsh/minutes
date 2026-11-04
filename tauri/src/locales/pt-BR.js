@@ -12,6 +12,11 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['pt-BR'] = {
   strings: {
+    "Today": "Hoje",
+    "Yesterday": "Ontem",
+    "meeting": "reunião",
+    "dictation": "ditado",
+    "note": "nota",
     "Next steps": "Próximos passos",
     "Summary": "Resumo",
     "Notes": "Notas",
@@ -117,7 +122,7 @@ window.__MINUTES_I18N['pt-BR'] = {
     "Stop Live": "Parar ao vivo",
     "Processing": "Processando",
     "Processing recording": "Processando gravação",
-    "Preparing transcript...": "Preparando transcrição...",
+    "Preparing transcript...": "Preparando a transcrição…",
     "Finishing recording…": "Finalizando gravação…",
     "mic silent, check input device": "microfone mudo, verifique o dispositivo de entrada",
 
@@ -1188,6 +1193,12 @@ window.__MINUTES_I18N['pt-BR'] = {
     "Yoruba": "Iorubá"
   },
   patterns: [
+    { re: "^(1) item$", to: "$1 item" },
+    { re: "^(\\d[\\d.,\\s]*) items$", to: "$1 itens" },
+    { re: "^(1) meeting$", to: "$1 reunião" },
+    { re: "^(\\d[\\d.,\\s]*) meetings$", to: "$1 reuniões" },
+    { re: "^(1) memo$", to: "$1 memo de voz" },
+    { re: "^(\\d[\\d.,\\s]*) memos$", to: "$1 memos de voz" },
     // ── IA overhaul ────────────────────────────────────────────────
     { re: "^Prep me for “(.+)”: what happened last time, open items, and what to raise\\.$", to: "Me ajude a preparar para “$1”: o que aconteceu da última vez, pendências e o que abordar." },
     { re: "^Ask me about “(.+)”, including decisions, action items and key moments from this meeting\\.$", to: "Pergunte sobre “$1”, incluindo decisões, itens de ação e momentos importantes desta reunião." },

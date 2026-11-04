@@ -11606,6 +11606,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     });
 
     // ── Meeting list ──
+    function uiDateLocale() {
+      const locale = window.MinutesI18n?.getLocale?.() || 'en';
+      return locale === 'en' ? 'en-US' : locale;
+    }
+
     function groupByDate(meetings) {
       const groups = {};
       const today = new Date();
@@ -11617,7 +11622,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         let label;
         if (d.toDateString() === today.toDateString()) label = 'Today';
         else if (d.toDateString() === yesterday.toDateString()) label = 'Yesterday';
-        else label = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        else label = d.toLocaleDateString(uiDateLocale(), { month: 'long', day: 'numeric', year: 'numeric' });
 
         if (!groups[label]) groups[label] = [];
         groups[label].push(m);
@@ -11628,7 +11633,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function formatTime(dateStr) {
       if (!dateStr) return '';
       try {
-        return new Date(dateStr).toLocaleTimeString('en-US', {
+        return new Date(dateStr).toLocaleTimeString(uiDateLocale(), {
           hour: 'numeric', minute: '2-digit'
         });
       } catch { return ''; }
@@ -11637,7 +11642,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function formatDetailDate(dateStr) {
       if (!dateStr) return '';
       try {
-        return new Date(dateStr).toLocaleString('en-US', {
+        return new Date(dateStr).toLocaleString(uiDateLocale(), {
           month: 'short',
           day: 'numeric',
           hour: 'numeric',
@@ -12865,7 +12870,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         const listEnd = document.createElement('div');
         listEnd.className = 'meeting-list-end';
         const noun = listScope === 'memos' ? 'memo' : listScope === 'all' ? 'item' : 'meeting';
-        listEnd.textContent = `${state.rows.length.toLocaleString('en-US')} ${noun}${state.rows.length === 1 ? '' : 's'}`;
+        listEnd.textContent = `${state.rows.length.toLocaleString(uiDateLocale())} ${noun}${state.rows.length === 1 ? '' : 's'}`;
         meetingsScroll.appendChild(listEnd);
       }
     }
@@ -13375,7 +13380,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function formatSearchRowDate(dateStr) {
       if (!dateStr) return '';
       try {
-        return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        return new Date(dateStr).toLocaleDateString(uiDateLocale(), { month: 'short', day: 'numeric', year: 'numeric' });
       } catch { return ''; }
     }
 
@@ -15652,6 +15657,22 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       try {
         const resolved = await invoke('cmd_set_ui_language', { language: e.target.value });
         if (window.MinutesI18n) window.MinutesI18n.setLocale(resolved);
+        if (meetingRowsState && !documentsViewActive) {
+          const scrollTop = meetingsScroll.scrollTop;
+          if (meetingRowsState.sections) {
+            const rendered = meetingRowsState.rendered;
+            meetingsScroll.replaceChildren();
+            meetingRowsState.rendered = 0;
+            meetingRowsState.lastLabel = null;
+            appendMeetingRows(rendered);
+          } else {
+            renderMeetings(meetingRowsState.rows.map(({ m }) => m));
+          }
+          meetingsScroll.scrollTop = scrollTop;
+        }
+        if (currentMeetingDetail && detailOverlay.classList.contains('active')) {
+          renderDetailKeepingScroll(currentMeetingDetail);
+        }
       } catch (err) { console.error('set ui language:', err); }
     });
     function renderDictationBackend(dictation) {
