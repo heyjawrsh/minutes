@@ -2621,6 +2621,267 @@ pub struct ProcessingJobView {
 #[serde(rename_all = "camelCase")]
 pub struct WeeklySummaryView {
     pub markdown: String,
+    #[serde(flatten)]
+    pub week: WeeklyView,
+}
+
+pub(crate) struct WeeklyMeeting {
+    pub path: PathBuf,
+    pub frontmatter: minutes_core::markdown::Frontmatter,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WeeklyView {
+    week_start: String,
+    week_end: String,
+    weeks_back: u32,
+    meeting_count: usize,
+    memo_count: usize,
+    decision_count: usize,
+    open_action_count: usize,
+    total_duration_secs: u64,
+    meetings: Vec<WeeklyMeetingView>,
+    decisions: Vec<WeeklyDecisionView>,
+    open_actions: Vec<WeeklyActionView>,
+    stale_commitments: Vec<WeeklyCommitmentView>,
+    people: Vec<WeeklyPersonView>,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WeeklyMeetingView {
+    path: PathBuf,
+    title: String,
+    date: String,
+    content_type: String,
+    duration_secs: u64,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WeeklyDecisionView {
+    text: String,
+    topic: Option<String>,
+    meeting_path: PathBuf,
+    meeting_title: String,
+    meeting_date: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WeeklyActionView {
+    task: String,
+    assignee: String,
+    due: Option<String>,
+    overdue: bool,
+    index: usize,
+    meeting_path: PathBuf,
+    meeting_title: String,
+    meeting_date: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WeeklyCommitmentView {
+    what: String,
+    who: Option<String>,
+    by_date: Option<String>,
+    age_days: i64,
+    meeting_path: PathBuf,
+    meeting_title: String,
+    meeting_date: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct WeeklyPersonView {
+    name: String,
+    count: usize,
+}
+
+fn weekly_week_bounds(
+    today: chrono::NaiveDate,
+    weeks_back: u32,
+) -> Option<(chrono::NaiveDate, chrono::NaiveDate)> {
+    use chrono::Datelike;
+    let days_back = u64::from(today.weekday().num_days_from_monday()) + 7 * u64::from(weeks_back);
+    let start = today.checked_sub_days(chrono::Days::new(days_back))?;
+    Some((start, start.checked_add_days(chrono::Days::new(6))?))
+}
+
+/// Aggregate local calendar dates without consulting the filesystem or clock.
+/// The command validates that the requested week fits Chrono's date range.
+pub(crate) fn build_weekly_view(
+    mut meetings: Vec<WeeklyMeeting>,
+    stale: &[minutes_core::search::StaleCommitment],
+    today: chrono::NaiveDate,
+    weeks_back: u32,
+) -> WeeklyView {
+    let (start, end) = weekly_week_bounds(today, weeks_back).expect("validated calendar week");
+    meetings.retain(|meeting| {
+        let fm = &meeting.frontmatter;
+        matches!(fm.r#type, ContentType::Meeting | ContentType::Memo)
+            && (start..=end).contains(&fm.date.date_naive())
+    });
+
+    // Preserve the first spelling in the input, before sorting the meeting rows.
+    let mut people: HashMap<String, WeeklyPersonView> = HashMap::new();
+    for meeting in &meetings {
+        if meeting.frontmatter.r#type != ContentType::Meeting {
+            continue;
+        }
+        let mut seen = std::collections::HashSet::new();
+        for name in &meeting.frontmatter.attendees {
+            let name = name.trim();
+            let key = name.to_lowercase();
+            if name.is_empty() || !seen.insert(key.clone()) {
+                continue;
+            }
+            people
+                .entry(key)
+                .or_insert_with(|| WeeklyPersonView {
+                    name: name.to_string(),
+                    count: 0,
+                })
+                .count += 1;
+        }
+    }
+    let mut people: Vec<_> = people.into_values().collect();
+    people.sort_by(|a, b| b.count.cmp(&a.count).then_with(|| a.name.cmp(&b.name)));
+    people.truncate(6);
+    meetings.sort_by_key(|meeting| Reverse(meeting.frontmatter.date));
+
+    let mut view = WeeklyView {
+        week_start: start.to_string(),
+        week_end: end.to_string(),
+        weeks_back,
+        meeting_count: 0,
+        memo_count: 0,
+        decision_count: 0,
+        open_action_count: 0,
+        total_duration_secs: 0,
+        meetings: Vec::new(),
+        decisions: Vec::new(),
+        open_actions: Vec::new(),
+        stale_commitments: Vec::new(),
+        people,
+    };
+    for meeting in meetings {
+        let fm = meeting.frontmatter;
+        let date = fm.date.to_rfc3339();
+        let duration_secs = weekly_duration_secs(&fm.duration);
+        let content_type = if fm.r#type == ContentType::Meeting {
+            view.meeting_count += 1;
+            view.total_duration_secs = view.total_duration_secs.saturating_add(duration_secs);
+            "meeting"
+        } else {
+            view.memo_count += 1;
+            "memo"
+        };
+        for decision in fm.decisions {
+            view.decisions.push(WeeklyDecisionView {
+                text: decision.text,
+                topic: decision.topic,
+                meeting_path: meeting.path.clone(),
+                meeting_title: fm.title.clone(),
+                meeting_date: date.clone(),
+            });
+        }
+        for (index, item) in fm.action_items.into_iter().enumerate() {
+            if item.status != "open" {
+                continue;
+            }
+            let overdue = item
+                .due
+                .as_deref()
+                .and_then(|due| due.trim().get(..10))
+                .and_then(|date| chrono::NaiveDate::parse_from_str(date, "%Y-%m-%d").ok())
+                .is_some_and(|due| due < today);
+            view.open_actions.push(WeeklyActionView {
+                task: item.task,
+                assignee: item.assignee,
+                due: item.due,
+                overdue,
+                index,
+                meeting_path: meeting.path.clone(),
+                meeting_title: fm.title.clone(),
+                meeting_date: date.clone(),
+            });
+        }
+        view.meetings.push(WeeklyMeetingView {
+            path: meeting.path,
+            title: fm.title,
+            date,
+            content_type: content_type.to_string(),
+            duration_secs,
+        });
+    }
+    view.decision_count = view.decisions.len();
+    view.open_action_count = view.open_actions.len();
+    if weeks_back == 0 {
+        view.stale_commitments = stale
+            .iter()
+            .take(5)
+            .map(|item| WeeklyCommitmentView {
+                what: item.entry.what.clone(),
+                who: item.entry.who.clone(),
+                by_date: item.entry.by_date.clone(),
+                age_days: item.age_days,
+                meeting_path: item.entry.path.clone(),
+                meeting_title: item.entry.title.clone(),
+                meeting_date: item.entry.date.clone(),
+            })
+            .collect();
+    }
+    view
+}
+
+fn weekly_duration_secs(duration: &str) -> u64 {
+    fn number(value: &str) -> Option<u64> {
+        if value.is_empty() || !value.bytes().all(|byte| byte.is_ascii_digit()) {
+            return None;
+        }
+        value.parse().ok()
+    }
+
+    fn parse(duration: &str) -> Option<u64> {
+        let duration = duration.trim();
+        if duration.contains(':') {
+            let parts: Vec<_> = duration.split(':').collect();
+            if !(2..=3).contains(&parts.len()) {
+                return None;
+            }
+            let mut total = number(parts[0])?;
+            for part in &parts[1..] {
+                let value = number(part)?;
+                if value >= 60 {
+                    return None;
+                }
+                total = total.checked_mul(60)?.checked_add(value)?;
+            }
+            return Some(total);
+        }
+        let mut total = 0u64;
+        let mut previous_unit = u64::MAX;
+        for part in duration.split_whitespace() {
+            let (value, unit) = if let Some(value) = part.strip_suffix('h') {
+                (value, 3600)
+            } else if let Some(value) = part.strip_suffix('m') {
+                (value, 60)
+            } else {
+                (part.strip_suffix('s')?, 1)
+            };
+            if unit >= previous_unit {
+                return None;
+            }
+            previous_unit = unit;
+            total = total.checked_add(number(value)?.checked_mul(unit)?)?;
+        }
+        Some(total)
+    }
+
+    parse(duration).unwrap_or(0)
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -8235,14 +8496,48 @@ pub fn cmd_retry_processing_job(
 // Corpus-wide reads run on the blocking pool: a sync Tauri command runs on
 // the main thread and freezes the window until every file read finishes.
 #[tauri::command]
-pub async fn cmd_weekly_summary() -> Result<WeeklySummaryView, String> {
-    tauri::async_runtime::spawn_blocking(cmd_weekly_summary_blocking)
-        .await
-        .map_err(|e| format!("cmd_weekly_summary worker failed: {e}"))?
+pub async fn cmd_weekly_summary(weeks_back: Option<u32>) -> Result<WeeklySummaryView, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        cmd_weekly_summary_blocking(weeks_back.unwrap_or(0))
+    })
+    .await
+    .map_err(|e| format!("cmd_weekly_summary worker failed: {e}"))?
 }
 
-fn cmd_weekly_summary_blocking() -> Result<WeeklySummaryView, String> {
+fn cmd_weekly_summary_blocking(weeks_back: u32) -> Result<WeeklySummaryView, String> {
     let config = Config::load();
+    let today = chrono::Local::now().date_naive();
+    let (week_start, _) = weekly_week_bounds(today, weeks_back)
+        .ok_or_else(|| "Requested week is outside the supported date range".to_string())?;
+    let week_filters = minutes_core::search::SearchFilters {
+        since: Some(week_start.to_string()),
+        include_restricted: true,
+        ..Default::default()
+    };
+    let candidates =
+        minutes_core::search::search("", &config, &week_filters).map_err(|e| e.to_string())?;
+    let mut weekly_meetings = Vec::with_capacity(candidates.len());
+    for candidate in candidates {
+        // Apply the same authorized read path as meeting_detail before parsing.
+        // One unreadable or malformed file is skipped rather than failing the week.
+        if minutes_core::notes::validate_meeting_path(&candidate.path, &config.output_dir).is_err()
+        {
+            continue;
+        }
+        let Ok(content) = std::fs::read_to_string(&candidate.path) else {
+            continue;
+        };
+        let (frontmatter, _) = minutes_core::markdown::split_frontmatter(&content);
+        let Ok(frontmatter) = serde_yaml::from_str(frontmatter.trim()) else {
+            continue;
+        };
+        weekly_meetings.push(WeeklyMeeting {
+            path: candidate.path,
+            frontmatter,
+        });
+    }
+
+    // Preserve the existing rolling-seven-day markdown for legacy callers.
     let since = (chrono::Local::now() - chrono::Duration::days(7)).to_rfc3339();
     let filters = minutes_core::search::SearchFilters {
         content_type: None,
@@ -8336,7 +8631,13 @@ fn cmd_weekly_summary_blocking() -> Result<WeeklySummaryView, String> {
         &open_actions_block,
     );
 
-    Ok(WeeklySummaryView { markdown })
+    let week = build_weekly_view(
+        weekly_meetings,
+        &consistency.stale_commitments,
+        today,
+        weeks_back,
+    );
+    Ok(WeeklySummaryView { markdown, week })
 }
 
 #[tauri::command]
@@ -19939,6 +20240,208 @@ mod tests {
     fn weekly_dates_read_as_days() {
         assert_eq!(weekly_date_label("2026-10-24T22:33:34-04:00"), "Sat Oct 24");
         assert_eq!(weekly_date_label("not a date"), "not a date");
+    }
+
+    fn weekly_view_fixture(date: &str, content_type: &str, extra: &str) -> WeeklyMeeting {
+        use chrono::TimeZone;
+        let local = chrono::Local
+            .from_local_datetime(
+                &chrono::NaiveDateTime::parse_from_str(date, "%Y-%m-%d %H:%M:%S").unwrap(),
+            )
+            .earliest()
+            .unwrap();
+        WeeklyMeeting {
+            path: PathBuf::from(format!("{date}-{content_type}.md")),
+            frontmatter: serde_yaml::from_str(&format!(
+                "title: Test {content_type}\ntype: {content_type}\ndate: '{}'\nduration: 1h 2m 3s\n{extra}",
+                local.to_rfc3339()
+            ))
+            .unwrap(),
+        }
+    }
+
+    #[test]
+    fn weekly_view_week_bounds() {
+        let today = chrono::NaiveDate::from_ymd_opt(2026, 11, 4).unwrap();
+        let fixtures = || {
+            vec![
+                weekly_view_fixture("2026-11-01 23:59:00", "meeting", ""),
+                weekly_view_fixture("2026-11-02 00:00:00", "memo", ""),
+                weekly_view_fixture("2026-11-08 23:59:59", "meeting", ""),
+                weekly_view_fixture("2026-11-09 00:00:00", "meeting", ""),
+                weekly_view_fixture("2026-11-04 12:00:00", "dictation", ""),
+                weekly_view_fixture("2026-11-04 12:00:00", "note", ""),
+            ]
+        };
+        let view = build_weekly_view(fixtures(), &[], today, 0);
+        assert_eq!(view.week_start, "2026-11-02");
+        assert_eq!(view.week_end, "2026-11-08");
+        assert_eq!((view.meeting_count, view.memo_count), (1, 1));
+        assert_eq!(view.total_duration_secs, 3723);
+        assert_eq!(view.meetings.len(), 2);
+        assert_eq!(view.meetings[0].content_type, "meeting");
+        let previous = build_weekly_view(fixtures(), &[], today, 1);
+        assert_eq!(previous.week_start, "2026-10-26");
+        assert_eq!(previous.week_end, "2026-11-01");
+        assert_eq!(previous.meeting_count, 1);
+        assert_eq!(previous.memo_count, 0);
+        for day in 2..=8 {
+            let day = chrono::NaiveDate::from_ymd_opt(2026, 11, day).unwrap();
+            assert_eq!(weekly_week_bounds(day, 0), weekly_week_bounds(today, 0));
+        }
+        let new_year = chrono::NaiveDate::from_ymd_opt(2027, 1, 1).unwrap();
+        assert_eq!(
+            build_weekly_view(vec![], &[], new_year, 0).week_start,
+            "2026-12-28"
+        );
+        assert!(weekly_week_bounds(today, u32::MAX).is_none());
+    }
+
+    #[test]
+    fn weekly_view_overdue_and_index() {
+        let today = chrono::NaiveDate::from_ymd_opt(2026, 11, 4).unwrap();
+        let meeting = weekly_view_fixture(
+            "2026-11-03 12:00:00",
+            "meeting",
+            "action_items:
+  - {task: Completed, assignee: Josh, status: done, due: '2026-11-01'}
+  - {task: Late, assignee: Josh, status: open, due: ' 2026-11-03T08:00:00Z '}
+  - {task: Today, assignee: Josh, status: open, due: '2026-11-04'}
+  - {task: Vague, assignee: Josh, status: open, due: Friday}
+  - {task: Invalid, assignee: Josh, status: open, due: '2026-02-30'}
+  - {task: Unscheduled, assignee: Josh, status: open}
+  - {task: Future, assignee: Josh, status: open, due: '2026-11-05'}
+decisions:
+  - {text: First, topic: Design}
+  - {text: Second}
+",
+        );
+        let memo = weekly_view_fixture(
+            "2026-11-04 12:00:00",
+            "memo",
+            "decisions:\n  - {text: Latest}\n",
+        );
+        let view = build_weekly_view(vec![meeting, memo], &[], today, 0);
+        assert_eq!(view.open_action_count, 6);
+        for (position, action) in view.open_actions.iter().enumerate() {
+            assert_eq!(action.index, position + 1);
+            assert_eq!(action.overdue, position == 0);
+        }
+        assert_eq!(view.decision_count, 3);
+        assert_eq!(view.decisions[0].text, "Latest");
+        assert_eq!(view.decisions[1].text, "First");
+        assert_eq!(view.decisions[2].text, "Second");
+        let json = serde_json::to_value(WeeklySummaryView {
+            markdown: "Legacy markdown".into(),
+            week: view,
+        })
+        .unwrap();
+        assert_eq!(json["markdown"], "Legacy markdown");
+        assert_eq!(json["weekStart"], "2026-11-02");
+        assert!(json.get("week").is_none());
+        assert!(json["decisions"][0]["topic"].is_null());
+        assert!(json["openActions"][4]["due"].is_null());
+        assert_eq!(json["openActions"][0]["meetingTitle"], "Test meeting");
+    }
+
+    #[test]
+    fn weekly_view_people() {
+        let today = chrono::NaiveDate::from_ymd_opt(2026, 11, 4).unwrap();
+        let view = build_weekly_view(
+            vec![
+                weekly_view_fixture(
+                    "2026-11-02 12:00:00",
+                    "meeting",
+                    "attendees: [' Alice ', ALICE, '', ' ', Bob, Carol, Dan, Eve, Fran, Greg]\n",
+                ),
+                weekly_view_fixture(
+                    "2026-11-03 12:00:00",
+                    "meeting",
+                    "attendees: [alice, BOB, bob]\n",
+                ),
+                weekly_view_fixture(
+                    "2026-11-04 12:00:00",
+                    "memo",
+                    "attendees: [Carol, MemoOnly]\n",
+                ),
+            ],
+            &[],
+            today,
+            0,
+        );
+        let people: Vec<_> = view
+            .people
+            .iter()
+            .map(|person| (person.name.as_str(), person.count))
+            .collect();
+        assert_eq!(
+            people,
+            [
+                ("Alice", 2),
+                ("Bob", 2),
+                ("Carol", 1),
+                ("Dan", 1),
+                ("Eve", 1),
+                ("Fran", 1)
+            ]
+        );
+    }
+
+    #[test]
+    fn weekly_view_stale_commitments() {
+        let today = chrono::NaiveDate::from_ymd_opt(2026, 11, 4).unwrap();
+        let stale: Vec<_> = (0..7)
+            .map(|index| minutes_core::search::StaleCommitment {
+                kind: minutes_core::markdown::IntentKind::Commitment,
+                entry: minutes_core::search::ReportEntry {
+                    path: PathBuf::from("old.md"),
+                    title: "Old meeting".into(),
+                    date: "2026-10-01T12:00:00-05:00".into(),
+                    what: format!("Commitment {index}"),
+                    who: None,
+                    who_original: None,
+                    who_provenance: None,
+                    by_date: None,
+                    authority: None,
+                },
+                meetings_since: 2,
+                age_days: 34,
+                reasons: vec![],
+                latest_follow_up: None,
+            })
+            .collect();
+        let view = build_weekly_view(vec![], &stale, today, 0);
+        assert_eq!(view.stale_commitments.len(), 5);
+        assert_eq!(view.stale_commitments[0].what, "Commitment 0");
+        assert_eq!(view.stale_commitments[4].what, "Commitment 4");
+        assert!(build_weekly_view(vec![], &stale, today, 1)
+            .stale_commitments
+            .is_empty());
+    }
+
+    #[test]
+    fn weekly_view_duration_parsing() {
+        for (input, expected) in [
+            ("58m 12s", 3492),
+            ("12s", 12),
+            ("1h 2m", 3720),
+            ("1h 2m 3s", 3723),
+            ("3:12", 192),
+            ("1:02:03", 3723),
+            (" 12s ", 12),
+            ("", 0),
+            ("unknown", 0),
+            ("1m garbage", 0),
+            ("1:60", 0),
+            ("1:2:3:4", 0),
+            ("1m 2m", 0),
+            ("-12s", 0),
+            ("1.5h", 0),
+            ("18446744073709551615h", 0),
+            ("18446744073709551615:01", 0),
+        ] {
+            assert_eq!(weekly_duration_secs(input), expected, "{input:?}");
+        }
     }
 
     #[test]
