@@ -241,6 +241,7 @@
       color: var(--text);
       height: 100vh;
       padding-top: 44px;
+      padding-bottom: 36px;
       display: flex;
       flex-direction: row;
       overflow: hidden;
@@ -281,6 +282,22 @@
     html[data-platform="macos"] .top-bar {
       padding-left: 86px;
     }
+
+    #bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 36px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+    }
+
+    #bottom-bar .list-toggle-btn { gap: 6px; }
 
     .top-bar button,
     .top-bar .status-pill {
@@ -401,7 +418,7 @@
       position: absolute;
       top: 44px;
       right: 0;
-      bottom: 0;
+      bottom: 36px;
       width: min(100%, 560px);
       flex: none;
       z-index: 30;
@@ -2093,16 +2110,19 @@
       line-height: 1.4;
     }
 
-    .search-icon {
+    .search-field {
       position: relative;
     }
 
-    .search-icon::before {
-      content: "⌕";
+    .search-field .search-box { display: block; }
+
+    .search-field svg {
       position: absolute;
-      left: 28px;
-      top: 17px;
-      font-size: var(--text-base);
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 15px;
       color: var(--text-secondary);
       pointer-events: none;
       z-index: 1;
@@ -6511,8 +6531,9 @@
     .top-bar .recording-bar,
     .top-bar .live-bar { min-width: 0; -webkit-app-region: no-drag; }
 
-    /* Top bar: one control size */
-    .top-bar :is(.btn, .sidebar-collapse-btn, .list-toggle-btn, .header-chip) {
+    /* Window bars: one control size */
+    .top-bar :is(.btn, .sidebar-collapse-btn, .list-toggle-btn, .header-chip),
+    #bottom-bar .list-toggle-btn {
       box-sizing: border-box;
       height: 28px;
       align-items: center;
@@ -6528,12 +6549,12 @@
     .top-bar .btn:not([hidden]),
     .top-bar .sidebar-collapse-btn:not([hidden]),
     .top-bar .list-toggle-btn:not([aria-expanded="true"]):not([hidden]),
-    .top-bar .header-chip.active:not([hidden]) {
+    .top-bar .header-chip.active:not([hidden]),
+    #bottom-bar .list-toggle-btn {
       display: inline-flex;
     }
 
-    .top-bar #btn-sidebar-collapse,
-    .top-bar #btn-settings {
+    .top-bar #btn-sidebar-collapse {
       width: 28px;
       padding: 0;
     }
@@ -6704,9 +6725,14 @@
       <button class="header-chip activity active" id="btn-activity" type="button" aria-haspopup="dialog" aria-controls="activity-overlay">Activity <span class="activity-badge" id="activity-badge" hidden></span></button>
       <button class="list-toggle-btn recall-toggle-btn" id="btn-assistant" type="button" aria-expanded="false" title="Open Assistant">Assistant <span class="recall-nudge"
             id="recall-nudge" aria-label="Assistant has new content"></span></button>
-      <button class="btn btn-icon" id="btn-settings">⚙</button>
     </div>
   </header>
+  <footer id="bottom-bar">
+    <button class="list-toggle-btn" id="btn-settings" type="button">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 3-.6 2.5-2 .9-2.3-.7-2 3.5L4 11v2l-1.9 1.8 2 3.5 2.3-.7 2 .9L9 21h6l.6-2.5 2-.9 2.3.7 2-3.5L20 13v-2l1.9-1.8-2-3.5-2.3.7-2-.9L15 3Z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Settings</span>
+    </button>
+  </footer>
   <div class="app-left">
     <div class="capture-details" id="recording-details">
       <div class="recording-source-health" id="recording-source-health">
@@ -6764,7 +6790,10 @@
 
     <!-- Search -->
     <div class="search-wrap search-icon">
-      <input class="search-box" type="text" placeholder="Search meetings…" id="search-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+      <div class="search-field">
+        <input class="search-box" type="text" placeholder="Search meetings…" id="search-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+      </div>
       <div class="search-error" id="search-error" hidden></div>
       <div class="list-scope" id="list-scope" role="radiogroup" aria-label="Show">
         <button class="list-scope-chip is-active" type="button" role="radio" data-scope="meetings" aria-checked="true" tabindex="0">Meetings</button>
