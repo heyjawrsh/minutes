@@ -2297,6 +2297,27 @@
       flex-basis: var(--doc-width, 40%);
     }
 
+    body.doc-beside .detail-overlay.meeting-pane { flex: 0 1 430px; min-width: 340px; max-width: 480px; }
+    body.doc-beside .md-viewer.active { order: 1; flex: 1 1 400px; min-width: 400px; }
+    body.doc-beside:has(#detail-overlay.active) .recall-panel.expanded { order: 2; flex: 0 0 280px; min-width: 280px; }
+    body.doc-beside .detail-header { flex-wrap: wrap; padding-right: 48px; }
+    body.doc-beside .detail-header-copy { min-width: 0; flex-basis: 100%; }
+    body.doc-beside .detail-actions { flex-wrap: wrap; padding-right: 0; }
+    body.doc-beside .detail-tabs { flex-wrap: wrap; }
+    .meeting-draft-row[aria-current="true"] { background: var(--accent-tint); border-radius: 8px; }
+    .md-viewer-actions { position: relative; }
+    .md-viewer-actions-menu {
+      position: absolute; top: calc(100% + 6px); right: 0; z-index: 10;
+      width: max-content; max-width: min(300px, calc(100vw - 40px)); padding: 5px;
+      background: var(--bg-elevated); border: 1px solid var(--border-mid);
+      border-radius: 8px; box-shadow: 0 8px 24px var(--shadow-soft);
+    }
+    .md-viewer-actions-menu .btn { display: block; width: 100%; text-align: left; white-space: normal; }
+    .md-viewer-toolbar .md-viewer-actions-menu .btn:not(:disabled) { color: var(--text); }
+    .md-viewer-toolbar .md-viewer-actions-menu .btn:hover:not(:disabled) { background: var(--surface-fill) !important; }
+    .md-viewer-actions-menu [hidden], #md-viewer-kind[hidden] { display: none; }
+    .md-viewer-back:focus-visible { outline: 2px solid var(--focus-ring); }
+
     .md-viewer-header {
       display: flex;
       align-items: center;
@@ -7025,19 +7046,23 @@
   <div class="md-viewer" id="md-viewer">
     <div class="md-viewer-header">
       <div class="md-viewer-header-main">
-        <button class="md-viewer-back" id="md-viewer-back" title="Close draft">×</button>
         <span class="md-viewer-filename" id="md-viewer-filename"></span>
         <span class="md-viewer-kind" id="md-viewer-kind">MD</span>
+        <span class="md-viewer-status" id="md-viewer-status">Saved</span>
       </div>
       <div class="md-viewer-toolbar">
+        <button class="btn md-viewer-mode-btn" id="md-viewer-source-btn">Edit</button>
         <button class="btn md-viewer-mode-btn active" id="md-viewer-preview-btn">Preview</button>
-        <button class="btn md-viewer-mode-btn" id="md-viewer-source-btn">Source</button>
-        <span class="md-viewer-toolbar-sep"></span>
-        <button class="btn" id="md-viewer-promote-btn" hidden>Make Editable Copy</button>
         <button class="btn" id="md-viewer-save-btn" disabled>Save</button>
-        <button class="btn" id="md-viewer-review-btn" disabled>Review</button>
-        <button class="btn" id="md-viewer-revert-btn" disabled>Revert</button>
-        <span class="md-viewer-status" id="md-viewer-status">Viewing</span>
+        <div class="md-viewer-actions">
+          <button class="detail-more-btn" id="md-viewer-actions-btn" aria-label="Draft actions" aria-haspopup="menu" aria-expanded="false" aria-controls="md-viewer-actions-menu">⋯</button>
+          <div class="md-viewer-actions-menu" id="md-viewer-actions-menu" role="menu" aria-label="Draft actions" hidden>
+            <button class="btn" id="md-viewer-review-btn" role="menuitem" disabled>Review changes</button>
+            <button class="btn" id="md-viewer-revert-btn" role="menuitem" disabled>Restore an earlier version</button>
+            <button class="btn" id="md-viewer-promote-btn" role="menuitem" hidden>Make editable copy</button>
+          </div>
+        </div>
+        <button class="md-viewer-back" id="md-viewer-back" aria-label="Close draft" title="Close draft">×</button>
       </div>
     </div>
     <div class="md-viewer-history" id="md-viewer-history"></div>
@@ -12037,6 +12062,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     function closeDetailView() {
+      delete document.getElementById('md-viewer').dataset.meetingPath;
       const wasOpen = detailOverlay.classList.contains('active');
       const wasWeekly = detailOverlay.dataset.view === 'weekly';
       detailOverlay.classList.remove('active');
@@ -12644,6 +12670,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         for (const draft of detail.drafts) {
           const row = document.createElement('div');
           row.className = 'meeting-draft-row';
+          row.dataset.draftPath = draft.path;
+          if (document.getElementById('md-viewer')?.dataset.path === draft.path) row.setAttribute('aria-current', 'true');
           const copy = document.createElement('div');
           copy.className = 'meeting-draft-copy';
           const label = templateLabels.get(draft.template_kind);
@@ -12680,6 +12708,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
               await showMdViewer(draft.path, draft.title, content, {
                 editable: !!access.editable,
                 kind: access.kind || draft.kind || 'text',
+                meetingPath: detail.path,
               });
             } catch (e) {
               console.error('Open meeting draft:', e);
@@ -12848,6 +12877,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     //   'failed'     — detail could not be loaded; the file went to an external
     //                  editor and the overlay still shows this meeting's old content
     async function openMeetingDetail(path) {
+      const viewer = document.getElementById('md-viewer');
+      if (viewer.dataset.meetingPath !== path) delete viewer.dataset.meetingPath;
       // Opens are concurrent: each awaits its own IPC, so a slower earlier open
       // could land last and render itself over a newer one — restoring the old
       // meeting's content AND its currentMeetingPath. That is what would let a
@@ -17137,6 +17168,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       sidebarCollapseButton.setAttribute('aria-label', collapsed ? 'Expand list pane' : 'Collapse list pane');
       sidebarCollapseButton.setAttribute('title', collapsed ? 'Expand list pane' : 'Collapse list pane');
       if (explicit) {
+        const viewer = document.getElementById('md-viewer');
+        if (viewer?.dataset.meetingPath) viewer.dataset.sidebarOverride = 'true';
         sidebarAutoCollapsed = false;
         localStorage.setItem('minutes.sidebarCollapsed', collapsed ? 'true' : 'false');
         if (!collapsed) {
@@ -17150,6 +17183,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function toggleSidebarCollapsed() {
       applySidebarCollapsed(!document.body.classList.contains('sidebar-collapsed'), { explicit: true });
+      return syncNarrowLayout();
     }
 
     function hasVisibleSecondaryPane() {
@@ -17173,9 +17207,17 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     const DOC_OVERLAY_WIDTH = 820;
     function syncNarrowLayout() {
       const docOpen = document.body.classList.contains('doc-open');
+      const viewer = document.getElementById('md-viewer');
+      const linked = docOpen && !!viewer?.dataset.meetingPath;
+      const autoLink = linked && !viewer.dataset.sidebarOverride;
+      document.body.classList.toggle('doc-linked', linked);
+      if (autoLink && !document.body.classList.contains('sidebar-collapsed')) {
+        sidebarAutoCollapsed = true;
+        applySidebarCollapsed(true);
+      }
       const meetingAndRecallOpen = detailOverlay.classList.contains('active')
         && !!document.querySelector('#recall-panel.expanded');
-      const threshold = docOpen ? DOC_OPEN_COLLAPSE_WIDTH
+      const threshold = autoLink ? Infinity : docOpen ? DOC_OPEN_COLLAPSE_WIDTH
         : meetingAndRecallOpen ? MEETING_AND_RECALL_COLLAPSE_WIDTH : SIDEBAR_AUTO_COLLAPSE_WIDTH;
       const width = window.innerWidth;
       const pinnedCollapsed = localStorage.getItem('minutes.sidebarCollapsed') === 'true';
@@ -17206,13 +17248,25 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       // A manual expand overrides the policy only while the window is still
       // narrow. Once it is wide again the override has done its job; the next
       // squeeze should auto-collapse like the first one did.
-      if (width >= threshold) userExpandedSidebarThisSession = false;
-      document.body.classList.toggle('doc-overlay', docOpen && width < DOC_OVERLAY_WIDTH);
+      if (width >= threshold && !linked) userExpandedSidebarThisSession = false;
+      const listWidth = document.body.classList.contains('sidebar-collapsed') ? 0
+        : Math.max(260, document.querySelector('.app-left')?.getBoundingClientRect().width || 360);
+      const assistantWidth = document.querySelector('#recall-panel.expanded') ? 280 : 0;
+      // Meeting (~430) beside a draft that stays the wider pane (>= 470).
+      const beside = linked && width >= listWidth + 900 + assistantWidth;
+      if (linked) detailOverlay.classList.toggle('active', beside);
+      document.body.classList.toggle('doc-beside', beside);
+      document.body.classList.toggle('doc-overlay', docOpen && !beside && width < DOC_OVERLAY_WIDTH);
+      for (const row of document.querySelectorAll('.meeting-draft-row')) {
+        if (docOpen && row.dataset.draftPath === viewer?.dataset.path) row.setAttribute('aria-current', 'true');
+        else row.removeAttribute('aria-current');
+      }
     }
     syncNarrowLayout();
     sidebarCollapseButton.addEventListener('click', toggleSidebarCollapsed);
     sidebarExpandRail.addEventListener('click', () => {
       applySidebarCollapsed(false, { explicit: true });
+      syncNarrowLayout();
     });
     window.addEventListener('resize', syncNarrowLayout);
 
@@ -19722,11 +19776,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       return { meta: m[1], body: source.slice(m[0].length), bodyStart: m[0].length };
     }
 
-    // Generated drafts have flat title/type fields. Other documents keep their
-    // filename; this display helper never interprets or rewrites their YAML.
-    function artifactDisplayTitle(source, filename) {
+    // Read display metadata only; the original document is never rewritten.
+    function artifactDisplayTitle(source, filename, includeUntypedTitle = false) {
       const { meta } = splitFrontmatter(source || '');
-      if (!meta || !/^artifact_type:[ \t]*\S/m.test(meta)) return filename;
+      if (!meta || (!includeUntypedTitle && !/^artifact_type:[ \t]*\S/m.test(meta))) return filename;
       const match = /^title:[ \t]*(.+)$/m.exec(meta);
       if (!match) return filename;
       const value = match[1].trim();
@@ -19739,6 +19792,18 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
       if (value.startsWith("'") && value.endsWith("'")) return value.slice(1, -1).replace(/''/g, "'") || filename;
       return value || filename;
+    }
+
+    function setArtifactDisplayTitle(source, filename) {
+      const { meta } = splitFrontmatter(source || '');
+      const kind = /^artifact_type:[ \t]*["']?([\w-]+)/m.exec(meta || '')?.[1];
+      const label = new Map([['debrief-memo', 'Debrief memo'], ['follow-up-email', 'Follow-up email'],
+        ['meeting-brief', 'Meeting brief'], ['decision-memo', 'Decision memo']]).get(kind);
+      const title = artifactDisplayTitle(source, filename.replace(/\.[^.]+$/, ''), true);
+      const emptyTitle = !/^title:[ \t]*\S/m.test(meta || '') || /^title:[ \t]*(?:""|'')[ \t]*$/m.test(meta || '');
+      const generated = label && (emptyTitle || title.toLowerCase().startsWith(`${label.toLowerCase()} - `));
+      i18nSkipUserText(mdViewerFilename, !generated);
+      mdViewerFilename.textContent = generated ? label : title;
     }
 
     function buildFrontmatterElement(doc, meta) {
@@ -19949,7 +20014,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       openArtifactParseError = activeParseError;
       mdViewerKind.textContent = openArtifactKind === 'json' ? 'JSON' : openArtifactKind === 'text' ? 'TXT' : 'MD';
       mdViewerPreviewBtn.textContent = openArtifactKind === 'json' ? 'Tree' : 'Preview';
-      mdViewerSourceBtn.textContent = 'Source';
+      mdViewerKind.hidden = openArtifactKind === 'markdown';
+      mdViewerSourceBtn.textContent = 'Edit';
       mdViewerPreviewBtn.classList.toggle('active', !sourceMode);
       mdViewerSourceBtn.classList.toggle('active', sourceMode);
       mdViewerSourceBtn.disabled = !openArtifactEditable;
@@ -19972,17 +20038,17 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       mdViewerReview.classList.toggle('active', mdViewerReviewVisible && !!mdViewerReviewData?.available);
 
       if (openArtifactSaving) {
-        setMdViewerStatus('saving', 'saved');
+        setMdViewerStatus('Saving…', 'saved');
       } else if (openArtifactParseError) {
         setMdViewerStatus('Invalid JSON', 'warning');
       } else if (!openArtifactEditable && openArtifactPath) {
-        setMdViewerStatus('read-only', 'readonly');
+        setMdViewerStatus('Read-only', 'readonly');
       } else if (openArtifactDirty) {
-        setMdViewerStatus('edited', 'unsaved');
+        setMdViewerStatus('Unsaved changes', 'unsaved');
       } else if (openArtifactExternalNotice) {
         setMdViewerStatus(openArtifactExternalNotice, 'external');
-      } else if (mdViewerLastSavedAt) {
-        setMdViewerStatus(`saved ${savedTimeLabel(mdViewerLastSavedAt)}`, 'saved');
+      } else if (openArtifactPath && openArtifactEditable) {
+        setMdViewerStatus('Saved', 'saved');
       } else {
         setMdViewerStatus('');
       }
@@ -20175,7 +20241,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function rerenderOpenArtifact(markdownText, { preserveScroll = false } = {}) {
       const previousScrollTop = preserveScroll ? mdViewerContent.scrollTop : 0;
-      mdViewerFilename.textContent = artifactDisplayTitle(markdownText, openArtifactPath?.split(/[\\/]/).pop() || 'Document');
+      setArtifactDisplayTitle(markdownText, openArtifactPath?.split(/[\\/]/).pop() || 'Document');
       renderArtifactPreview(mdViewerContent, markdownText);
       if (preserveScroll) {
         mdViewerContent.scrollTop = Math.min(previousScrollTop, mdViewerContent.scrollHeight);
@@ -20283,7 +20349,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             setMdViewerStatus('Unsaved changes', 'unsaved');
             scheduleOpenArtifactSave();
           } else {
-            setMdViewerStatus(`saved ${savedTimeLabel(mdViewerLastSavedAt)}`, 'saved');
+            setMdViewerStatus('Saved', 'saved');
             await refreshArtifactReview();
           }
         } catch (e) {
@@ -20330,16 +20396,24 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       mdViewerReviewVisible = false;
       mdViewerLastSavedAt = null;
       mdViewerMode = initialMode;
-      mdViewerFilename.textContent = artifactDisplayTitle(markdownText, filename);
+      setArtifactDisplayTitle(markdownText, filename);
       mdViewerFilename.title = path;
       rerenderOpenArtifact(markdownText);
       mdViewerEditor.value = kind === 'json' ? formatJsonSource(markdownText) : markdownText;
+      closeDraftActions(false);
+      const meetingPath = currentMeetingDetail?.path;
+      const linked = meetingPath && (detailOverlay.classList.contains('active') || mdViewer.dataset.meetingPath === meetingPath)
+        && (options.meetingPath === meetingPath || currentMeetingDetail.drafts?.some((draft) => draft.path === path));
+      if (!linked || mdViewer.dataset.meetingPath !== meetingPath) delete mdViewer.dataset.sidebarOverride;
+      mdViewer.dataset.path = path;
+      if (linked) { mdViewer.dataset.meetingPath = meetingPath; selectDetailTab('drafts'); }
+      else delete mdViewer.dataset.meetingPath;
       mdViewer.classList.add('active');
       // Drives the three-pane split: chat yields, the list keeps its width.
       document.body.classList.add('doc-open');
       syncNarrowLayout();
-      // Opening a document replaces the meeting pane with the document pane.
-      if (detailOverlay.classList.contains('active')) {
+      // Unrelated documents retain the replacement behavior.
+      if (!linked && detailOverlay.classList.contains('active')) {
         detailOverlay.classList.remove('active');
         markOpenMeetingRow();
         // Hiding the pane bypasses closeDetailView(), so drop any armed
@@ -20420,6 +20494,14 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       mdViewerMode = 'preview';
       mdViewerReviewData = null;
       mdViewerReviewVisible = false;
+      closeDraftActions(false);
+      if (mdViewer.dataset.meetingPath === currentMeetingDetail?.path) {
+        detailOverlay.classList.add('active');
+        selectDetailTab('drafts');
+      }
+      delete mdViewer.dataset.meetingPath;
+      delete mdViewer.dataset.path;
+      delete mdViewer.dataset.sidebarOverride;
       mdViewer.classList.remove('active');
       document.body.classList.remove('doc-open');
       syncNarrowLayout();
@@ -20475,11 +20557,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           mode: 'preview',
           confirmedDiscard: bypassDiscardPrompt,
           editable: true,
+          meetingPath,
         });
         if (!shown) return;
-        // The detail overlay is closed by showMdViewer, so showDetailFeedback would
-        // render into a hidden element. The md-viewer opening with the draft contents
-        // is itself the confirmation that the draft was created.
+        // Opening the draft is the confirmation that it was created.
       } catch (e) {
         console.error('Create artifact:', e);
         showDetailFeedback(`Could not create draft: ${e}`, 'error');
@@ -20553,6 +20634,40 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         console.error('Open markdown:', e);
       }
     }
+
+    const draftActionsButton = document.getElementById('md-viewer-actions-btn');
+    const draftActionsMenu = document.getElementById('md-viewer-actions-menu');
+    function closeDraftActions(restoreFocus = true) {
+      const wasOpen = !draftActionsMenu.hidden;
+      draftActionsMenu.hidden = true;
+      draftActionsButton.setAttribute('aria-expanded', 'false');
+      if (wasOpen && restoreFocus) draftActionsButton.focus();
+    }
+    draftActionsButton.addEventListener('click', () => {
+      if (!draftActionsMenu.hidden) return closeDraftActions();
+      draftActionsMenu.hidden = false;
+      draftActionsButton.setAttribute('aria-expanded', 'true');
+      draftActionsMenu.querySelector('button:not(:disabled):not([hidden])')?.focus();
+    });
+    draftActionsMenu.addEventListener('click', (event) => {
+      if (event.target.closest('[role="menuitem"]')) closeDraftActions();
+    });
+    document.addEventListener('click', (event) => {
+      if (!draftActionsMenu.hidden && !event.target.closest('.md-viewer-actions')) closeDraftActions();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (draftActionsMenu.hidden) return;
+      if (event.key === 'Escape') {
+        event.preventDefault(); event.stopImmediatePropagation(); closeDraftActions();
+      } else if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        event.preventDefault();
+        const items = [...draftActionsMenu.querySelectorAll('button:not(:disabled):not([hidden])')];
+        const index = items.indexOf(document.activeElement);
+        const next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1
+          : (index + (event.key === 'ArrowUp' ? -1 : 1) + items.length) % items.length;
+        items[next]?.focus();
+      } else if (event.key === 'Tab') closeDraftActions();
+    }, true);
 
     document.getElementById('md-viewer-back').addEventListener('click', () => {
       // hideMdViewer is async; an unhandled rejection here would look exactly
