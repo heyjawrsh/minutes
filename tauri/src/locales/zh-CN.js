@@ -12,6 +12,14 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['zh-CN'] = {
   strings: {
+    "Done today": "今天完成",
+    "Run all checks": "运行所有检查",
+    "Show all checks": "显示所有检查",
+    "A recording didn't finish processing": "有一段录音未完成处理",
+    "A watched file couldn't be processed": "无法处理监视文件夹中的文件",
+    "Transcript needs review": "转写需要复查",
+    "Nothing needs attention.": "没有需要处理的事项。",
+    "Nothing is processing.": "当前没有正在处理的内容。",
     "Last week": "上周",
     "Previous week": "上一周",
     "Next week": "下一周",

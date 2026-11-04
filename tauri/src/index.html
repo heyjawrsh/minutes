@@ -4331,6 +4331,8 @@
 
     #activity-section-notices[hidden] + .activity-section {
       border-top: 0;
+      margin-top: 0;
+      padding-top: 0;
     }
 
     #activity-notices > * {
@@ -4407,15 +4409,51 @@
 
     .activity-section h3 {
       margin: 0;
-      font-family: var(--font-display);
-      font-size: var(--text-lg);
-      font-weight: 400;
-      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-secondary);
     }
 
-    .activity-section h3[tabindex="-1"] {
-      outline: none;
+    .activity-section h3[tabindex="-1"] { outline: none; }
+    .activity-section summary:focus-visible {
+      outline: 2px solid var(--focus-ring);
+      outline-offset: 3px;
     }
+
+    .activity-card {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--surface-fill);
+      overflow-wrap: anywhere;
+    }
+
+    .activity-card.is-attention { border-left: 3px solid var(--orange); }
+    #recovery-scroll .recovery-list { display: block; }
+    .activity-card-title, .activity-done-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text);
+    }
+    .activity-card-body, .activity-card-elapsed {
+      font-size: var(--text-xs);
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .activity-card-body { margin-top: 6px; }
+    .activity-card-elapsed { flex-shrink: 0; }
+    .activity-card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .activity-done-row { align-items: center; margin-top: 10px; }
+    #activity-section-setup details { margin-top: 12px; }
+    #activity-section-setup summary { cursor: pointer; font-size: var(--text-xs); color: var(--text-secondary); }
+    #btn-readiness-run-all { margin-top: 10px; }
 
     .activity-sub {
       margin-top: 6px;
@@ -7090,26 +7128,35 @@
         </section>
         <section class="activity-section" id="activity-section-attention">
           <div class="activity-section-heading">
-            <h3 id="activity-attention-title" tabindex="-1">Recordings to retry</h3>
+            <h3 id="activity-attention-title" tabindex="-1">Needs attention<span id="activity-attention-count" hidden></span></h3>
             <button class="btn btn-secondary btn-sm" id="btn-recovery-retry-all" disabled>Retry all</button>
           </div>
-          <div class="activity-sub" id="recovery-subtitle">Preserved captures and watched files that didn't finish processing.</div>
+          <div class="activity-sub" id="recovery-subtitle" hidden>Preserved captures and watched files that didn't finish processing.</div>
           <div class="recovery-bulk-errors" id="recovery-bulk-errors" role="status" aria-live="polite" hidden></div>
-          <div class="recovery-scroll" id="recovery-scroll">
-            <div class="recovery-empty">Nothing to retry.</div>
-          </div>
+          <div class="recovery-scroll" id="recovery-scroll"></div>
+          <div id="activity-attention-jobs"></div>
+          <div id="activity-attention-readiness"></div>
+          <div class="recovery-empty" id="activity-attention-empty">Nothing needs attention.</div>
         </section>
         <section class="activity-section" id="activity-section-processing">
           <h3 id="activity-processing-title" tabindex="-1">Processing <span id="activity-processing-count"></span></h3>
           <div class="activity-sub">Background processing for recent recordings.</div>
           <div class="recovery-scroll" id="jobs-scroll">
-            <div class="recovery-empty">Nothing processing right now.</div>
+            <div class="recovery-empty">Nothing is processing.</div>
           </div>
+        </section>
+        <section class="activity-section" id="activity-section-done" hidden>
+          <h3 id="activity-done-title" tabindex="-1">Done today</h3>
+          <div id="activity-done-list"></div>
         </section>
         <section class="activity-section" id="activity-section-setup">
           <h3 id="readiness-title" tabindex="-1">Setup checks</h3>
           <div class="activity-sub" id="readiness-sub"></div>
-          <div class="readiness-scroll" id="readiness-scroll"></div>
+          <button class="btn btn-secondary btn-sm" id="btn-readiness-run-all" type="button">Run all checks</button>
+          <details id="activity-setup-details">
+            <summary>Show all checks</summary>
+            <div class="readiness-scroll" id="readiness-scroll"></div>
+          </details>
         </section>
       </div>
     </aside>
@@ -9112,7 +9159,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       if (!isoString) return '';
       const date = new Date(isoString);
       if (!Number.isFinite(date.getTime())) return '';
-      return date.toLocaleString([], {
+      return date.toLocaleString(uiDateLocale(), {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -9121,80 +9168,76 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       });
     }
 
+    let activityJobsLoadGeneration = 0;
+    let activityJobsStatus = '';
+
     async function loadProcessingJobsCenter() {
+      const generation = ++activityJobsLoadGeneration;
       try {
-        jobsHistory = await invoke('cmd_processing_jobs', { limit: 24 });
+        const jobs = await invoke('cmd_processing_jobs', { limit: 24 });
+        if (generation !== activityJobsLoadGeneration) return;
+        jobsHistory = Array.isArray(jobs) ? jobs : [];
       } catch (e) {
+        if (generation !== activityJobsLoadGeneration) return;
         console.error('Processing jobs:', e);
         jobsHistory = [];
       }
 
+      const attentionJobs = document.getElementById('activity-attention-jobs');
+      const doneList = document.getElementById('activity-done-list');
       jobsScroll.replaceChildren();
-      if (!jobsHistory.length) {
+      attentionJobs.replaceChildren();
+      doneList.replaceChildren();
+      const activeJobs = jobsHistory.filter((job) => !['complete', 'failed', 'needs-review'].includes(job.state)
+        && !(job.state === 'transcript-only' && job.finishedAt));
+      const failedJobs = jobsHistory.filter((job) => ['failed', 'needs-review'].includes(job.state));
+      const today = new Date().toDateString();
+      const doneJobs = jobsHistory.filter((job) => ['complete', 'transcript-only'].includes(job.state)
+        && job.finishedAt && new Date(job.finishedAt).toDateString() === today);
+      updateJobsChip(activeJobs.length);
+      document.getElementById('activity-section-done').hidden = !doneJobs.length;
+      if (!activeJobs.length) {
         const empty = document.createElement('div');
         empty.className = 'recovery-empty';
-        empty.textContent = 'No processing jobs right now.';
+        empty.textContent = 'Nothing is processing.';
         jobsScroll.appendChild(empty);
-        return;
       }
 
-      const list = document.createElement('div');
-      list.className = 'recovery-list';
-
-      const activeJobs = jobsHistory.filter((job) => !['complete', 'failed', 'needs-review'].includes(job.state));
-      const recentJobs = jobsHistory.filter((job) => ['complete', 'failed', 'needs-review'].includes(job.state));
-
-      function addSection(titleText, jobs) {
-        if (!jobs.length) return;
-        const heading = document.createElement('div');
-        heading.className = 'about-item-title';
-        heading.style.margin = '4px 4px 10px';
-        heading.textContent = titleText;
-        list.appendChild(heading);
-
+      function addSection(jobs, list, attention = false, done = false) {
         for (const job of jobs) {
           const card = document.createElement('div');
-          card.className = 'recovery-item';
-
-          const top = document.createElement('div');
-          top.className = 'recovery-item-top';
+          card.className = done ? 'activity-done-row' : attention ? 'activity-card is-attention' : 'activity-card';
 
           const title = document.createElement('div');
-          title.className = 'recovery-item-title';
-          i18nSkipUserText(title, job.title);
-          title.textContent = job.title || processingTitleFallback(job);
-
-          const kind = document.createElement('div');
-          kind.className = 'recovery-kind';
-          kind.textContent = processingStateLabel(job);
-
-          top.appendChild(title);
-          top.appendChild(kind);
-
+          title.className = 'activity-card-title';
+          const name = document.createElement('span');
+          i18nSkipUserText(name, job.title);
+          name.textContent = job.title || processingTitleFallback(job);
           const detail = document.createElement('div');
-          detail.className = 'recovery-item-detail';
-          detail.textContent = processingJobDetail(job, jobs);
-
-          const path = document.createElement('div');
-          path.className = 'recovery-item-path';
-          path.textContent = job.outputPath || job.audioPath;
-
-          const meta = document.createElement('div');
-          meta.className = 'recovery-item-detail';
-          meta.style.marginTop = '6px';
-          const stamp = formatJobTimestamp(job.finishedAt || job.startedAt || job.createdAt);
-          const mode = job.mode === 'quick-thought' ? 'Memo' : 'Meeting';
-          const elapsed = ['queued', 'transcribing', 'transcript-only', 'diarizing', 'summarizing', 'saving'].includes(job.state)
-            ? processingJobMeta(job)
-            : mode;
-          meta.textContent = `${elapsed}${stamp ? ` · ${stamp}` : ''}${job.wordCount != null ? ` · ${job.wordCount} words` : ''}`;
-
+          detail.className = 'activity-card-body';
+          if (attention) {
+            title.textContent = job.state === 'failed' ? 'Processing failed' : 'Transcript needs review';
+            detail.appendChild(name);
+            if (job.error) detail.append(' · ', document.createTextNode(job.error));
+          } else {
+            title.appendChild(name);
+            if (!done) {
+              const elapsed = document.createElement('span');
+              elapsed.className = 'activity-card-elapsed';
+              elapsed.textContent = formatIsoElapsed(job.startedAt || job.createdAt);
+              title.appendChild(elapsed);
+              const stage = document.createElement('span');
+              stage.textContent = processingStateLabel(job);
+              detail.append(stage, ' · ', document.createTextNode(processingJobDetail(job, jobs)));
+            }
+          }
           const actions = document.createElement('div');
-          actions.className = 'recovery-actions';
+          actions.className = 'activity-card-actions';
 
           if (job.outputPath) {
             const openOutput = document.createElement('button');
             openOutput.className = 'btn btn-secondary btn-sm';
+            openOutput.title = job.outputPath;
             openOutput.textContent = ['transcript-only', 'needs-review'].includes(job.state) ? 'Open Transcript' : 'Open';
             openOutput.addEventListener('click', async () => {
               try {
@@ -9206,59 +9249,62 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             actions.appendChild(openOutput);
           }
 
-          const openCapture = document.createElement('button');
-          openCapture.className = 'btn btn-secondary btn-sm';
-          openCapture.textContent = job.outputPath ? 'Open Capture' : 'Open';
-          openCapture.addEventListener('click', async () => {
-            try {
-              await invoke('cmd_open_file', { path: job.audioPath });
-            } catch (e) {
-              console.error('Open processing job capture:', e);
-            }
-          });
-          actions.appendChild(openCapture);
-
-          const folder = document.createElement('button');
-          folder.className = 'btn btn-secondary btn-sm';
-          folder.textContent = desktopCapabilities.folderRevealLabel || 'Show in Folder';
-          folder.addEventListener('click', async () => {
-            try {
-              const target = parentPath(job.outputPath || job.audioPath);
-              await invoke('cmd_open_file', { path: target });
-            } catch (e) {
-              console.error('Open processing job folder:', e);
-            }
-          });
-          actions.appendChild(folder);
-
-          if (['failed', 'needs-review'].includes(job.state)) {
-            const retry = document.createElement('button');
-            retry.className = 'btn btn-secondary btn-sm';
-            retry.textContent = job.state === 'needs-review' ? 'Retry Audio' : 'Queue Again';
-            retry.addEventListener('click', async () => {
+          if (!done) {
+            const openCapture = document.createElement('button');
+            openCapture.className = 'btn btn-secondary btn-sm';
+            openCapture.title = job.audioPath || '';
+            openCapture.textContent = job.outputPath ? 'Open Capture' : 'Open';
+            openCapture.addEventListener('click', async () => {
               try {
-                await invoke('cmd_retry_processing_job', { jobId: job.id });
-                await loadProcessingJobsCenter();
-                startFastPoll();
+                await invoke('cmd_open_file', { path: job.audioPath });
               } catch (e) {
-                console.error('Retry processing job:', e);
+                console.error('Open processing job capture:', e);
               }
             });
-            actions.appendChild(retry);
-          }
+            actions.appendChild(openCapture);
 
-          card.appendChild(top);
-          card.appendChild(detail);
-          card.appendChild(path);
-          card.appendChild(meta);
-          card.appendChild(actions);
+            const folder = document.createElement('button');
+            folder.className = 'btn btn-secondary btn-sm';
+            folder.title = job.outputPath || job.audioPath || '';
+            folder.textContent = desktopCapabilities.folderRevealLabel || 'Show in Folder';
+            folder.addEventListener('click', async () => {
+              try {
+                const target = parentPath(job.outputPath || job.audioPath);
+                await invoke('cmd_open_file', { path: target });
+              } catch (e) {
+                console.error('Open processing job folder:', e);
+              }
+            });
+            actions.appendChild(folder);
+
+            if (['failed', 'needs-review'].includes(job.state)) {
+              const retry = document.createElement('button');
+              retry.className = 'btn btn-secondary btn-sm';
+              retry.textContent = job.state === 'needs-review' ? 'Retry Audio' : 'Queue Again';
+              retry.addEventListener('click', async () => {
+                try {
+                  await invoke('cmd_retry_processing_job', { jobId: job.id });
+                  await loadProcessingJobsCenter();
+                  startFastPoll();
+                } catch (e) {
+                  console.error('Retry processing job:', e);
+                }
+              });
+              actions.appendChild(retry);
+            }
+          }
+          card.appendChild(title);
+          if (!done) card.appendChild(detail);
+          if (done) card.append(...actions.childNodes);
+          else card.appendChild(actions);
           list.appendChild(card);
         }
       }
 
-      addSection('ACTIVE', activeJobs);
-      addSection('RECENT', recentJobs);
-      jobsScroll.appendChild(list);
+      addSection(activeJobs, jobsScroll);
+      addSection(failedJobs, attentionJobs, true);
+      addSection(doneJobs, doneList, false, true);
+      updateActivityBadge();
     }
 
     function elapsedClockSeconds(value) {
@@ -9378,7 +9424,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         isStarting = !!status.starting;
         isProcessing = !!status.processing;
         isSensitiveMeeting = !!(status.sensitive && status.sensitive.active);
-        updateJobsChip(status.processingJobCount || 0);
+        const jobsStatus = JSON.stringify(status.processingJobs || []);
+        if (jobsStatus !== activityJobsStatus) {
+          activityJobsStatus = jobsStatus;
+          loadProcessingJobsCenter();
+        }
         renderProcessingJobs(status.processingJobs || []);
         updateOutputNotice(status.latestOutput);
         if (status.updateState && typeof status.updateState === 'object') {
@@ -9603,7 +9653,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             if (wasRecording || wasStarting || wasProcessing || wasLive) {
               stopFastPoll();
               loadMeetings(); // Refresh list
-              if (activityOverlay.classList.contains('active')) loadProcessingJobsCenter();
+              loadProcessingJobsCenter();
 
               // Auto-open the result when processing completes successfully
               if (wasProcessing && latestOutput && latestOutput.kind === 'saved') {
@@ -9900,13 +9950,19 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     let activityReturnFocus = null;
-    let activityRecoveryCount = 0;
     let activityRecoveryError = false;
-    let activityReadinessCount = 0;
+    let activityReadinessItems = [];
     let activityDictationNudge = false;
 
     function updateActivityBadge() {
-      const count = activityRecoveryCount + activityReadinessCount + (activityDictationNudge ? 1 : 0);
+      const attentionItems = activityReadinessItems.filter(item => item.state === 'attention' && !item.optional);
+      const cardCount = recoveryItems.length + jobsHistory.filter(job => ['failed', 'needs-review'].includes(job.state)).length + attentionItems.length;
+      const nudgeRepresented = attentionItems.some(item => ['microphone', 'inputMonitoring'].includes(item.kind));
+      const count = cardCount + (activityDictationNudge && !nudgeRepresented ? 1 : 0);
+      const headingCount = document.getElementById('activity-attention-count');
+      headingCount.textContent = cardCount ? ` · ${cardCount}` : '';
+      headingCount.hidden = !cardCount;
+      document.getElementById('activity-attention-empty').hidden = cardCount > 0 || activityRecoveryError;
       const label = activityRecoveryError ? '!' : count > 0 ? String(count) : '';
       activityBadge.textContent = label;
       activityBadge.hidden = !label;
@@ -9934,6 +9990,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           ? activityButton : target;
       }
       setReadinessScope(readinessScope);
+      document.getElementById('activity-setup-details').open = section === 'setup' || readinessScope !== 'all';
       activityOverlay.classList.add('active');
       loadRecoveryItems();
       loadProcessingJobsCenter();
@@ -10182,14 +10239,14 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
     function setReadinessScope(scope = 'all') {
       readinessScope = scope === 'dictation' ? 'dictation' : 'all';
-      if (readinessScope === 'dictation') {
-        readinessTitle.textContent = 'Set up Type at cursor';
-        readinessSub.textContent = 'Four separate capabilities, checked only for dictation. Minutes never asks recording-only users to configure them.';
-      } else {
-        readinessTitle.textContent = 'Setup checks';
-        readinessSub.textContent = 'Only what Minutes can verify right now. Optional items are marked.';
-      }
+      readinessTitle.textContent = readinessScope === 'dictation' ? 'Set up Type at cursor' : 'Setup checks';
+      document.getElementById('activity-setup-details').setAttribute('aria-label', readinessTitle.textContent);
     }
+
+    document.getElementById('btn-readiness-run-all').addEventListener('click', () => {
+      setReadinessScope('all');
+      loadReadinessItems();
+    });
 
     async function refreshDictationPermissionNudge({ allowShow = false, force = false } = {}) {
       if (!latestSettings || !desktopAppVersion) return;
@@ -10239,9 +10296,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       checking.textContent = 'Checking now…';
       readinessScroll.appendChild(checking);
       const [itemsResult, permissionRowsResult, restartSafetyResult, shortcutResult] = await Promise.allSettled([
-        readinessScope === 'all'
-          ? withUiDeadline(invoke('cmd_permission_center'), 'Readiness inventory')
-          : Promise.resolve([]),
+        withUiDeadline(invoke('cmd_permission_center'), 'Readiness inventory'),
         withUiDeadline(invoke('cmd_macos_permission_rows'), 'macOS permission checks'),
         invoke('cmd_permission_restart_safety'),
         invoke('cmd_dictation_shortcut_settings')
@@ -10268,8 +10323,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       }
 
       let permissionItems = [];
+      let allPermissionItems = [];
       if (permissionRowsResult.status === 'fulfilled' && Array.isArray(permissionRowsResult.value)) {
         const shortcutSettings = shortcutResult.status === 'fulfilled' ? shortcutResult.value : null;
+        allPermissionItems = permissionRowsResult.value.map(row => permissionRowToReadinessItem(row, restartSafety, shortcutSettings, 'all'));
         const rows = readinessScope === 'dictation'
           ? permissionRowsResult.value.filter(row => ['microphone', 'inputMonitoring', 'accessibility', 'automation'].includes(row.kind))
           : permissionRowsResult.value;
@@ -10284,25 +10341,36 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         });
       }
 
-      readinessItems = [...permissionItems, ...items];
-      if (readinessScope === 'all') {
-        activityReadinessCount = readinessItems.filter(item => item.state === 'attention' && !item.optional).length;
-        updateActivityBadge();
-      }
+      activityReadinessItems = [...(permissionRowsResult.status === 'rejected' ? permissionItems : allPermissionItems), ...items];
+      readinessItems = readinessScope === 'dictation' ? permissionItems : activityReadinessItems;
+      updateActivityBadge();
+      const attentionReadiness = document.getElementById('activity-attention-readiness');
+      attentionReadiness.replaceChildren();
+      readinessSub.replaceChildren();
+      if (readinessScope === 'dictation') {
+        readinessSub.textContent = 'Four separate capabilities, checked only for dictation. Minutes never asks recording-only users to configure them.';
+      } else readinessItems.forEach((item, index) => {
+        if (index) readinessSub.append(', ');
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        readinessSub.appendChild(label);
+      });
 
       readinessScroll.replaceChildren();
       const list = document.createElement('div');
       list.className = 'readiness-list';
 
-      for (const item of readinessItems) {
+      const rows = readinessItems.map(item => [item, false]).concat(
+        activityReadinessItems.filter(item => item.state === 'attention' && !item.optional).map(item => [item, true]));
+      for (const [item, attention] of rows) {
         const card = document.createElement('div');
-        card.className = 'readiness-item';
+        card.className = attention ? 'activity-card is-attention' : 'readiness-item';
 
         const top = document.createElement('div');
         top.className = 'readiness-item-top';
 
         const title = document.createElement('div');
-        title.className = 'readiness-item-title';
+        title.className = attention ? 'activity-card-title' : 'readiness-item-title';
         title.textContent = item.label;
 
         const state = document.createElement('div');
@@ -10313,10 +10381,10 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         top.appendChild(state);
 
         const detail = document.createElement('div');
-        detail.className = 'readiness-item-detail';
+        detail.className = attention ? 'activity-card-body' : 'readiness-item-detail';
         detail.textContent = item.detail;
 
-        card.appendChild(top);
+        card.appendChild(attention ? title : top);
         card.appendChild(detail);
 
         if (item.optional) {
@@ -10326,9 +10394,9 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           card.appendChild(optional);
         }
 
-        if (item.permission || item.settingsUrl || item.restartRecommended) {
+        if (attention || item.permission || item.settingsUrl || item.restartRecommended) {
           const actions = document.createElement('div');
-          actions.className = 'readiness-actions';
+          actions.className = attention ? 'activity-card-actions' : 'readiness-actions';
           const statusLine = document.createElement('div');
           statusLine.className = 'readiness-action-status';
           const recheckButton = document.createElement('button');
@@ -10383,7 +10451,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           card.appendChild(actions);
         }
 
-        list.appendChild(card);
+        (attention ? attentionReadiness : list).appendChild(card);
       }
 
       readinessScroll.appendChild(list);
@@ -10392,7 +10460,6 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     function renderRecoveryItemsResult(items, recoveryLoadError, generation) {
       if (generation !== recoveryLoadGeneration) return;
       recoveryItems = Array.isArray(items) ? items : [];
-      activityRecoveryCount = recoveryItems.length;
       activityRecoveryError = recoveryLoadError !== null;
       updateActivityBadge();
       updateRecoveryRetryAllButton();
@@ -10405,45 +10472,30 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         recoveryScroll.appendChild(unavailable);
         return;
       }
-      if (!recoveryItems.length) {
-        const empty = document.createElement('div');
-        empty.className = 'recovery-empty';
-        empty.textContent = 'No recovery items right now.';
-        recoveryScroll.appendChild(empty);
-        return;
-      }
 
       const list = document.createElement('div');
       list.className = 'recovery-list';
 
       for (const item of recoveryItems) {
         const card = document.createElement('div');
-        card.className = 'recovery-item';
-
-        const top = document.createElement('div');
-        top.className = 'recovery-item-top';
+        card.className = 'activity-card is-attention';
 
         const title = document.createElement('div');
-        title.className = 'recovery-item-title';
-        title.textContent = formatJobTimestamp(item.modified_at) || item.title || 'Recovery item';
-
-        const kind = document.createElement('div');
-        kind.className = 'recovery-kind';
-        kind.textContent = item.kind.replace(/-/g, ' ');
-
-        top.appendChild(title);
-        top.appendChild(kind);
-
+        title.className = 'activity-card-title';
+        title.textContent = item.kind.startsWith('watch-')
+          ? "A watched file couldn't be processed" : "A recording didn't finish processing";
         const detail = document.createElement('div');
-        detail.className = 'recovery-item-detail';
-        detail.textContent = item.detail;
-
-        const path = document.createElement('div');
-        path.className = 'recovery-item-path';
-        path.textContent = item.path;
+        detail.className = 'activity-card-body';
+        const name = document.createElement('span');
+        i18nSkipUserText(name, item.title);
+        name.textContent = item.title || 'Recovery item';
+        detail.appendChild(name);
+        const stamp = formatJobTimestamp(item.modified_at);
+        if (stamp) detail.append(' · ', document.createTextNode(stamp));
+        if (item.detail) detail.append(' · ', document.createTextNode(item.detail));
 
         const actions = document.createElement('div');
-        actions.className = 'recovery-actions';
+        actions.className = 'activity-card-actions';
 
         const retry = document.createElement('button');
         retry.className = 'btn btn-secondary btn-sm';
@@ -10481,6 +10533,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         const open = document.createElement('button');
         open.className = 'btn btn-secondary btn-sm';
         open.textContent = 'Open';
+        open.title = item.path;
         open.addEventListener('click', async () => {
           try {
             await invoke('cmd_open_file', { path: item.path });
@@ -10491,6 +10544,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
 
         const folder = document.createElement('button');
         folder.className = 'btn btn-secondary btn-sm';
+        folder.title = item.path;
         folder.textContent = desktopCapabilities.folderRevealLabel || 'Show in Folder';
         folder.addEventListener('click', async () => {
           try {
@@ -10505,9 +10559,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         actions.appendChild(open);
         actions.appendChild(folder);
 
-        card.appendChild(top);
+        card.appendChild(title);
         card.appendChild(detail);
-        card.appendChild(path);
         card.appendChild(actions);
         list.appendChild(card);
       }
@@ -20677,6 +20730,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     setTimeout(() => {
       loadReadinessItems();
       loadRecoveryItems();
+      loadProcessingJobsCenter();
       checkUpcoming();
     }, 2000);
     setTimeout(() => maybeOpenCoachOnboarding(), 1200);

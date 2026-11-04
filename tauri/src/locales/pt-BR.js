@@ -12,6 +12,14 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['pt-BR'] = {
   strings: {
+    "Done today": "Concluído hoje",
+    "Run all checks": "Executar todas as verificações",
+    "Show all checks": "Mostrar todas as verificações",
+    "A recording didn't finish processing": "Uma gravação não terminou de ser processada",
+    "A watched file couldn't be processed": "Um arquivo da pasta monitorada não pôde ser processado",
+    "Transcript needs review": "A transcrição precisa de revisão",
+    "Nothing needs attention.": "Nada precisa de atenção.",
+    "Nothing is processing.": "Nada está sendo processado.",
     "Last week": "Semana passada",
     "Previous week": "Semana anterior",
     "Next week": "Próxima semana",
