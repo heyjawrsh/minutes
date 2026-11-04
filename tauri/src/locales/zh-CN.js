@@ -12,6 +12,18 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['zh-CN'] = {
   strings: {
+    "Last week": "上周",
+    "Previous week": "上一周",
+    "Next week": "下一周",
+    "Ask Assistant about this week": "向助手询问本周",
+    "Meetings": "会议",
+    "Needs a follow-up": "需要跟进",
+    "Commitments made over a week ago with no later mention.": "一周多以前做出且之后未再提及的承诺。",
+    "People you met most": "你最常见面的人",
+    "overdue": "已逾期",
+    "No meetings this week.": "本周没有会议。",
+    "No meetings that week.": "那一周没有会议。",
+    "Nothing is waiting on a follow-up.": "没有需要跟进的事项。",
     "Today": "今天",
     "Yesterday": "昨天",
     "meeting": "会议",
@@ -645,6 +657,8 @@ window.__MINUTES_I18N['zh-CN'] = {
     "Yoruba": "约鲁巴语"
   },
   patterns: [
+    { re: "^(\\d+) meetings? · (\\d+) open$", to: "$1 场会议 · $2 项待办" },
+    { re: "^What happened in my meetings from (\\d{4}-\\d{2}-\\d{2}) to (\\d{4}-\\d{2}-\\d{2})\\? Decisions, open items, and anything overdue\\.$", to: "从 $1 到 $2，我的会议都讨论了什么？列出决策、待办事项，以及所有逾期事项。" },
     { re: "^(1) item$", to: "$1 项" },
     { re: "^(\\d[\\d.,\\s]*) items$", to: "$1 项" },
     { re: "^(1) meeting$", to: "$1 场会议" },

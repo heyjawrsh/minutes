@@ -2173,7 +2173,10 @@
       display: none;
     }
 
+    .weekly-row-title { flex-shrink: 0; }
+    .weekly-row { gap: 8px; }
     .weekly-row-sub {
+      text-align: right;
       color: var(--text-tertiary);
       font-size: var(--text-xs);
     }
@@ -2185,6 +2188,43 @@
 
     .detail-weekly {
       padding-top: 16px;
+      container-type: inline-size;
+    }
+
+    .weekly-nav, .weekly-people { display: flex; flex-wrap: wrap; gap: 8px; }
+    .detail-weekly .weekly-meeting-link {
+      border: 0; background: none; padding: 0; font: inherit; cursor: pointer; text-align: left;
+    }
+    .detail-weekly .weekly-meeting-link:hover { color: var(--text); text-decoration: underline; }
+    .detail-weekly button:focus-visible, .detail-weekly input:focus-visible {
+      outline: 2px solid var(--focus-ring); outline-offset: 2px;
+    }
+    .weekly-stats, .weekly-grid { display: grid; gap: 12px; margin-top: 16px; }
+    .weekly-stats { grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr)); }
+    .weekly-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    @container (max-width: 560px) {
+      .weekly-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+    .weekly-stat, .weekly-section {
+      padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: var(--radius-lg); background: var(--bg-elevated); min-width: 0;
+    }
+    .weekly-stat-value { font-size: var(--text-xl); color: var(--text); }
+    .weekly-stat-label, .weekly-note { font-size: var(--text-xs); color: var(--text-secondary); }
+    .weekly-section h3 { margin: 0 0 12px; font-size: var(--text-sm); color: var(--text); }
+    .weekly-item { padding: 10px 0; overflow-wrap: anywhere; font-size: var(--text-sm); }
+    .weekly-item + .weekly-item { border-top: 1px solid var(--border); }
+    .weekly-action { display: flex; align-items: baseline; gap: 8px; }
+    .weekly-action-body { min-width: 0; flex: 1; }
+    .weekly-task.is-done { text-decoration: line-through; }
+    .weekly-assignee {
+      display: inline-block; margin: 6px 0; padding: 2px 6px;
+      border-radius: var(--radius-lg); background: var(--bg-hover);
+      color: var(--text-secondary); font-size: var(--text-xs);
+    }
+    .weekly-assignee.overdue { color: var(--orange); background: var(--orange-tint); }
+    .detail-weekly .weekly-meeting-link {
+      display: block; margin-top: 4px; font-size: var(--text-xs); color: var(--text-secondary);
     }
 
     /* ── Meeting list ── */
@@ -11743,7 +11783,119 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       });
     }
 
-    async function openWeeklyView() {
+    let weeklyWeeksBack = 0;
+    let weeklySidebarRequestId = 0;
+
+    async function refreshWeeklySidebar() {
+      const requestId = ++weeklySidebarRequestId;
+      let label = 'Last 7 days';
+      try {
+        const summary = await invoke('cmd_weekly_summary', { weeksBack: 0 });
+        if (summary) label = `${summary.meetingCount} ${summary.meetingCount === 1 ? 'meeting' : 'meetings'} · ${summary.openActionCount} open`;
+      } catch (_) { /* Keep the fallback when the weekly summary is unavailable. */ }
+      if (requestId === weeklySidebarRequestId) weeklyRow.querySelector('.weekly-row-sub').textContent = label;
+    }
+
+    function weeklyLocalDate(iso) {
+      const [year, month, day] = iso.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function renderWeeklyContent(content, summary, weeksBack) {
+      const dateFormat = new Intl.DateTimeFormat(uiDateLocale(), { month: 'short', day: 'numeric' });
+      const shortDate = (date) => /^\d{4}-\d{2}-\d{2}$/.test(date || '') ? dateFormat.format(weeklyLocalDate(date)) : (date || '');
+      const userText = (text) => i18nSkipUserText(el('span', { text: text || '' }), true);
+      const button = (label, onClick, className = '') => el('button', { type: 'button', class: className, on: { click: onClick } }, label);
+      const meetingLink = (item) => {
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(item.meetingDate || '') ? weeklyLocalDate(item.meetingDate) : new Date(item.meetingDate);
+        const dateText = Number.isNaN(date.getTime()) ? '' : dateFormat.format(date);
+        return button([userText(item.meetingTitle), ' · ', dateText], () => openMeetingDetail(item.meetingPath), 'weekly-meeting-link');
+      };
+      const range = dateFormat.formatRange(weeklyLocalDate(summary.weekStart), weeklyLocalDate(summary.weekEnd));
+      detailTitle.textContent = weeksBack === 0 ? 'This week' : weeksBack === 1 ? 'Last week' : range;
+      detailTitle.title = detailTitle.textContent;
+      detailMeta.replaceChildren(el('span', { class: 'detail-meta-chip', text: range }));
+      const arrow = (text) => el('span', { text, attrs: { 'aria-hidden': 'true' } });
+      const nav = el('div', { class: 'weekly-nav' }, [
+        button([arrow('‹'), ' ', el('span', { text: 'Previous week' })], () => openWeeklyView(weeksBack + 1), 'btn btn-secondary btn-sm'),
+      ]);
+      if (weeksBack > 0) nav.append(button([el('span', { text: 'Next week' }), ' ', arrow('›')], () => openWeeklyView(weeksBack - 1), 'btn btn-secondary btn-sm'));
+      nav.append(button('Ask Assistant about this week', async () => {
+        await setAssistantScope(null);
+        await openRecall('assistant');
+        sendAssistantPrompt(weeksBack === 0
+          ? 'What happened in my meetings this week? Decisions, open items, and anything overdue.'
+          : `What happened in my meetings from ${summary.weekStart} to ${summary.weekEnd}? Decisions, open items, and anything overdue.`);
+      }, 'btn btn-secondary btn-sm'));
+      const minutes = Math.floor((summary.totalDurationSecs || 0) / 60);
+      const duration = `${minutes >= 60 ? `${Math.floor(minutes / 60)}h ` : ''}${minutes % 60}m`;
+      const stats = el('div', { class: 'weekly-stats' });
+      for (const [count, label] of [[summary.meetingCount, 'Meetings'], [summary.memoCount, 'Memos'], [summary.decisionCount, 'Decisions'], [summary.openActionCount, 'Open action items']]) {
+        const caption = el('div', { class: 'weekly-stat-label' }, [el('span', { text: label })]);
+        if (label === 'Meetings') caption.append(' · ', el('span', { text: duration }));
+        stats.append(el('div', { class: 'weekly-stat' }, [el('div', { class: 'weekly-stat-value', text: String(count || 0) }), caption]));
+      }
+      content.append(nav, stats);
+      if (summary.meetingCount + summary.memoCount === 0) {
+        content.append(el('p', { class: 'detail-empty', text: weeksBack === 0 ? 'No meetings this week.' : 'No meetings that week.' }));
+        return;
+      }
+      const grid = el('div', { class: 'weekly-grid' });
+      const section = (heading) => {
+        const card = el('section', { class: 'weekly-section' }, [el('h3', { text: heading })]);
+        grid.append(card);
+        return card;
+      };
+      const decisions = section('Decisions');
+      for (const item of summary.decisions || []) decisions.append(el('div', { class: 'weekly-item' }, [userText(item.text), meetingLink(item)]));
+      const actions = section('Open action items');
+      for (const item of summary.openActions || []) {
+        const task = el('span', { class: 'weekly-task' }, [userText(item.task)]);
+        const check = el('input', { type: 'checkbox', attrs: { 'aria-label': `Done: ${item.task}` } });
+        check.addEventListener('change', async () => {
+          const done = check.checked;
+          check.disabled = true;
+          task.classList.toggle('is-done', done);
+          try {
+            await invoke('cmd_set_action_item_status', { path: item.meetingPath, index: item.index, done });
+          } catch (e) {
+            check.checked = !done;
+            task.classList.toggle('is-done', !done);
+            showDetailFeedback(`Could not update the action item: ${e}`, 'error');
+          } finally {
+            check.disabled = false;
+            void refreshWeeklySidebar();
+          }
+        });
+        const chip = el('span', { class: `weekly-assignee${item.overdue ? ' overdue' : ''}` }, [userText(item.assignee)]);
+        if (item.overdue) chip.append(' · ', el('span', { text: 'overdue' }));
+        else if (item.due) chip.append(' · ', userText(shortDate(item.due)));
+        actions.append(el('div', { class: 'weekly-item weekly-action' }, [check,
+          el('div', { class: 'weekly-action-body' }, [task, el('div', {}, [chip]), meetingLink(item)]),
+        ]));
+      }
+      if (weeksBack === 0) {
+        const followUp = section('Needs a follow-up');
+        followUp.append(el('p', { class: 'weekly-note', text: 'Commitments made over a week ago with no later mention.' }));
+        for (const item of summary.staleCommitments || []) {
+          followUp.append(el('div', { class: 'weekly-item' }, [userText(item.what), ...(item.who ? [' · ', userText(item.who)] : []), meetingLink(item)]));
+        }
+        if (!summary.staleCommitments?.length) followUp.append(el('p', { class: 'weekly-note', text: 'Nothing is waiting on a follow-up.' }));
+      }
+      if (summary.people?.length) {
+        const people = el('div', { class: 'weekly-people' });
+        for (const person of summary.people) people.append(button([userText(person.name), ` · ${person.count}`], () => searchFromDetail(person.name), 'btn btn-secondary btn-sm'));
+        section('People you met most').append(people);
+      }
+      if (summary.meetings?.length) {
+        const meetings = section('Meetings');
+        for (const item of summary.meetings) meetings.append(meetingLink({ meetingTitle: item.title, meetingDate: item.date, meetingPath: item.path }));
+      }
+      content.append(grid);
+    }
+
+    async function openWeeklyView(weeksBack = 0) {
+      weeklyWeeksBack = weeksBack;
       const requestId = ++detailOpenRequestId;
       detailReturnFocusPath = null;
       currentMeetingPath = null;
@@ -11753,8 +11905,8 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       clearDetailFeedback();
       detailOverlay.dataset.view = 'weekly';
       i18nSkipUserText(detailTitle, false);
-      detailTitle.textContent = 'This week';
-      detailTitle.title = 'This week';
+      detailTitle.textContent = weeksBack === 1 ? 'Last week' : 'This week';
+      detailTitle.title = detailTitle.textContent;
       const meta = document.createElement('span');
       meta.className = 'detail-meta-chip';
       meta.textContent = 'Last 7 days';
@@ -11768,11 +11920,11 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       weeklyRow.setAttribute('aria-current', 'true');
       syncNarrowLayout();
       const content = document.createElement('div');
-      content.className = 'md-prose detail-weekly';
+      content.className = 'detail-weekly';
       try {
-        const summary = await invoke('cmd_weekly_summary');
+        const summary = await invoke('cmd_weekly_summary', { weeksBack });
         if (requestId !== detailOpenRequestId || detailOverlay.dataset.view !== 'weekly') return;
-        if (summary?.markdown) renderMarkdownToElement(content, summary.markdown);
+        if (summary) renderWeeklyContent(content, summary, weeksBack);
         else content.textContent = 'No weekly summary available.';
       } catch (e) {
         if (requestId !== detailOpenRequestId || detailOverlay.dataset.view !== 'weekly') return;
@@ -12115,6 +12267,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
             try {
               await invoke('cmd_set_action_item_status', { path: detail.path, index, done });
               item.status = done ? 'done' : 'open';
+              void refreshWeeklySidebar();
             } catch (e) {
               checkSpan.checked = !done;
               textSpan.style.textDecoration = done ? '' : 'line-through';
@@ -13115,6 +13268,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     }
 
     async function loadMeetings(options = {}) {
+      void refreshWeeklySidebar();
       if (documentsViewActive) {
         await loadDocuments();
         return;
@@ -15655,8 +15809,9 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
     // frontend in place (cmd returns the resolved locale, "en" | "zh-CN" | "pt-BR").
     document.getElementById('settings-ui-language').addEventListener('change', async (e) => {
       try {
-        const resolved = await invoke('cmd_set_ui_language', { language: e.target.value });
-        if (window.MinutesI18n) window.MinutesI18n.setLocale(resolved);
+        const language = e.target.value;
+        const resolved = await invoke('cmd_set_ui_language', { language });
+        if (window.MinutesI18n) window.MinutesI18n.setLocale(resolved || language);
         if (meetingRowsState && !documentsViewActive) {
           const scrollTop = meetingsScroll.scrollTop;
           if (meetingRowsState.sections) {
@@ -15670,9 +15825,12 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
           }
           meetingsScroll.scrollTop = scrollTop;
         }
-        if (currentMeetingDetail && detailOverlay.classList.contains('active')) {
+        if (detailOverlay.classList.contains('active') && detailOverlay.dataset.view === 'weekly') {
+          await openWeeklyView(weeklyWeeksBack);
+        } else if (currentMeetingDetail && detailOverlay.classList.contains('active')) {
           renderDetailKeepingScroll(currentMeetingDetail);
         }
+        void refreshWeeklySidebar();
       } catch (err) { console.error('set ui language:', err); }
     });
     function renderDictationBackend(dictation) {
@@ -16498,6 +16656,18 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
       assistantScopeOffer.querySelector('span').title = meeting?.title || '';
     }
 
+    function sendAssistantPrompt(question) {
+      if (assistantSetupActive) return;
+      const asked = window.MinutesI18n?.t ? window.MinutesI18n.t(question) : question;
+      if (recallDevMode) {
+        recallTerminal?.focus();
+        recallTerminal?.paste(asked);
+      } else if (!recallChatInput.disabled) {
+        recallChatInput.value = asked;
+        void recallChatController.send();
+      }
+    }
+
     function renderAssistantPrompts() {
       const prompts = assistantScope ? [
         ['Debrief', 'Debrief this meeting: what was decided, what is still open, and who owes what.'],
@@ -16516,17 +16686,7 @@ Mat" required maxlength="8192"></textarea></label><div class="dictation-form-act
         const button = document.createElement('button');
         button.replaceChildren(...(Array.isArray(label) ? label : [label]));
         button.title = title ?? label;
-        button.addEventListener('click', () => {
-          if (assistantSetupActive) return;
-          const asked = window.MinutesI18n?.t ? window.MinutesI18n.t(question) : question;
-          if (recallDevMode) {
-            recallTerminal?.focus();
-            recallTerminal?.paste(asked);
-          } else if (!recallChatInput.disabled) {
-            recallChatInput.value = asked;
-            void recallChatController.send();
-          }
-        });
+        button.addEventListener('click', () => sendAssistantPrompt(question));
         return button;
       }));
     }

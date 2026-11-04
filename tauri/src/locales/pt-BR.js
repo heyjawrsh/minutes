@@ -12,6 +12,18 @@
 window.__MINUTES_I18N = window.__MINUTES_I18N || {};
 window.__MINUTES_I18N['pt-BR'] = {
   strings: {
+    "Last week": "Semana passada",
+    "Previous week": "Semana anterior",
+    "Next week": "Próxima semana",
+    "Ask Assistant about this week": "Perguntar ao Assistente sobre esta semana",
+    "Meetings": "Reuniões",
+    "Needs a follow-up": "Precisa de acompanhamento",
+    "Commitments made over a week ago with no later mention.": "Compromissos feitos há mais de uma semana sem menção posterior.",
+    "People you met most": "Pessoas com quem você mais se reuniu",
+    "overdue": "atrasado",
+    "No meetings this week.": "Nenhuma reunião esta semana.",
+    "No meetings that week.": "Nenhuma reunião naquela semana.",
+    "Nothing is waiting on a follow-up.": "Nada aguardando acompanhamento.",
     "Today": "Hoje",
     "Yesterday": "Ontem",
     "meeting": "reunião",
@@ -1193,6 +1205,9 @@ window.__MINUTES_I18N['pt-BR'] = {
     "Yoruba": "Iorubá"
   },
   patterns: [
+    { re: "^(1) meeting · (\\d+) open$", to: "$1 reunião · $2 em aberto" },
+    { re: "^(\\d+) meetings · (\\d+) open$", to: "$1 reuniões · $2 em aberto" },
+    { re: "^What happened in my meetings from (\\d{4}-\\d{2}-\\d{2}) to (\\d{4}-\\d{2}-\\d{2})\\? Decisions, open items, and anything overdue\\.$", to: "O que aconteceu nas minhas reuniões de $1 a $2? Liste decisões, pendências e tudo o que estiver atrasado." },
     { re: "^(1) item$", to: "$1 item" },
     { re: "^(\\d[\\d.,\\s]*) items$", to: "$1 itens" },
     { re: "^(1) meeting$", to: "$1 reunião" },
